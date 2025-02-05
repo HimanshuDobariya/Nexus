@@ -11,3 +11,9 @@ html {
 body {
   font-family: "Poppins", serif;
 }
+
+@layer components {
+  .error-message {
+    @apply text-red-500 flex items-center gap-1 text-xs absolute -bottom-[18px];
+  }
+}
