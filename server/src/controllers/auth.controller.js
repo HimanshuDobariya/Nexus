@@ -3,7 +3,7 @@ import { hashPassword } from "../utils/hashPassword.js";
 import { generateOTP } from "../utils/generateOTP.js";
 import { sendVerificationEmail } from "../utils/sendEmail.js";
 import { generateToken } from "../utils/generateJwtToken.js";
-import bcrypt from "bcryptjs"
+import bcrypt from "bcryptjs";
 
 //signup controller
 const signup = async (req, res) => {
@@ -77,6 +77,20 @@ const login = async (req, res) => {
   }
 };
 
+//logout controller
+const logout = async (req, res) => {
+  try {
+    // Clear the token cookie
+    res.clearCookie("token");
+
+    return res.status(200).json({ message: "Logged out successfully." });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Server error.", error: error.message });
+  }
+};
+
 const verifyEmail = async (req, res) => {
   try {
     const { email, code } = req.body;
@@ -112,4 +126,4 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-export { signup, verifyEmail, login };
+export { signup, verifyEmail, login, logout };
