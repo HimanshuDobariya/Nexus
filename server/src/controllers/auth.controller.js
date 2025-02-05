@@ -1,9 +1,14 @@
 import User from "../models/user.model.js";
 import { hashPassword } from "../utils/hashPassword.js";
 import { generateOTP } from "../utils/generateOTP.js";
-import { sendVerificationEmail } from "../utils/sendEmail.js";
+import {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+} from "../utils/sendEmail.js";
 import { generateToken } from "../utils/generateJwtToken.js";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import { config } from "../config/env.config.js";
 
 //signup controller
 const signup = async (req, res) => {
@@ -126,4 +131,34 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-export { signup, verifyEmail, login, logout };
+//forgot password
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User Not Found" });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenExpiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour expiry
+
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordTokenExpireAt = resetTokenExpiresAt;
+
+    await user.save();
+
+    // Generate the password reset URL
+    const resetUrl = `${config.client_url}/reset-password/${resetToken}`;
+
+    await sendPasswordResetEmail(user.name, user.email, resetUrl);
+
+    res.status(200).json({ message: "Password reset link sent to your email" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Server error.", error: error.message });
+  }
+};
+
+export { signup, verifyEmail, login, logout, forgotPassword };

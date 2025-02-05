@@ -9,4 +9,5 @@ export const config = {
   emailPass: process.env.EMAIL_PASS,
   jwt_secret: process.env.JWT_SECRET,
   node_env: process.env.NODE_ENV,
+  client_url: process.env.CLIENT_URL,
 };
