@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import { hashPassword } from "../utils/hashPassword.js";
 import { generateOTP } from "../utils/generateOTP.js";
 import { sendVerificationEmail } from "../utils/sendEmail.js";
+import { generateToken } from "../utils/generateJwtToken.js";
 
 //signup controller
 const signup = async (req, res) => {
@@ -65,6 +66,9 @@ const verifyEmail = async (req, res) => {
     user.verificationCodeExpireAt = undefined;
 
     await user.save();
+
+    // generate token
+    generateToken(res, user._id);
 
     res.status(200).json({ message: "Email verified successfully." });
   } catch (error) {
