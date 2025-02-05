@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import { hashPassword } from "../utils/hashPassword.js";
 import { generateOTP } from "../utils/generateOTP.js";
+import { sendVerificationEmail } from "../utils/sendEmail.js";
 
 //signup controller
 const signup = async (req, res) => {
@@ -30,6 +31,9 @@ const signup = async (req, res) => {
 
     // Save the user in the database
     await newUser.save();
+
+    // Send the OTP to the user's email
+    await sendVerificationEmail(name, email, otp);
 
     return res.status(201).json({ message: "User registered successfully." });
   } catch (error) {
