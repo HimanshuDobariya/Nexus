@@ -1,0 +1,41 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+debug.log*
+error.log*
+output.log*
+
+# Process ID files
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# IDE settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build files
+dist/
+coverage/
+
+# Database dumps
+*.sqlite
+*.sqlite3
+dump.rdb
