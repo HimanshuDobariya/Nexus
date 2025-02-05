@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import { hashPassword } from "../utils/hashPassword.js";
+import { generateOTP } from "../utils/generateOTP.js";
 
 //signup controller
 const signup = async (req, res) => {
@@ -15,11 +16,16 @@ const signup = async (req, res) => {
     // Hash the password before storing
     const hashedPassword = await hashPassword(password);
 
+    // Generate OTP (6-digit number)
+    const otp = generateOTP();
+
     // Create a new user
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
+      verificationCode: otp,
+      verificationCodeExpireAt: new Date(Date.now() + 15 * 60 * 1000), // OTP expires in 15 minutes
     });
 
     // Save the user in the database
