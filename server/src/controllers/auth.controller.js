@@ -3,6 +3,7 @@ import { hashPassword } from "../utils/hashPassword.js";
 import { generateOTP } from "../utils/generateOTP.js";
 import { sendVerificationEmail } from "../utils/sendEmail.js";
 import { generateToken } from "../utils/generateJwtToken.js";
+import bcrypt from "bcryptjs"
 
 //signup controller
 const signup = async (req, res) => {
@@ -37,6 +38,38 @@ const signup = async (req, res) => {
     await sendVerificationEmail(name, email, otp);
 
     return res.status(201).json({ message: "User registered successfully." });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Server error.", error: error.message });
+  }
+};
+
+//login controller
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid Credentilas." });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ message: "Invalid Credentilas" });
+    }
+
+    const isVerified = user.isVerified;
+    if (!isVerified) {
+      return res.status(400).json({ message: "Email is not verified" });
+    }
+
+    generateToken(res, user._id);
+    await user.save();
+
+    res.status(200).json({ message: "Login successful." });
   } catch (error) {
     return res
       .status(500)
@@ -79,4 +112,4 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-export { signup, verifyEmail };
+export { signup, verifyEmail, login };
