@@ -4,6 +4,7 @@ import Home from "./pages/public/Home";
 import AuthLayout from "./layouts/AuthLayout";
 import Signup from "./pages/auth/Signup";
 import Login from "./pages/auth/Login";
+import VerifyEmail from "./pages/auth/VerifyEmail";
 const App = () => {
   return (
     <Router>
@@ -15,6 +16,7 @@ const App = () => {
         <Route element={<AuthLayout />}>
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
         </Route>
       </Routes>
     </Router>
