@@ -1,10 +1,16 @@
-import { Button } from "@material-tailwind/react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
+import Home from "./pages/public/Home"
 const App = () => {
   return (
-    <div>
-      <h1 className="text-3xl font-bold underline">Hello world!</h1>
-      <Button>Button</Button>
-    </div>
+    <Router>
+      <Routes>
+        <Route element={<MainLayout />}>
+          
+          <Route path="/"  element={<Home /> } />
+        </Route>
+      </Routes>
+    </Router>
   );
 };
 export default App;
