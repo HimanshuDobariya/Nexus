@@ -200,4 +200,33 @@ const resetPassword = async (req, res) => {
   }
 };
 
-export { signup, verifyEmail, login, logout, forgotPassword, resetPassword };
+//check user authentication status
+const checkAuth = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("-password");
+    if (!user) {
+      return res.status(400).json({ message: "User Not Found" });
+    }
+
+    res.status(200).json({
+      user: {
+        ...user._doc,
+        password: undefined,
+      },
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Server error.", error: error.message });
+  }
+};
+
+export {
+  signup,
+  verifyEmail,
+  login,
+  logout,
+  forgotPassword,
+  resetPassword,
+  checkAuth,
+};
