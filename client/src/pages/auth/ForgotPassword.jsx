@@ -5,6 +5,7 @@ import { useAuthStore } from "../../store/authStore";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { CiMail } from "react-icons/ci";
+import Loader from "../../components/Loader";
 
 const ForgotPassword = () => {
   const {
@@ -14,7 +15,7 @@ const ForgotPassword = () => {
   } = useForm();
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const { forgotPassword } = useAuthStore();
+  const { forgotPassword, loading } = useAuthStore();
 
   const onSubmit = async (data) => {
     try {
@@ -80,7 +81,7 @@ const ForgotPassword = () => {
               fullWidth
               type="submit"
             >
-              Request reset link
+              {loading ? <Loader /> : "Send reset link"}
             </Button>
           </form>
         </>

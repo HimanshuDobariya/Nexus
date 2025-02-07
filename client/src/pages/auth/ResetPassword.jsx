@@ -6,6 +6,7 @@ import { FaEyeSlash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
 import { IoAlertCircle } from "react-icons/io5";
 import { useAuthStore } from "../../store/authStore";
+import Loader from "../../components/Loader";
 
 const ResetPassword = () => {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -16,7 +17,7 @@ const ResetPassword = () => {
     formState: { errors },
   } = useForm();
   const navigate = useNavigate();
-  const { resetPassword } = useAuthStore();
+  const { resetPassword, loading } = useAuthStore();
   const { token } = useParams();
 
   const onSubmit = async (data) => {
@@ -132,7 +133,7 @@ const ResetPassword = () => {
         </div>
 
         <Button color="gray" size="lg" className="mt-8" fullWidth type="submit">
-          Reset password
+          {loading ? <Loader /> : "Reset password"}
         </Button>
       </form>
     </Card>
