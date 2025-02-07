@@ -1,6 +1,10 @@
 import { useRef } from "react";
 import { Card, Input, Typography, Button } from "@material-tailwind/react";
 import { useForm, Controller } from "react-hook-form";
+import { useAuthStore } from "../../store/authStore";
+import { useLocation, useNavigate } from "react-router-dom";
+import Loader from "../../components/Loader";
+
 const VerifyEmail = () => {
   const {
     handleSubmit,
@@ -10,10 +14,19 @@ const VerifyEmail = () => {
     formState: { errors },
   } = useForm();
   const inputsRef = useRef([]);
+  const { verifyemail, loading } = useAuthStore();
+  const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    const otp = Object.values(data).join(""); // Combine all OTP digits
-    console.log("Entered OTP:", otp);
+  const email = localStorage.getItem("userEmail");
+
+  const onSubmit = async (data) => {
+    const code = Object.values(data).join("").toString();
+    try {
+      await verifyemail({ email, code });
+      navigate("/dashboard");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleChange = (e, index) => {
@@ -33,8 +46,26 @@ const VerifyEmail = () => {
     }
   };
 
+  const handlePaste = (e) => {
+    e.preventDefault();
+
+    // Get the pasted data as a string
+    const pasteData = e.clipboardData.getData("text").slice(0, 6); // Limit to 6 digits
+
+    // Split the paste data into individual characters
+    const fields = pasteData.split("");
+
+    // Loop through the fields and set the value of each input field
+    fields.forEach((value, idx) => {
+      if (inputsRef.current[idx]) {
+        inputsRef.current[idx].value = value; // Set the value of each OTP input
+        handleChange({ target: { value, name: `otp${idx}` } }, idx); // Trigger handleChange for each field
+      }
+    });
+  };
+
   return (
-    <Card className="w-full p-4 md:max-w-[456px] mx-auto">
+    <Card className="w-full p-4 md:max-w-[420px] mx-auto">
       <Typography variant="h3" color="blue-gray" className="mb-2">
         Verify Your Email
       </Typography>
@@ -62,14 +93,21 @@ const VerifyEmail = () => {
                   } rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow`}
                   onChange={(e) => handleChange(e, index)}
                   onKeyDown={(e) => handleBackspace(e, index)}
+                  onPaste={handlePaste}
                 />
               )}
             />
           ))}
         </div>
 
-        <Button color="gray" size="md" className="mb-4 mt-5" fullWidth type="submit">
-          Verify Email
+        <Button
+          color="gray"
+          size="lg"
+          className="mb-4 mt-5 max-w-sm mx-auto"
+          fullWidth
+          type="submit"
+        >
+          {loading ? <Loader /> : "Verify Email"}
         </Button>
       </form>
 

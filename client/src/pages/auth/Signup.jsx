@@ -1,10 +1,18 @@
-import { Typography, Input, Button, Card } from "@material-tailwind/react";
+import {
+  Typography,
+  Input,
+  Button,
+  Card,
+  button,
+} from "@material-tailwind/react";
 import { useState } from "react";
 import { FaEyeSlash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { IoAlertCircle } from "react-icons/io5";
+import { useAuthStore } from "../../store/authStore";
+import Loader from "../../components/Loader";
 
 const Signup = () => {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -14,9 +22,17 @@ const Signup = () => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // Handle form submission
+  const { signup, loading, error } = useAuthStore();
+  const navigate = useNavigate();
+
+  const onSubmit = async (data) => {
+    try {
+      await signup(data);
+      localStorage.setItem("userEmail", data.email);
+      navigate("/verify-email");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -162,7 +178,7 @@ const Signup = () => {
             fullWidth
             type="submit"
           >
-            sign up
+            {loading ? <Loader /> : "Sign up"}
           </Button>
 
           <div className="flex items-center my-5">
