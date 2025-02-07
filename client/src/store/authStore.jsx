@@ -41,4 +41,21 @@ export const useAuthStore = create((set) => ({
       throw error;
     }
   },
+
+  login: async (userData) => {
+    set({ loading: true, error: null });
+
+    try {
+      const response = await axios.post(`${API_URL}/login`, userData);
+      set({ loading: false });
+      toast.success(response.data.message);
+    } catch (error) {
+      set({
+        error: error.response?.data.message || "Error in Login",
+        loading: false,
+      });
+      toast.error(error.response?.data.message);
+      throw error;
+    }
+  },
 }));

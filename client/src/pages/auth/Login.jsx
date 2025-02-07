@@ -2,9 +2,11 @@ import { Typography, Input, Button, Card } from "@material-tailwind/react";
 import { useState } from "react";
 import { FaEyeSlash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { IoAlertCircle } from "react-icons/io5";
+import { useAuthStore } from "../../store/authStore";
+import Loader from "../../components/Loader";
 
 const Login = () => {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -13,10 +15,16 @@ const Login = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
+  const navigate = useNavigate();
+  const { login, loading } = useAuthStore();
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // Handle form submission
+  const onSubmit = async (data) => {
+    try {
+      await login(data);
+      navigate("/dashboard");
+    } catch (error) {
+      console.log(error);
+    }
   };
   return (
     <Card className="w-full p-4 md:max-w-[456px] mx-auto">
@@ -108,7 +116,7 @@ const Login = () => {
             fullWidth
             type="submit"
           >
-            sign in
+            {loading ? <Loader /> : "Sign in"}
           </Button>
 
           <div className="flex items-center my-5">
