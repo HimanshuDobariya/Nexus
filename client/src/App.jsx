@@ -5,6 +5,7 @@ import AuthLayout from "./layouts/AuthLayout";
 import Signup from "./pages/auth/Signup";
 import Login from "./pages/auth/Login";
 import VerifyEmail from "./pages/auth/VerifyEmail";
+import ForgotPassword from "./pages/auth/ForgotPassword";
 import { ToastContainer, Slide } from "react-toastify";
 import DashboardLayout from "./layouts/DashboardLayout";
 const App = () => {
@@ -34,6 +35,7 @@ const App = () => {
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
 
           <Route element={<DashboardLayout />} path="/dashboard" />
