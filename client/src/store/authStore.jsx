@@ -62,15 +62,32 @@ export const useAuthStore = create((set) => ({
   forgotPassword: async (userData) => {
     set({ loading: true, error: null });
     try {
+      const response = await axios.post(`${API_URL}/forgot-password`, userData);
+      set({ loading: false });
+      toast.success(response.data.message);
+    } catch (error) {
+      set({
+        error:
+          error.response?.data.message || "Error to sent reset password link",
+        loading: false,
+      });
+      toast.error(error.response?.data.message);
+      throw error;
+    }
+  },
+
+  resetPassword: async (userData, token) => {
+    set({ loading: true, error: null });
+    try {
       const response = await axios.post(
-        `${API_URL}/forgot-password`,
+        `${API_URL}/reset-password/${token}`,
         userData
       );
       set({ loading: false });
       toast.success(response.data.message);
     } catch (error) {
       set({
-        error: error.response?.data.message || "Error in Login",
+        error: error.response?.data.message || "Error in reset password",
         loading: false,
       });
       toast.error(error.response?.data.message);

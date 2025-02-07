@@ -8,6 +8,7 @@ import VerifyEmail from "./pages/auth/VerifyEmail";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import { ToastContainer, Slide } from "react-toastify";
 import DashboardLayout from "./layouts/DashboardLayout";
+import ResetPassword from "./pages/auth/ResetPassword";
 const App = () => {
   return (
     <>
@@ -36,6 +37,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
           </Route>
 
           <Route element={<DashboardLayout />} path="/dashboard" />
