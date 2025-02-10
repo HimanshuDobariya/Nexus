@@ -66,11 +66,6 @@ const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid Credentilas" });
     }
 
-    const isVerified = user.isVerified;
-    if (!isVerified) {
-      return res.status(400).json({ message: "Email is not verified" });
-    }
-
     generateToken(res, user._id);
     await user.save();
 
@@ -122,7 +117,13 @@ const verifyEmail = async (req, res) => {
     // generate token
     generateToken(res, user._id);
 
-    res.status(200).json({ message: "Email verified successfully." });
+    res.status(200).json({
+      message: "Email verified successfully.",
+      user: {
+        ...user._doc,
+        password: undefined,
+      },
+    });
   } catch (error) {
     console.log(error);
     return res

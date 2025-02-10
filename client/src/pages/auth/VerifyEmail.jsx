@@ -23,7 +23,7 @@ const VerifyEmail = () => {
     const code = Object.values(data).join("").toString();
     try {
       await verifyemail({ email, code });
-      navigate("/dashboard");
+      navigate(`/workspace`);
     } catch (error) {
       console.log(error);
     }

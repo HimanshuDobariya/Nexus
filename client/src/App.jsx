@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import Home from "./pages/public/Home";
 import AuthLayout from "./layouts/AuthLayout";
@@ -7,9 +12,28 @@ import Login from "./pages/auth/Login";
 import VerifyEmail from "./pages/auth/VerifyEmail";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import { ToastContainer, Slide } from "react-toastify";
-import DashboardLayout from "./layouts/DashboardLayout";
 import ResetPassword from "./pages/auth/ResetPassword";
+import WorkSpaceLayout from "./layouts/WorkSpaceLayout";
+import { useAuthStore } from "./store/authStore";
+import { useEffect } from "react";
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuthStore();
+  if (!isAuthenticated) {
+    return <Navigate to="/signup" replace />;
+  }
+  return children;
+};
+
 const App = () => {
+  const { isAuthenticated, user, checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth, isAuthenticated]);
+
+  console.log(isAuthenticated, user);
+
   return (
     <>
       {" "}
@@ -40,7 +64,14 @@ const App = () => {
             <Route path="/reset-password/:token" element={<ResetPassword />} />
           </Route>
 
-          <Route element={<DashboardLayout />} path="/dashboard" />
+          <Route
+            element={
+              <ProtectedRoute>
+                <WorkSpaceLayout />
+              </ProtectedRoute>
+            }
+            path="/workspace"
+          />
         </Routes>
       </Router>
     </>

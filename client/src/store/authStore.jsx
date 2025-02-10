@@ -4,18 +4,22 @@ import { toast } from "react-toastify";
 
 const API_URL = `${import.meta.env.VITE_SERVER_URL}/api/auth`;
 
+axios.defaults.withCredentials = true;
+
 export const useAuthStore = create((set) => ({
   user: null,
   loading: false,
   error: null,
+  isAuthenticated: false,
+  isCheckingAuth: true,
 
   signup: async (userData) => {
     set({ loading: true, error: null });
 
     try {
-      const response = await axios.post(`${API_URL}/signup`, userData);
+      const { data } = await axios.post(`${API_URL}/signup`, userData);
       set({ loading: false });
-      toast.success(response.data.message);
+      toast.success(data.message);
     } catch (error) {
       set({
         error: error.response?.data.message || "Signup failed",
@@ -29,9 +33,9 @@ export const useAuthStore = create((set) => ({
     set({ loading: true, error: null });
 
     try {
-      const response = await axios.post(`${API_URL}/verify-email`, userData);
-      set({ loading: false });
-      toast.success(response.data.message);
+      const { data } = await axios.post(`${API_URL}/verify-email`, userData);
+      set({ loading: false, isAuthenticated: true, user: data.user });
+      toast.success(data.message);
     } catch (error) {
       set({
         error: error.response?.data.message || "Error in Verify Email",
@@ -41,14 +45,13 @@ export const useAuthStore = create((set) => ({
       throw error;
     }
   },
-
   login: async (userData) => {
     set({ loading: true, error: null });
 
     try {
-      const response = await axios.post(`${API_URL}/login`, userData);
-      set({ loading: false });
-      toast.success(response.data.message);
+      const { data } = await axios.post(`${API_URL}/login`, userData);
+      set({ loading: false, isAuthenticated: true });
+      toast.success(data.message);
     } catch (error) {
       set({
         error: error.response?.data.message || "Error in Login",
@@ -62,9 +65,9 @@ export const useAuthStore = create((set) => ({
   forgotPassword: async (userData) => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.post(`${API_URL}/forgot-password`, userData);
+      const { data } = await axios.post(`${API_URL}/forgot-password`, userData);
       set({ loading: false });
-      toast.success(response.data.message);
+      toast.success(data.message);
     } catch (error) {
       set({
         error:
@@ -79,12 +82,12 @@ export const useAuthStore = create((set) => ({
   resetPassword: async (userData, token) => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.post(
+      const { data } = await axios.post(
         `${API_URL}/reset-password/${token}`,
         userData
       );
       set({ loading: false });
-      toast.success(response.data.message);
+      toast.success(data.message);
     } catch (error) {
       set({
         error: error.response?.data.message || "Error in reset password",
@@ -92,6 +95,24 @@ export const useAuthStore = create((set) => ({
       });
       toast.error(error.response?.data.message);
       throw error;
+    }
+  },
+
+  checkAuth: async () => {
+    set({ isCheckingAuth: true, error: null });
+    try {
+      const { data } = await axios.get(`${API_URL}/check-auth`);
+      if (data.user) {
+        set({ isCheckingAuth: false, isAuthenticated: true, user: data.user });
+      } else {
+        set({ isCheckingAuth: false, isAuthenticated: false, user: null });
+      }
+    } catch (error) {
+      set({
+        user: null,
+        isCheckingAuth: false,
+        isAuthenticated: false,
+      });
     }
   },
 }));

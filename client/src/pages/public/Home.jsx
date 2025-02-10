@@ -1,8 +1,9 @@
 import { Button } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../store/authStore";
 const Home = () => {
   const navigate = useNavigate();
-
+  const { isAuthenticated } = useAuthStore();
   return (
     <div className="flex flex-col items-center text-center py-8 md:py-16 px-4 z-10 relative">
       <h1 className="mb-4 text-5xl font-extrabold tracking-tight leading-none md:text-6xl lg:text-7xl text-white">
@@ -28,7 +29,7 @@ const Home = () => {
         color="white"
         size="lg"
         onClick={() => {
-          navigate("/signup");
+          navigate(`${isAuthenticated ? "/workspace" : "signup"}`);
         }}
       >
         Get started

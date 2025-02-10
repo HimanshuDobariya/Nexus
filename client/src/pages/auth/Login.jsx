@@ -21,7 +21,7 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       await login(data);
-      navigate("/dashboard");
+      navigate("/workspace");
     } catch (error) {
       console.log(error);
     }
@@ -111,7 +111,10 @@ const Login = () => {
           </div>
 
           <div className="flex justify-end">
-            <Link to="/forgot-password" className="font-medium hover:underline text-blue-500 text-sm">
+            <Link
+              to="/forgot-password"
+              className="font-medium hover:underline text-blue-500 text-sm"
+            >
               Forgot password?
             </Link>
           </div>
