@@ -29,7 +29,7 @@ const Home = () => {
         color="white"
         size="lg"
         onClick={() => {
-          navigate(`${isAuthenticated ? "/workspace" : "signup"}`);
+          navigate(`${isAuthenticated ? "/workspace" : "/login"}`);
         }}
       >
         Get started

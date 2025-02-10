@@ -20,7 +20,7 @@ import { useEffect } from "react";
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
   if (!isAuthenticated && !user) {
-    return <Navigate to="/signup" />;
+    return <Navigate to="/login" />;
   }
   return children;
 };
