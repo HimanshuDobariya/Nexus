@@ -18,21 +18,19 @@ import { useAuthStore } from "./store/authStore";
 import { useEffect } from "react";
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
-  if (!isAuthenticated) {
-    return <Navigate to="/signup" replace />;
+  const { isAuthenticated, user } = useAuthStore();
+  if (!isAuthenticated && !user) {
+    return <Navigate to="/signup" />;
   }
   return children;
 };
 
 const App = () => {
-  const { isAuthenticated, user, checkAuth } = useAuthStore();
+  const { isAuthenticated, checkAuth } = useAuthStore();
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth, isAuthenticated]);
-
-  console.log(isAuthenticated, user);
 
   return (
     <>
