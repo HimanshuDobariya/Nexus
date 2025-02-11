@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import Profile from "../models/profile.model.js";
 import { hashPassword } from "../utils/hashPassword.js";
 import { generateOTP } from "../utils/generateOTP.js";
 import {
@@ -116,6 +117,16 @@ const verifyEmail = async (req, res) => {
 
     // generate token
     generateToken(res, user._id);
+
+    // create the profile for the user
+    const profileData = {
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+    };
+
+    const newProfile = new Profile(profileData);
+    await newProfile.save();
 
     res.status(200).json({
       message: "Email verified successfully.",

@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   Menu,
   MenuHandler,
@@ -11,7 +12,7 @@ import { FaUser } from "react-icons/fa";
 import { FaPowerOff } from "react-icons/fa";
 import { useAuthStore } from "../store/authStore";
 
-const DrapdownMenu = () => {
+const DropdownMenu = () => {
   const { user, logout } = useAuthStore();
 
   const userName = user.name
@@ -19,6 +20,8 @@ const DrapdownMenu = () => {
     .map((word) => word[0])
     .slice(0, 2)
     .join("");
+
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
@@ -37,7 +40,12 @@ const DrapdownMenu = () => {
         </IconButton>
       </MenuHandler>
       <MenuList>
-        <MenuItem className="flex items-center gap-2">
+        <MenuItem
+          className="flex items-center gap-2"
+          onClick={() => {
+            navigate(`/workspace/profile/${user._id}`);
+          }}
+        >
           <FaUser />
           <Typography variant="small" className="font-medium">
             My Profile
@@ -53,4 +61,4 @@ const DrapdownMenu = () => {
     </Menu>
   );
 };
-export default DrapdownMenu;
+export default DropdownMenu;

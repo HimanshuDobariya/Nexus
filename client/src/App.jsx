@@ -16,6 +16,8 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import WorkSpaceLayout from "./layouts/WorkSpaceLayout";
 import { useAuthStore } from "./store/authStore";
 import { useEffect } from "react";
+import Index from "./pages/workspace/index";
+import UserProfile from "./pages/workspace/UserProfile";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -68,8 +70,10 @@ const App = () => {
                 <WorkSpaceLayout />
               </ProtectedRoute>
             }
-            path="/workspace"
-          />
+          >
+            <Route path="/workspace/" element={<Index />} />
+            <Route path="/workspace/profile/:id" element={<UserProfile />} />
+          </Route>
         </Routes>
       </Router>
     </>

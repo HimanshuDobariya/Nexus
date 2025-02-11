@@ -1,12 +1,6 @@
-import DrapdownMenu from "../components/DrapdownMenu";
-import Sidebar from "../components/Sidebar";
+import { Outlet } from "react-router-dom";
 
 const WorkSpaceLayout = () => {
-  return (
-    <div className="p-4 bg-gray-100 flex justify-between items-start">
-      <Sidebar />
-      <DrapdownMenu />
-    </div>
-  );
+  return <Outlet />;
 };
 export default WorkSpaceLayout;
