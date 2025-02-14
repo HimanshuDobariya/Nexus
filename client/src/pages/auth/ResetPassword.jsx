@@ -1,23 +1,49 @@
-import { Card, Typography, Input, Button } from "@material-tailwind/react";
-import { useForm } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { FaEyeSlash } from "react-icons/fa";
-import { FaEye } from "react-icons/fa";
-import { IoAlertCircle } from "react-icons/io5";
-import { useAuthStore } from "../../store/authStore";
-import Loader from "../../components/Loader";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { FcGoogle } from "react-icons/fc";
+import { IoLogoApple } from "react-icons/io";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useAuthStore } from "@/store/authStore";
+import { useToast } from "@/hooks/use-toast";
+import { Loader } from "lucide-react";
+
+const schema = z.object({
+  newPassword: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/,
+      "Must contain uppercase, number & special letter."
+    ),
+  confirmPassword: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/,
+      "Must contain uppercase, number & special letter."
+    ),
+});
 
 const ResetPassword = () => {
   const [passwordShown, setPasswordShown] = useState(false);
-
+  const [confirmPasswordShown, setConfirmPasswordShown] = useState(false);
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    resolver: zodResolver(schema),
+  });
   const navigate = useNavigate();
   const { resetPassword, loading } = useAuthStore();
+  const { toast } = useToast();
   const { token } = useParams();
 
   const onSubmit = async (data) => {
@@ -25,118 +51,95 @@ const ResetPassword = () => {
       await resetPassword(data, token);
       navigate("/login");
     } catch (error) {
-      console.log(error);
+      toast({
+        variant: "destructive",
+        description: error.response?.data.message || "Can't reset password",
+      });
     }
   };
 
   return (
-    <Card className="w-full p-4 md:max-w-[456px] mx-auto">
-      <Typography variant="h3" color="blue-gray" className="mb-2">
-        Reset Your Password
-      </Typography>
-      <Typography className="mb-4 text-gray-600 font-normal text-sm text-center">
-        Please enter your new password below. Make sure it meets the required
-        criteria.
-      </Typography>
-      <form className="text-left" onSubmit={handleSubmit(onSubmit)}>
-        <div className="mb-6 relative">
-          <label htmlFor="newPassword">
-            <Typography
-              variant="small"
-              className="mb-2 block font-medium text-gray-900"
-            >
-              New Password
-            </Typography>
-          </label>
-          <Input
-            size="lg"
-            placeholder="********"
-            {...register("newPassword", {
-              required: "Password is required",
-              minLength: {
-                value: 8,
-                message: "Password must be at least 8 characters long",
-              },
-              pattern: {
-                value: /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/,
-                message: "Must contain uppercase, number & special letter.",
-              },
-            })}
-            className="appearance-none !border-t-blue-gray-200 placeholder:text-blue-gray-300 placeholder:opacity-100 focus:!border-t-gray-900 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-            labelProps={{
-              className: "before:content-none after:content-none",
-            }}
-            type={passwordShown ? "text" : "password"}
-            icon={
-              <span
-                className="cursor-pointer"
-                onClick={() => {
-                  setPasswordShown((prev) => !prev);
-                }}
-              >
-                {passwordShown ? (
-                  <FaEye className="h-5 w-5" />
-                ) : (
-                  <FaEyeSlash className="h-5 w-5" />
-                )}
-              </span>
-            }
-          />
-          {errors.newPassword && (
-            <p className="error-message">
-              <IoAlertCircle />
-              {errors.newPassword.message}
-            </p>
-          )}
-        </div>
-        <div className="mb-6 relative">
-          <label htmlFor="confirmPassword">
-            <Typography
-              variant="small"
-              className="mb-2 block font-medium text-gray-900"
-            >
-              Confirm Password
-            </Typography>
-          </label>
-          <Input
-            size="lg"
-            placeholder="********"
-            {...register("confirmPassword", {
-              required: "Please confirm the password",
-            })}
-            className="appearance-none !border-t-blue-gray-200 placeholder:text-blue-gray-300 placeholder:opacity-100 focus:!border-t-gray-900 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-            labelProps={{
-              className: "before:content-none after:content-none",
-            }}
-            type={passwordShown ? "text" : "password"}
-            icon={
-              <span
-                className="cursor-pointer"
-                onClick={() => {
-                  setPasswordShown((prev) => !prev);
-                }}
-              >
-                {passwordShown ? (
-                  <FaEye className="h-5 w-5" />
-                ) : (
-                  <FaEyeSlash className="h-5 w-5" />
-                )}
-              </span>
-            }
-          />
-          {errors.confirmPassword && (
-            <p className="error-message">
-              <IoAlertCircle />
-              {errors.confirmPassword.message}
-            </p>
-          )}
-        </div>
+    <div className="w-full">
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col items-center text-center">
+                <h1 className="text-2xl font-bold">Reset Your Password</h1>
+                <p className="text-sm text-muted-foreground">
+                  Please enter your new password below. Make sure it meets the
+                  required criteria.
+                </p>
+              </div>
 
-        <Button color="gray" size="lg" className="mt-8" fullWidth type="submit">
-          {loading ? <Loader /> : "Reset password"}
-        </Button>
-      </form>
-    </Card>
+              <div className="grid gap-2 relative">
+                <div className="flex items-center">
+                  <Label htmlFor="newPassword">New Password</Label>
+                </div>
+                <Input
+                  id="newPassword"
+                  type={passwordShown ? "text" : "password"}
+                  placeholder="******"
+                  {...register("newPassword")}
+                />
+                <span
+                  className="absolute right-2 top-8 text-gray-500 hover:text-gray-700 cursor-pointer"
+                  onClick={() => {
+                    setPasswordShown((prev) => !prev);
+                  }}
+                >
+                  {passwordShown ? (
+                    <FaEye className="h-5 w-5" />
+                  ) : (
+                    <FaEyeSlash className="h-5 w-5" />
+                  )}
+                </span>
+
+                {errors.newPassword && (
+                  <p className="error-msg">{errors.newPassword.message}</p>
+                )}
+              </div>
+              <div className="grid gap-2 relative">
+                <div className="flex items-center">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                </div>
+                <Input
+                  id="password"
+                  type={confirmPasswordShown ? "text" : "password"}
+                  placeholder="******"
+                  {...register("confirmPassword")}
+                />
+                <span
+                  className="absolute right-2 top-8 text-gray-500 hover:text-gray-700 cursor-pointer"
+                  onClick={() => {
+                    setConfirmPasswordShown((prev) => !prev);
+                  }}
+                >
+                  {confirmPasswordShown ? (
+                    <FaEye className="h-5 w-5" />
+                  ) : (
+                    <FaEyeSlash className="h-5 w-5" />
+                  )}
+                </span>
+
+                {errors.confirmPassword && (
+                  <p className="error-msg">{errors.confirmPassword.message}</p>
+                )}
+              </div>
+              <Button
+                type="submit"
+                className="w-full mt-2"
+                size="lg"
+                disabled={loading}
+              >
+                {loading && <Loader className="animate-spin" />}
+                Reset Password
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 export default ResetPassword;

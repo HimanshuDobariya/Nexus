@@ -1,117 +1,89 @@
-import { Typography, Input, Button, Card } from "@material-tailwind/react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { IoAlertCircle } from "react-icons/io5";
-import { useAuthStore } from "../../store/authStore";
-import { Link } from "react-router-dom";
-import { useState } from "react";
-import { CiMail } from "react-icons/ci";
-import Loader from "../../components/Loader";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useAuthStore } from "@/store/authStore";
+import { useToast } from "@/hooks/use-toast";
+import { Loader } from "lucide-react";
+
+const schema = z.object({
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
+});
 
 const ForgotPassword = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  } = useForm({
+    resolver: zodResolver(schema),
+  });
 
+  const navigate = useNavigate();
   const { forgotPassword, loading } = useAuthStore();
+  const { toast } = useToast();
 
   const onSubmit = async (data) => {
     try {
       await forgotPassword(data);
-      setIsSubmitted(true);
+      navigate("/login");
+      toast({
+        description: "Reset Password link sent on your email.",
+      });
     } catch (error) {
-      console.log(error);
+      toast({
+        variant: "destructive",
+        description:
+          error.response?.data.message || "Error to sent verification link",
+      });
     }
   };
 
   return (
-    <Card className="w-full p-4 md:max-w-[456px] mx-auto">
-      {!isSubmitted ? (
-        <>
-          <Typography variant="h3" color="blue-gray" className="mb-2">
-            Forgot Your Password
-          </Typography>
-          <Typography className="mb-4 text-gray-600 font-normal text-sm text-center">
-            Please enter the email address you'd like your password reset
-            information sent to
-          </Typography>
-
-          <form className=" text-left" onSubmit={handleSubmit(onSubmit)}>
-            <div className="mb-6 relative">
-              <label htmlFor="email">
-                <Typography
-                  variant="small"
-                  className="mb-2 block font-medium text-gray-900"
-                >
-                  Your Email
-                </Typography>
-              </label>
-              <Input
-                id="email"
-                color="gray"
-                size="lg"
-                type="email"
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Invalid email address",
-                  },
-                })}
-                placeholder="example@mail.com"
-                className="appearance-none !border-t-blue-gray-200 placeholder:text-blue-gray-300 placeholder:opacity-100 focus:!border-t-gray-900 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                labelProps={{
-                  className: "before:content-none after:content-none",
-                }}
-              />
-              {errors.email && (
-                <p className="error-message">
-                  <IoAlertCircle />
-                  {errors.email.message}
+    <div className="w-full">
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col items-center text-center">
+                <h1 className="text-2xl font-bold">Forgot Your Password</h1>
+                <p className="text-sm text-muted-foreground">
+                  Please enter the email address you'd like your password reset
+                  information sent to
                 </p>
-              )}
+              </div>
+
+              <div className="grid gap-2 relative">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  {...register("email")}
+                />
+                {errors.email && (
+                  <p className="error-msg">{errors.email.message}</p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full mt-2"
+                size="lg"
+                disabled={loading}
+              >
+                {loading && <Loader className="animate-spin" />}
+                Forgot Password
+              </Button>
             </div>
-
-            <Button
-              color="gray"
-              size="lg"
-              className="mt-8"
-              fullWidth
-              type="submit"
-            >
-              {loading ? <Loader /> : "Send reset link"}
-            </Button>
           </form>
-        </>
-      ) : (
-        <>
-          <Typography variant="h3" color="blue-gray" className="mb-2">
-            Email Sent!
-          </Typography>
-          <Typography className="mb-4 text-gray-600 font-normal text-sm text-center">
-            A password reset link has been sent to your email address
-          </Typography>
-          <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 font-extrabold">
-            <CiMail className="h-14 w-14 text-white" />
-          </div>
-          <Typography variant="paragraph" className="mt-2 text-gray-600">
-            If you don't see the email, be sure to check your spam or junk
-            folder. Or you can resend the email.
-          </Typography>
-        </>
-      )}
-
-      <div className="flex justify-center mt-5">
-        <Link
-          to="/login"
-          className="font-medium hover:underline text-blue-500 text-sm"
-        >
-          back to login
-        </Link>
-      </div>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 export default ForgotPassword;

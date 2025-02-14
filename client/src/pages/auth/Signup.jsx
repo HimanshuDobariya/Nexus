@@ -1,18 +1,30 @@
-import {
-  Typography,
-  Input,
-  Button,
-  Card,
-  button,
-} from "@material-tailwind/react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { FaEyeSlash } from "react-icons/fa";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
+import { FcGoogle } from "react-icons/fc";
+import { IoLogoApple } from "react-icons/io";
 import { useForm } from "react-hook-form";
-import { IoAlertCircle } from "react-icons/io5";
-import { useAuthStore } from "../../store/authStore";
-import Loader from "../../components/Loader";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useAuthStore } from "@/store/authStore";
+import { useToast } from "@/hooks/use-toast";
+import { Loader } from "lucide-react";
+
+const signupSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/,
+      "Must contain uppercase, number & special letter."
+    ),
+});
 
 const Signup = () => {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -20,138 +32,75 @@ const Signup = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
-
-  const { signup, loading, error } = useAuthStore();
+  } = useForm({
+    resolver: zodResolver(signupSchema),
+  });
   const navigate = useNavigate();
+  const { signup, loading } = useAuthStore();
+  const { toast } = useToast();
 
   const onSubmit = async (data) => {
     try {
       await signup(data);
-      localStorage.setItem("userEmail", data.email);
+      localStorage.setItem("email", data.email);
       navigate("/verify-email");
     } catch (error) {
-      console.log(error);
+      toast({
+        variant: "destructive",
+        description: error.response?.data.message || "Signup failed.",
+      });
     }
   };
 
   return (
-    <Card className="w-full p-4 md:max-w-[456px] mx-auto">
-      <div>
-        <Typography variant="h3" color="blue-gray" className="mb-2">
-          Create an Account
-        </Typography>
-        <Typography className="mb-4 text-gray-600 font-normal text-sm text-center">
-          By signing up, you agree to our{" "}
-          <Link to="/privacy" className="text-blue-600">
-            {" "}
-            Privacy Policy{" "}
-          </Link>{" "}
-          and
-          <Link to="/terms" className="text-blue-600">
-            Terms of service
-          </Link>
-        </Typography>
-        <form className="mx-auto text-left" onSubmit={handleSubmit(onSubmit)}>
-          <div className="mb-6 relative">
-            <label htmlFor="name">
-              <Typography
-                variant="small"
-                className="mb-2 block font-medium text-gray-900"
-              >
-                Your Name
-              </Typography>
-            </label>
-            <Input
-              id="name"
-              color="gray"
-              size="lg"
-              type="text"
-              {...register("name", {
-                required: "Name is required",
-                minLength: {
-                  value: 3,
-                  message: "Name must be at least 3 characters",
-                },
-              })}
-              placeholder="User Name"
-              className="appearance-none !border-t-blue-gray-200 placeholder:text-blue-gray-300 placeholder:opacity-100 focus:!border-t-gray-900 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
-            />
-            {errors.name && (
-              <p className="error-message">
-                <IoAlertCircle />
-                {errors.name.message}
-              </p>
-            )}
-          </div>
-          <div className="mb-6 relative">
-            <label htmlFor="email">
-              <Typography
-                variant="small"
-                className="mb-2 block font-medium text-gray-900"
-              >
-                Your Email
-              </Typography>
-            </label>
-            <Input
-              id="email"
-              color="gray"
-              size="lg"
-              type="email"
-              {...register("email", {
-                required: "Email is required",
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: "Invalid email address",
-                },
-              })}
-              placeholder="example@mail.com"
-              className="appearance-none !border-t-blue-gray-200 placeholder:text-blue-gray-300 placeholder:opacity-100 focus:!border-t-gray-900 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
-            />
-            {errors.email && (
-              <p className="error-message">
-                <IoAlertCircle />
-                {errors.email.message}
-              </p>
-            )}
-          </div>
-          <div className="mb-6 relative">
-            <label htmlFor="password">
-              <Typography
-                variant="small"
-                className="mb-2 block font-medium text-gray-900"
-              >
-                Password
-              </Typography>
-            </label>
-            <Input
-              size="lg"
-              placeholder="********"
-              {...register("password", {
-                required: "Password is required",
-                minLength: {
-                  value: 8,
-                  message: "Password must be at least 8 characters long",
-                },
-                pattern: {
-                  value: /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/,
-                  message: "Must contain uppercase, number & special letter.",
-                },
-              })}
-              className="appearance-none !border-t-blue-gray-200 placeholder:text-blue-gray-300 placeholder:opacity-100 focus:!border-t-gray-900 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
-              type={passwordShown ? "text" : "password"}
-              icon={
+    <div className="w-full">
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col items-center text-center">
+                <h1 className="text-2xl font-bold">Create An Account</h1>
+                <p className="text-sm text-muted-foreground">
+                  Signup with your Email or Google account
+                </p>
+              </div>
+
+              <div className="grid gap-2 relative">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="user name"
+                  {...register("name")}
+                />
+                {errors.name && (
+                  <p className="error-msg">{errors.name.message}</p>
+                )}
+              </div>
+              <div className="grid gap-2 relative">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  {...register("email")}
+                />
+                {errors.email && (
+                  <p className="error-msg">{errors.email.message}</p>
+                )}
+              </div>
+              <div className="grid gap-2 relative">
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                </div>
+                <Input
+                  id="password"
+                  type={passwordShown ? "text" : "password"}
+                  placeholder="******"
+                  {...register("password")}
+                />
                 <span
-                  className="cursor-pointer"
+                  className="absolute right-2 top-8 text-gray-500 hover:text-gray-700 cursor-pointer"
                   onClick={() => {
                     setPasswordShown((prev) => !prev);
                   }}
@@ -162,60 +111,44 @@ const Signup = () => {
                     <FaEyeSlash className="h-5 w-5" />
                   )}
                 </span>
-              }
-            />
-            {errors.password && (
-              <p className="error-message">
-                <IoAlertCircle />
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-          <Button
-            color="gray"
-            size="lg"
-            className="mt-8"
-            fullWidth
-            type="submit"
-          >
-            {loading ? <Loader /> : "Sign up"}
-          </Button>
 
-          <div className="flex items-center my-5">
-            <div className="flex-1 border-t border-gray-300"></div>
-            <span className="px-3 text-gray-500 text-sm font-medium">OR</span>
-            <div className="flex-1 border-t border-gray-300"></div>
-          </div>
-
-          <Button
-            variant="outlined"
-            size="lg"
-            className=" flex h-12 items-center justify-center gap-2"
-            fullWidth
-          >
-            <img
-              src={`https://www.material-tailwind.com/logos/logo-google.png`}
-              alt="google"
-              className="h-6 w-6"
-            />{" "}
-            sign in with google
-          </Button>
-          <Typography
-            variant="small"
-            color="gray"
-            className="!mt-4 text-center font-normal"
-          >
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="font-medium text-gray-900 hover:underline"
-            >
-              Login
-            </Link>
-          </Typography>
-        </form>
-      </div>
-    </Card>
+                {errors.password && (
+                  <p className="error-msg">{errors.password.message}</p>
+                )}
+              </div>
+              <Button
+                type="submit"
+                className="w-full mt-2 "
+                size="lg"
+                disabled={loading}
+              >
+                {loading && <Loader className="animate-spin" />}
+                Sign up
+              </Button>
+              <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+                <span className="relative z-10 bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Button variant="outline" className="w-full">
+                  <FcGoogle /> Google
+                </Button>
+                <Button variant="outline" className="w-full">
+                  <IoLogoApple /> Apple
+                </Button>
+              </div>
+              <div className="text-center text-sm">
+                Already have an account?{" "}
+                <Link to="/login" className="underline underline-offset-4">
+                  Login
+                </Link>
+              </div>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 export default Signup;

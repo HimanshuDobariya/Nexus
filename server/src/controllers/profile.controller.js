@@ -3,7 +3,8 @@ import cloudinary from "../config/cloudinary.config.js";
 
 export const updateProfileData = async (req, res) => {
   try {
-    const { userId, ...updateFields } = req.body;
+    const { ...updateFields } = req.body;
+    const userId = req.userId
 
     const profile = await Profile.findOne({ userId });
 
@@ -43,13 +44,11 @@ export const updateProfileData = async (req, res) => {
 
 export const getProfileData = async (req, res) => {
   try {
-    const { userId } = req.params;
-
+    const userId = req.userId;
     const profile = await Profile.findOne({ userId });
     if (!profile) {
-      return res.status(404).json({ message: "Profile not found." });
+      return res.status(404).json({ message: "Profile not found.", userId });
     }
-
     res.status(200).json({ profile });
   } catch (error) {
     return res
