@@ -1,27 +1,20 @@
+import AppSidebar from "@/components/sidebar/AppSidebar";
 import SidebarInsetHeader from "@/components/sidebar/SidebarInsetHeader";
-import AppSidebar from "../components/sidebar/AppSidebar";
-import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-
+import { Separator } from "@radix-ui/react-dropdown-menu";
 import { Outlet } from "react-router-dom";
-import { useAuthStore } from "@/store/authStore";
 
-const workspaceLayout = () => {
+const WorkspaceLayout = () => {
   return (
-    <>
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <SidebarInsetHeader />
-          <div className="mb-2">
-            <Separator />
-          </div>
-          <div className="px-6 py-2">
-            <Outlet />
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    </>
+    <SidebarProvider>
+      <AppSidebar />
+
+      <SidebarInset className="px-4">
+        <SidebarInsetHeader />
+        <Separator className="h-[1px] bg-neutral-200 mb-3" />
+        <Outlet />
+      </SidebarInset>
+    </SidebarProvider>
   );
 };
-export default workspaceLayout;
+export default WorkspaceLayout;

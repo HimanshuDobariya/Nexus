@@ -26,8 +26,7 @@ const VerifyEmail = () => {
     const code = Object.values(data).join("").toString();
     try {
       await verifyemail({ email, code });
-      const username = email.split("@")[0];
-      navigate(`/${username}/workspace`);
+      navigate("/workspace/create");
     } catch (error) {
       toast({
         variant: "destructive",

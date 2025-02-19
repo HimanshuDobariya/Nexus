@@ -5,6 +5,8 @@ import authRoutes from "./routes/auth.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import profileRoutes from "./routes/profile.route.js";
+import workspaceRoutes from "./routes/workspace.route.js";
+import { verifyToken } from "./middlewares/verifyToken.js";
 
 const app = express();
 
@@ -25,6 +27,7 @@ connectDatabase();
 //routes
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/workspaces", verifyToken, workspaceRoutes);
 
 app.listen(config.port, () => {
   console.log(`Server running on port : ${config.port}`);

@@ -1,16 +1,16 @@
 import { useAuthStore } from "@/store/authStore";
-import { useNavigationStore } from "@/store/useNavigationStore";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Navigate, Outlet } from "react-router-dom";
 
 const AuthRoutes = () => {
-  const { isAuthenticated, user } = useAuthStore();
-  const { lastVisitedRoute } = useNavigationStore();
-
-  const username = user?.email.split("@")[0];
+  const { isAuthenticated } = useAuthStore();
+  const { workspaces, currentWorkspace } = useWorkspaceStore();
 
   if (isAuthenticated) {
-    return (
-      <Navigate to={lastVisitedRoute || `/${username}/workspace`} replace />
+    return workspaces.length === 0 ? (
+      <Navigate to="/workspace/create" replace />
+    ) : (
+      <Navigate to={`/workspace/${currentWorkspace._id}`} replace />
     );
   }
 

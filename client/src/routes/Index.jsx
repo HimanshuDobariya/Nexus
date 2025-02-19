@@ -7,15 +7,24 @@ import WorkspaceLayout from "@/layout/WorkspaceLayout";
 import { useAuthStore } from "@/store/authStore";
 import ProtectedRoutes from "./ProtectedRoutes";
 import Dashboard from "@/pages/workspace/Dashboard";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import UserProfile from "@/pages/profile/UserProfile";
+import CreateWorkspace from "@/pages/workspace/CreateWorkspace";
+import WorkspaceForm from "@/components/common/WorkspaceForm";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 
 const AppRoutes = () => {
-  const { checkAuth } = useAuthStore();
+  const { checkAuth, isAuthenticated } = useAuthStore();
+  const { getWorkSpaces } = useWorkspaceStore();
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  useEffect(() => {
+    getWorkSpaces();
+  }, [getWorkSpaces, isAuthenticated]);
+
   return (
     <BrowserRouter>
       <Routes>
@@ -25,7 +34,7 @@ const AppRoutes = () => {
           ))}
         </Route>
 
-        <Route path="/" element={<AuthRoutes />}>
+        <Route element={<AuthRoutes />}>
           <Route element={<AuthLayout />}>
             {authenticationRoutePaths.map((route) => (
               <Route
@@ -38,9 +47,8 @@ const AppRoutes = () => {
         </Route>
 
         <Route element={<ProtectedRoutes />}>
-          <Route path="/:username/workspace" element={<WorkspaceLayout />}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
+          <Route path="/workspace/create" element={<CreateWorkspace />} />
+          <Route path="/workspace/:id" element={<WorkspaceLayout />}>
             <Route path="profile" element={<UserProfile />} />
           </Route>
         </Route>

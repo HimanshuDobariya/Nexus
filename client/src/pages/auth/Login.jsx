@@ -13,6 +13,7 @@ import * as z from "zod";
 import { useAuthStore } from "@/store/authStore";
 import { useToast } from "@/hooks/use-toast";
 import { Loader } from "lucide-react";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
@@ -27,7 +28,6 @@ const loginSchema = z.object({
 
 const Login = () => {
   const [passwordShown, setPasswordShown] = useState(false);
-
   const {
     register,
     handleSubmit,
@@ -35,16 +35,20 @@ const Login = () => {
   } = useForm({
     resolver: zodResolver(loginSchema),
   });
-
   const navigate = useNavigate();
   const { login, loading } = useAuthStore();
   const { toast } = useToast();
 
+  const { currentWorkspace } = useWorkspaceStore();
+
   const onSubmit = async (data) => {
     try {
       await login(data);
-      const username = data.email.split("@")[0];
-      navigate(`/${username}/workspace`);
+      if (currentWorkspace) {
+        navigate(`/workspace/${currentWorkspace._id}`);
+      } else {
+        navigate("/workspace/create");
+      }
     } catch (error) {
       toast({
         variant: "destructive",
