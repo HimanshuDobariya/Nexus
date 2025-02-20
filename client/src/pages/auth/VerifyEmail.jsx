@@ -1,121 +1,164 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useRef } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { useAuthStore } from "../../store/authStore";
-import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import DottedSeperator from "@/components/common/DottedSeperator";
+import { useNavigate } from "react-router-dom";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { toast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/store/authStore";
 import { Loader } from "lucide-react";
+import { useRef } from "react";
+
+const otpSchema = z.object({
+  otp: z
+    .array(z.string().length(1).regex(/^\d$/))
+    .length(6, "OTP must be exactly 6 digits"),
+});
 
 const VerifyEmail = () => {
-  const {
-    handleSubmit,
-    control,
-    setValue,
-    trigger,
-    formState: { errors },
-  } = useForm();
+  const form = useForm({
+    resolver: zodResolver(otpSchema),
+    defaultValues: {
+      otp: Array(6).fill(""),
+    },
+  });
   const inputsRef = useRef([]);
-  const { verifyemail, loading } = useAuthStore();
+  const { loading, user, verifyemail } = useAuthStore();
   const navigate = useNavigate();
-  const email = localStorage.getItem("email");
-  const { toast } = useToast();
 
-  const onSubmit = async (data) => {
-    const code = Object.values(data).join("").toString();
-    try {
-      await verifyemail({ email, code });
-      navigate("/workspace/create");
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        description:
-          error.response?.data.message || "Cant't verify your email.",
-      });
-    }
-  };
-  const handleChange = (e, index) => {
+  // const navigate = useNavigate();
+
+  const handleChange = (e, index, field) => {
     const value = e.target.value.replace(/[^0-9]/g, ""); // Allow only digits
-    setValue(`otp${index}`, value); // Update form value
+    const otpArray = [...form.getValues("otp")];
+    otpArray[index] = value; // Update the specific OTP digit
+    form.setValue("otp", otpArray, { shouldValidate: true });
+
+    // Move focus to next input if a number is entered
     if (value && index < 5) {
-      inputsRef.current[index + 1].focus(); // Move to the next input
+      inputsRef.current[index + 1].focus();
     }
-    trigger(`otp${index}`); // Validate field
   };
+
   const handleBackspace = (e, index) => {
     if (e.key === "Backspace" && !e.target.value && index > 0) {
-      inputsRef.current[index - 1].focus(); // Move to the previous input
+      inputsRef.current[index - 1].focus();
     }
   };
 
   const handlePaste = (e) => {
     e.preventDefault();
+    const pasteData = e.clipboardData
+      .getData("text")
+      .slice(0, 6)
+      .replace(/[^0-9]/g, ""); // Allow only digits
+    const otpArray = pasteData.split("");
 
-    // Get the pasted data as a string
-    const pasteData = e.clipboardData.getData("text").slice(0, 6); // Limit to 6 digits
-
-    // Split the paste data into individual characters
-    const fields = pasteData.split("");
-
-    // Loop through the fields and set the value of each input field
-    fields.forEach((value, idx) => {
-      if (inputsRef.current[idx]) {
-        inputsRef.current[idx].value = value; // Set the value of each OTP input
-        handleChange({ target: { value, name: `otp${idx}` } }, idx); // Trigger handleChange for each field
-      }
+    // Update form values and set input fields
+    form.setValue("otp", otpArray.concat(Array(6 - otpArray.length).fill("")), {
+      shouldValidate: true,
     });
-  };
-  return (
-    <div className="w-full">
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
-          <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col items-center text-center">
-                <h1 className="text-2xl font-bold">Verify Your Email</h1>
-                <p className="text-sm text-muted-foreground">
-                  Enter the 6-digit otp that was sent to your email.
-                </p>
-              </div>
 
-              <div className="flex items-center justify-center my-2 space-x-2">
-                {[...Array(6)].map((_, index) => (
-                  <Controller
+    // Focus on the last filled input
+    if (inputsRef.current[otpArray.length - 1]) {
+      inputsRef.current[otpArray.length - 1].focus();
+    }
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      const verificationCode = data.otp.join("");
+      await verifyemail({ email: user?.email, code: verificationCode });
+      navigate("/");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description: error.response?.data.message || "Failed to verify email.",
+      });
+    }
+  };
+
+  return (
+    <Card className="w-full h-full md:w-[487px] border-none shadow-none">
+      <CardHeader className="flex items-center justify-center text-center p-7">
+        <CardTitle className="text-2xl">Verify Your Email</CardTitle>
+
+        <CardDescription className="px-5">
+          Enter the 6-digit otp that was sent to your email.
+        </CardDescription>
+      </CardHeader>
+
+      <div className="px-7">
+        <DottedSeperator />
+      </div>
+
+      <CardContent className="px-7 py-5">
+        <Form {...form}>
+          <form className="space-y-7" onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="flex items-center justify-center my-2 space-x-2 relative">
+              {Array(6)
+                .fill("")
+                .map((_, index) => (
+                  <FormField
                     key={index}
-                    name={`otp${index}`}
-                    control={control}
-                    defaultValue=""
-                    rules={{ required: "All fields are required" }}
+                    control={form.control}
+                    name={`otp.${index}`} // Dot notation for array
                     render={({ field }) => (
-                      <Input
-                        {...field}
-                        ref={(el) => (inputsRef.current[index] = el)}
-                        type="text"
-                        maxLength="1"
-                        className={`w-10 h-10 text-center !ring-0  ${
-                          errors[`otp${index}`]
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }  focus:border-slate-600 hover:border-slate-300`}
-                        onChange={(e) => handleChange(e, index)}
-                        onKeyDown={(e) => handleBackspace(e, index)}
-                        onPaste={handlePaste}
-                      />
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            ref={(el) => (inputsRef.current[index] = el)}
+                            type="text"
+                            maxLength="1"
+                            className={`w-10 h-10 text-center !ring-0 ${
+                              form.formState.errors.otp?.[index]
+                                ? "border-red-500"
+                                : "border-gray-300"
+                            } focus:border-slate-600 hover:border-slate-300`}
+                            onChange={(e) => handleChange(e, index, field)}
+                            onKeyDown={(e) => handleBackspace(e, index)}
+                            onPaste={handlePaste}
+                          />
+                        </FormControl>
+                      </FormItem>
                     )}
                   />
                 ))}
-              </div>
 
-              <Button size="lg" type="submit" disabled={loading}>
-                {loading && <Loader className="animate-spin" />} Verify Email
-              </Button>
+              {form.formState.errors.otp && (
+                <p className="error-msg left-auto">
+                  {form.formState.errors.otp.root?.message ||
+                    "OTP must be exactly 6 digits"}
+                </p>
+              )}
             </div>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader className="animate-spin !size-7" />
+              ) : (
+                "Verify Email"
+              )}
+            </Button>
           </form>
-        </CardContent>
-      </Card>
-    </div>
+        </Form>
+      </CardContent>
+    </Card>
   );
 };
-
 export default VerifyEmail;

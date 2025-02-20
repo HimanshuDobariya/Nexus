@@ -1,19 +1,28 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import DottedSeperator from "@/components/common/DottedSeperator";
 import { FcGoogle } from "react-icons/fc";
-import { IoLogoApple } from "react-icons/io";
-import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/authStore";
-import { useToast } from "@/hooks/use-toast";
 import { Loader } from "lucide-react";
-import { useWorkspaceStore } from "@/store/workspaceStore";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
@@ -27,28 +36,20 @@ const loginSchema = z.object({
 });
 
 const Login = () => {
-  const [passwordShown, setPasswordShown] = useState(false);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
+  const form = useForm({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
   const navigate = useNavigate();
   const { login, loading } = useAuthStore();
-  const { toast } = useToast();
-
-  const { currentWorkspace } = useWorkspaceStore();
 
   const onSubmit = async (data) => {
     try {
       await login(data);
-      if (currentWorkspace) {
-        navigate(`/workspace/${currentWorkspace._id}`);
-      } else {
-        navigate("/workspace/create");
-      }
+      navigate("/");
     } catch (error) {
       toast({
         variant: "destructive",
@@ -58,96 +59,90 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full">
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
-          <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col items-center text-center">
-                <h1 className="text-2xl font-bold">Welcome Back</h1>
-                <p className="text-sm text-muted-foreground">
-                  Login to your account
-                </p>
-              </div>
+    <Card className="w-full h-full md:w-[487px] border-none shadow-none">
+      <CardHeader className="flex items-center justify-center text-center p-7">
+        <CardTitle className="text-2xl">Welcome Back!</CardTitle>
+        <CardDescription>
+          Enter your email below to login to your account
+        </CardDescription>
+      </CardHeader>
+      <div className="px-7">
+        <DottedSeperator />
+      </div>
 
-              <div className="grid gap-2 relative">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  {...register("email")}
-                />
-                {errors.email && (
-                  <p className="error-msg">{errors.email.message}</p>
+      <CardContent className="px-7 py-5">
+        <Form {...form}>
+          <form className="space-y-7" onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="space-y-7">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="relative">
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="Enter email address"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="error-msg" />
+                  </FormItem>
                 )}
-              </div>
-              <div className="grid gap-2 relative">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    to="/forgot-password"
-                    className="ml-auto text-sm underline-offset-2 hover:underline"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
-                <Input
-                  id="password"
-                  type={passwordShown ? "text" : "password"}
-                  placeholder="******"
-                  {...register("password")}
-                />
-                <span
-                  className="absolute right-2 top-10 text-gray-500 hover:text-gray-700 cursor-pointer"
-                  onClick={() => {
-                    setPasswordShown((prev) => !prev);
-                  }}
-                >
-                  {passwordShown ? (
-                    <FaEye className="h-5 w-5" />
-                  ) : (
-                    <FaEyeSlash className="h-5 w-5" />
-                  )}
-                </span>
-
-                {errors.password && (
-                  <p className="error-msg">{errors.password.message}</p>
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem className="relative">
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Enter password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="error-msg" />
+                  </FormItem>
                 )}
-              </div>
-              <Button
-                type="submit"
-                className="w-full mt-2"
-                size="lg"
-                disabled={loading}
-              >
-                {loading && <Loader className="animate-spin" />}
-                Login
-              </Button>
-              <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-                <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="w-full">
-                  <FcGoogle /> Google
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <IoLogoApple /> Apple
-                </Button>
-              </div>
-              <div className="text-center text-sm">
-                Don&apos;t have an account?{" "}
-                <Link to="/signup" className="underline underline-offset-4">
-                  Sign up
-                </Link>
-              </div>
+              />
             </div>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? <Loader className="animate-spin !size-7" /> : "Login"}
+            </Button>
           </form>
-        </CardContent>
-      </Card>
-    </div>
+        </Form>
+
+        <Link
+          to="/forgot-password"
+          className="text-end block mt-3 hover:underline"
+        >
+          Forgot password?
+        </Link>
+      </CardContent>
+
+      <div className="px-7">
+        <DottedSeperator />
+      </div>
+      <CardContent className="p-7 flex flex-col gap-y-4">
+        <Button variant="outline" size="lg" className="w-full p-0">
+          <FcGoogle className="mr-2 !size-5" /> Login with Google
+        </Button>
+
+        <div className="mt-4 text-center text-sm">
+          Don&apos;t have an account?{" "}
+          <Link to="/signup" className="underline underline-offset-4">
+            Sign up
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 export default Login;

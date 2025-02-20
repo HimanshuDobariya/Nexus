@@ -14,15 +14,15 @@ export const useAuthStore = create((set) => ({
     set({ loading: true });
 
     try {
-      await axios.post(`${API_URL}/signup`, userData);
-      set({ loading: false });
+      const { data } = await axios.post(`${API_URL}/signup`, userData);
+      set({ loading: false, user: data.user });
     } catch (error) {
       set({ loading: false });
       throw error;
     }
   },
   verifyemail: async (userData) => {
-    set({ loading: true, error: null });
+    set({ loading: true });
 
     try {
       const { data } = await axios.post(`${API_URL}/verify-email`, userData);
@@ -34,10 +34,9 @@ export const useAuthStore = create((set) => ({
   },
   login: async (userData) => {
     set({ loading: true });
-
     try {
-      await axios.post(`${API_URL}/login`, userData);
-      set({ loading: false, isAuthenticated: true });
+      const { data } = await axios.post(`${API_URL}/login`, userData);
+      set({ loading: false, isAuthenticated: true, user: data.user });
     } catch (error) {
       set({ loading: false });
       throw error;
@@ -69,8 +68,11 @@ export const useAuthStore = create((set) => ({
   resetPassword: async (userData, token) => {
     set({ loading: true });
     try {
-      await axios.post(`${API_URL}/reset-password/${token}`, userData);
-      set({ loading: false });
+      const { data } = await axios.post(
+        `${API_URL}/reset-password/${token}`,
+        userData
+      );
+      set({ loading: false, user: data.user });
     } catch (error) {
       set({ loading: false });
       throw error;
@@ -78,21 +80,23 @@ export const useAuthStore = create((set) => ({
   },
 
   checkAuth: async () => {
-    set({ isAuthenticated: false });
+    set({ isAuthenticated: false, loading: true });
     try {
       const { data } = await axios.get(`${API_URL}/check-auth`);
       if (data.user) {
         set({
           isAuthenticated: true,
           user: data.user,
+          loading: false,
         });
       } else {
-        set({ isAuthenticated: false, user: null });
+        set({ isAuthenticated: false, user: null, loading: false });
       }
     } catch (error) {
       set({
         user: null,
         isAuthenticated: false,
+        loading: false,
       });
     }
   },

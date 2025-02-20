@@ -21,14 +21,13 @@ app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-// connect to database
-connectDatabase();
-
 //routes
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/workspaces", verifyToken, workspaceRoutes);
 
-app.listen(config.port, () => {
+app.listen(config.port, async () => {
   console.log(`Server running on port : ${config.port}`);
+  // connect to database
+  await connectDatabase();
 });

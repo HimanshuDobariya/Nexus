@@ -1,20 +1,29 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { FcGoogle } from "react-icons/fc";
-import { IoLogoApple } from "react-icons/io";
-import { useForm } from "react-hook-form";
+import DottedSeperator from "@/components/common/DottedSeperator";
+import { useNavigate, useParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/authStore";
-import { useToast } from "@/hooks/use-toast";
 import { Loader } from "lucide-react";
 
-const schema = z.object({
+const formSchema = z.object({
   newPassword: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -22,28 +31,21 @@ const schema = z.object({
       /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/,
       "Must contain uppercase, number & special letter."
     ),
-  confirmPassword: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(
-      /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/,
-      "Must contain uppercase, number & special letter."
-    ),
+  confirmPassword: z.string().min(1, "Confirm password is required."),
 });
 
 const ResetPassword = () => {
-  const [passwordShown, setPasswordShown] = useState(false);
-  const [confirmPasswordShown, setConfirmPasswordShown] = useState(false);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(schema),
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
   });
-  const navigate = useNavigate();
+
   const { resetPassword, loading } = useAuthStore();
-  const { toast } = useToast();
+  const navigate = useNavigate();
   const { token } = useParams();
 
   const onSubmit = async (data) => {
@@ -53,93 +55,80 @@ const ResetPassword = () => {
     } catch (error) {
       toast({
         variant: "destructive",
-        description: error.response?.data.message || "Can't reset password",
+        description: error.response?.data.message || "Failed to reset password",
       });
     }
   };
 
   return (
-    <div className="w-full">
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
-          <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col items-center text-center">
-                <h1 className="text-2xl font-bold">Reset Your Password</h1>
-                <p className="text-sm text-muted-foreground">
-                  Please enter your new password below. Make sure it meets the
-                  required criteria.
-                </p>
-              </div>
+    <Card className="w-full h-full md:w-[487px] border-none shadow-none">
+      <CardHeader className="flex items-center justify-center text-center p-7">
+        <CardTitle className="text-2xl">Reset Your Password</CardTitle>
 
-              <div className="grid gap-2 relative">
-                <div className="flex items-center">
-                  <Label htmlFor="newPassword">New Password</Label>
-                </div>
-                <Input
-                  id="newPassword"
-                  type={passwordShown ? "text" : "password"}
-                  placeholder="******"
-                  {...register("newPassword")}
-                />
-                <span
-                  className="absolute right-2 top-8 text-gray-500 hover:text-gray-700 cursor-pointer"
-                  onClick={() => {
-                    setPasswordShown((prev) => !prev);
-                  }}
-                >
-                  {passwordShown ? (
-                    <FaEye className="h-5 w-5" />
-                  ) : (
-                    <FaEyeSlash className="h-5 w-5" />
-                  )}
-                </span>
+        <CardDescription className="px-5">
+          Please enter your new password below. Make sure it meets the required
+          criteria.
+        </CardDescription>
+      </CardHeader>
 
-                {errors.newPassword && (
-                  <p className="error-msg">{errors.newPassword.message}</p>
+      <div className="px-7">
+        <DottedSeperator />
+      </div>
+
+      <CardContent className="px-7 py-5">
+        <Form {...form}>
+          <form className="space-y-7" onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="space-y-7">
+              <FormField
+                control={form.control}
+                name="newPassword"
+                render={({ field }) => (
+                  <FormItem className="relative">
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="New password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="error-msg" />
+                  </FormItem>
                 )}
-              </div>
-              <div className="grid gap-2 relative">
-                <div className="flex items-center">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
-                </div>
-                <Input
-                  id="password"
-                  type={confirmPasswordShown ? "text" : "password"}
-                  placeholder="******"
-                  {...register("confirmPassword")}
-                />
-                <span
-                  className="absolute right-2 top-8 text-gray-500 hover:text-gray-700 cursor-pointer"
-                  onClick={() => {
-                    setConfirmPasswordShown((prev) => !prev);
-                  }}
-                >
-                  {confirmPasswordShown ? (
-                    <FaEye className="h-5 w-5" />
-                  ) : (
-                    <FaEyeSlash className="h-5 w-5" />
-                  )}
-                </span>
-
-                {errors.confirmPassword && (
-                  <p className="error-msg">{errors.confirmPassword.message}</p>
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem className="relative">
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Confirm password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="error-msg" />
+                  </FormItem>
                 )}
-              </div>
-              <Button
-                type="submit"
-                className="w-full mt-2"
-                size="lg"
-                disabled={loading}
-              >
-                {loading && <Loader className="animate-spin" />}
-                Reset Password
-              </Button>
+              />
             </div>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader className="animate-spin !size-7" />
+              ) : (
+                "Reset Password"
+              )}
+            </Button>
           </form>
-        </CardContent>
-      </Card>
-    </div>
+        </Form>
+      </CardContent>
+    </Card>
   );
 };
 export default ResetPassword;

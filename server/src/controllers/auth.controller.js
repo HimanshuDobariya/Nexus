@@ -29,7 +29,7 @@ const signup = async (req, res) => {
     const otp = generateOTP();
 
     // Create a new user
-    const newUser = new User({
+    const user = new User({
       name,
       email,
       password: hashedPassword,
@@ -38,12 +38,15 @@ const signup = async (req, res) => {
     });
 
     // Save the user in the database
-    await newUser.save();
+    await user.save();
 
     // Send the OTP to the user's email
     await sendVerificationEmail(name, email, otp);
 
-    return res.status(201).json({ message: "User registered successfully." });
+    return res.status(201).json({
+      message: "User registered successfully.",
+      user: { name: user.name, email: user.email },
+    });
   } catch (error) {
     return res
       .status(500)
@@ -70,8 +73,15 @@ const login = async (req, res) => {
     generateToken(res, user._id);
     await user.save();
 
-    res.status(200).json({ message: "Login successful." });
+    res.status(200).json({
+      message: "Login successful.",
+      user: {
+        ...user._doc,
+        password: undefined,
+      },
+    });
   } catch (error) {
+    console.log(error);
     return res
       .status(500)
       .json({ message: "Server error.", error: error.message });
@@ -100,13 +110,12 @@ const verifyEmail = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User Not Found" });
     }
+
     if (code !== user.verificationCode) {
       return res.status(400).json({ message: "Invalid verification code" });
     }
     if (user.verificationCodeExpireAt < Date.now()) {
-      return res
-        .status(400)
-        .json({ message: "Verification code is expired. Send it again." });
+      return res.status(400).json({ message: "Verification code is expired." });
     }
 
     user.isVerified = true;
@@ -118,15 +127,19 @@ const verifyEmail = async (req, res) => {
     // generate token
     generateToken(res, user._id);
 
-    // create the profile for the user
-    const profileData = {
-      userId: user._id,
-      name: user.name,
-      email: user.email,
-    };
+    // Check if a profile already exists
+    let profile = await Profile.findOne({ userId: user._id });
 
-    const newProfile = new Profile(profileData);
-    await newProfile.save();
+    if (!profile) {
+      // Create profile with name and email
+      profile = new Profile({
+        userId: user._id,
+        name: user.name, // Pre-fill name
+        email: user.email, // Pre-fill email
+      });
+
+      await profile.save();
+    }
 
     res.status(200).json({
       message: "Email verified successfully.",
@@ -179,6 +192,12 @@ const resetPassword = async (req, res) => {
     const { token } = req.params;
     const { newPassword, confirmPassword } = req.body;
 
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        message: "Passwords do not match.",
+      });
+    }
+
     const user = await User.findOne({
       resetPasswordToken: token,
       resetPasswordTokenExpireAt: { $gt: Date.now() },
@@ -190,12 +209,6 @@ const resetPassword = async (req, res) => {
         .json({ message: "Invalid or Expired Reset Token" });
     }
 
-    if (newPassword !== confirmPassword) {
-      return res.status(400).json({
-        message: "Passwords do not match.",
-      });
-    }
-
     // update the password
     user.password = await hashPassword(newPassword);
     user.resetPasswordToken = undefined;
@@ -203,7 +216,7 @@ const resetPassword = async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({ message: "Password Reset Successfully" });
+    res.status(200).json({ message: "Password Reset Successfully", user });
   } catch (error) {
     console.log(error);
     return res
