@@ -6,50 +6,29 @@ import axios from "axios";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useProfileStore } from "@/store/profileStore";
 
 const UserProfile = () => {
+  const { profile, getProfile, loading, updateProfile } = useProfileStore();
+
+  if (!profile) return null;
+
   const [editMode, setEditMode] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: "",
-    email: "",
-    bio: "",
-    jobTitle: "",
-    department: "",
-    organization: "",
-    location: "",
-    profileImage: "",
+    name: profile.name || "",
+    email: profile.email || "",
+    bio: profile.bio || "",
+    jobTitle: profile.jobTitle || "",
+    department: profile.department || "",
+    organization: profile.organization || "",
+    location: profile.location || "",
+    profileImage: profile.profileImage || "",
   });
   const { toast } = useToast();
   const fileInputRef = useRef(null);
-  const API_URL = `${import.meta.env.VITE_SERVER_URL}/api/profile`;
-  const [loading, setLoading] = useState(false);
-
-  const getPtofileData = async () => {
-    try {
-      const { data } = await axios.get(`${API_URL}`);
-
-      const { profile } = data;
-      setProfileData({
-        name: profile.name || "",
-        email: profile.email || "",
-        bio: profile.bio || "",
-        jobTitle: profile.jobTitle || "",
-        department: profile.department || "",
-        organization: profile.organization || "",
-        location: profile.location || "",
-        profileImage: profile.profileImage || "",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        description:
-          error.response?.data.message || "Can't get your profile data",
-      });
-    }
-  };
 
   useEffect(() => {
-    getPtofileData();
+    getProfile();
   }, []);
 
   const handleInputChange = (field, value) => {
@@ -58,20 +37,14 @@ const UserProfile = () => {
 
   const handleSaveChanges = async () => {
     try {
-      setLoading(true);
-      await axios.put(`${API_URL}`, {
-        ...profileData,
-      });
+      await updateProfile(profileData);
       setEditMode(false);
-      getPtofileData();
-      setLoading(false);
     } catch (error) {
       toast({
         variant: "destructive",
         description:
           error.response?.data.message || "Can't update your profile data",
       });
-      setLoading(false);
     }
   };
 
@@ -109,15 +82,15 @@ const UserProfile = () => {
       </div>
       <Card className="p-6 space-y-6">
         <div className="flex gap-7">
-          <div className="w-48 h-48 rounded-full overflow-hidden flex items-center justify-center relative cursor-pointer group">
+          <div className="w-36 h-36 rounded-full overflow-hidden flex items-center justify-center relative cursor-pointer group">
             {profileData.profileImage ? (
               <img
                 src={profileData.profileImage}
                 alt="Profile"
-                className="w-48 h-48 rounded-full object-cover"
+                className="w-36 h-36 rounded-full object-cover"
               />
             ) : (
-              <Avatar className="w-48 h-48 rounded-full bg-gray-600 text-white flex items-center justify-center text-6xl">
+              <Avatar className="w-36 h-36 rounded-full bg-gray-600 text-white flex items-center justify-center text-6xl">
                 <AvatarFallback>
                   {profileData?.name
                     .split(" ")

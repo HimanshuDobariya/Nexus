@@ -1,10 +1,19 @@
-import UserButton from "@/pages/workspace/UserButton";
+import AppSidebar from "@/components/sidebar/AppSidebar";
+import Header from "@/components/sidebar/Header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Outlet } from "react-router-dom";
 
 const WorkspaceLayout = () => {
   return (
-    <div>
-      <UserButton />
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <Header />
+        <div className="p-4">
+          <Outlet />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 };
 export default WorkspaceLayout;

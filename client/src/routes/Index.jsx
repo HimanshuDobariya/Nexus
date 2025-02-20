@@ -8,6 +8,7 @@ import VerifyEmail from "@/pages/auth/VerifyEmail";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
 import ResetPassword from "@/pages/auth/ResetPassword";
 import AuthRoutes from "./AuthRoutes";
+import UserProfile from "@/pages/profile/UserProfile";
 
 const AppRoutes = () => {
   return (
@@ -24,7 +25,9 @@ const AppRoutes = () => {
         </Route>
 
         <Route element={<ProtectedRoutes />}>
-          <Route path="/" element={<WorkspaceLayout />} />
+          <Route path="/" element={<WorkspaceLayout />}>
+            <Route path="profile" element={<UserProfile />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

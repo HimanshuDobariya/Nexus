@@ -5,24 +5,56 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
+import {
+  GoCheckCircle,
+  GoCheckCircleFill,
+  GoHome,
+  GoHomeFill,
+} from "react-icons/go";
+import { SettingsIcon, UsersIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const Navigation = ({ routes }) => {
+const Navigation = () => {
+  const routes = [
+    { label: "Home", href: "", icon: GoHome, activeIcon: GoHomeFill },
+    {
+      label: "Tasks",
+      href: "/tasks",
+      icon: GoCheckCircle,
+      activeIcon: GoCheckCircleFill,
+    },
+    {
+      label: "Settings",
+      href: "/settings",
+      icon: SettingsIcon,
+      activeIcon: SettingsIcon,
+    },
+    {
+      label: "Members",
+      href: "/members",
+      icon: UsersIcon,
+      activeIcon: UsersIcon,
+    },
+  ];
   return (
     <SidebarGroup>
       <SidebarMenu>
-        {routes.map((item, index) => {
+        {routes.map((item) => {
+          const isActive = false;
+          const Icon = isActive ? item.activeIcon : item.icon;
           return (
-            <SidebarMenuItem key={index}>
-              <SidebarMenuButton asChild size="lg">
-                <Link
-                  to={item.url}
-                  className="text-[18px] flex items-center gap-2 py-2 rounded-md font-medium transition"
-                >
-                  <item.icon className="!size-5" />
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            <Link key={item.href} to={item.href}>
+              <div
+                className={cn(
+                  "flex items-center gap-2.5 p-2.5 rounded-md font-medium hover:text-primary transition text-neutral-500",
+                  isActive &&
+                    "bg-white shadow-sm hover:opacity-100 text-primary"
+                )}
+              >
+                <Icon className="size-5 text-neutral-500" />
+                {item.label}
+              </div>
+            </Link>
           );
         })}
       </SidebarMenu>

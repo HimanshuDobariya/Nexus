@@ -1,6 +1,6 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfileStore } from "@/store/profileStore";
-import { Loader, LogOut } from "lucide-react";
+import { BadgeCheck, Bell, Loader, LogOut, User } from "lucide-react";
 import { useEffect } from "react";
 import {
   DropdownMenu,
@@ -10,10 +10,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import DottedSeperator from "@/components/common/DottedSeperator";
 import { useAuthStore } from "@/store/authStore";
+import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
+import { useNavigate } from "react-router-dom";
 
 const UserButton = () => {
   const { profile, loading, getProfile } = useProfileStore();
   const { logout } = useAuthStore();
+  const naviagte = useNavigate();
 
   useEffect(() => {
     getProfile();
@@ -30,16 +33,22 @@ const UserButton = () => {
   if (!profile) return null;
 
   const { name, email } = profile;
+
   const avatarFallback = name
     ? name.charAt(0).toUpperCase()
     : email.charAt(0).toUpperCase() ?? "U";
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger className="outline-none relative">
         <Avatar className="size-10 hover:opacity-75 transition border border-neutral-300">
-          <AvatarFallback className="bg-neutral-200 font-medium text-neutral-500 flex items-center justify-center">
-            {avatarFallback}
-          </AvatarFallback>
+          {profile && profile.profileImage ? (
+            <AvatarImage src={profile.profileImage} />
+          ) : (
+            <AvatarFallback className="bg-neutral-200 font-medium text-neutral-500 flex items-center justify-center">
+              {avatarFallback}
+            </AvatarFallback>
+          )}
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -53,15 +62,37 @@ const UserButton = () => {
         py-4"
         >
           <Avatar className="size-[62px] border border-neutral-300">
-            <AvatarFallback className="bg-neutral-200 text-4xl font-medium text-neutral-500 flex items-center justify-center">
-              {avatarFallback}
-            </AvatarFallback>
+            {profile && profile.profileImage ? (
+              <AvatarImage src={profile.profileImage} />
+            ) : (
+              <AvatarFallback className="bg-neutral-200 text-4xl font-medium text-neutral-500 flex items-center justify-center">
+                {avatarFallback}
+              </AvatarFallback>
+            )}
           </Avatar>
           <div className="flex items-center justify-center flex-col">
             <p className="font-medium text-neutral-900">{name || "User"}</p>
             <p className="text-xs text-neutral-500">{email}</p>
           </div>
         </div>
+        <DottedSeperator />
+
+        <DropdownMenuGroup className="my-2">
+          <DropdownMenuItem
+            onClick={() => {
+              naviagte("/profile");
+            }}
+          >
+            <User className="!size-5 mr-2" /> Profile
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <BadgeCheck className="!size-5 mr-2" /> Account
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Bell className="!size-5 mr-2" /> Notifications
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+
         <DottedSeperator />
         <DropdownMenuItem
           className="h-10 mt-1 flex items-center justify-center text-amber-700 font-medium cursor-pointer"
