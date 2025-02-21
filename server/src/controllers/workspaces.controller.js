@@ -1,5 +1,7 @@
 import Workspace from "../models/workspace.model.js";
 import cloudinary from "../config/cloudinary.config.js";
+import Member from "../models/members.model.js";
+import { ROLES } from "../enums/role.enum.js";
 
 //create workspace
 export const createWorkspace = async (req, res) => {
@@ -25,6 +27,15 @@ export const createWorkspace = async (req, res) => {
     });
 
     await newWorkspace.save();
+
+    const member = new Member({
+      userId,
+      workspaceId: newWorkspace._id,
+      role: ROLES.ADMIN,
+    });
+
+    await member.save();
+
     res.status(201).json({ workspace: newWorkspace });
   } catch (error) {
     console.error(error);
