@@ -1,6 +1,7 @@
 import AppSidebar from "@/components/sidebar/AppSidebar";
 import Header from "@/components/sidebar/Header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import CreateWorkspace from "@/pages/workspace/WorkspaceFormCard";
 import { Outlet } from "react-router-dom";
 
 const WorkspaceLayout = () => {

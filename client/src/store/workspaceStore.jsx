@@ -32,14 +32,15 @@ export const useWorkspaceStore = create((set) => ({
     set({ loading: true });
     try {
       const { data } = await axios.get(`${API_URL}`);
-      set({
+      set((state) => ({
         loading: false,
         workspaces: data.workspaces,
-        currentWorkspace:
-          data.workspaces.length > 0
-            ? data.workspaces[data.workspaces.length - 1]
-            : null,
-      });
+        currentWorkspace: state.currentWorkspace
+          ? state.workspaces.find(
+              (ws) => ws._id === state.currentWorkspace._id
+            ) || data.workspaces[data.workspaces.length - 1]
+          : data.workspaces[data.workspaces.length - 1],
+      }));
     } catch (error) {
       set({ loading: false });
       throw error;
