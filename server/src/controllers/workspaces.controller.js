@@ -7,7 +7,7 @@ export const createWorkspace = async (req, res) => {
     const { name } = req.body;
     const userId = req.userId;
 
-    const isWorkspaceExist = await Workspace.findOne({ name, userId });
+    const isWorkspaceExist = await Workspace.findOne({ name, owner: userId });
     if (isWorkspaceExist) {
       return res.status(404).json({ message: "Workspace already exist." });
     }
@@ -20,7 +20,7 @@ export const createWorkspace = async (req, res) => {
 
     const newWorkspace = new Workspace({
       name,
-      userId,
+      owner: userId,
       imageUrl,
     });
 
@@ -36,7 +36,7 @@ export const createWorkspace = async (req, res) => {
 export const getWorkspaces = async (req, res) => {
   try {
     const userId = req.userId;
-    const workspaces = await Workspace.find({ userId });
+    const workspaces = await Workspace.find({ owner: userId });
     res.status(200).json({ workspaces });
   } catch (error) {
     console.error(error);
@@ -49,7 +49,7 @@ export const getWorkspaceById = async (req, res) => {
   try {
     const workspace = await Workspace.findOne({
       _id: req.params.id,
-      userId: req.userId,
+      owner: req.userId,
     });
 
     if (!workspace) {
@@ -70,7 +70,7 @@ export const updateWorkspace = async (req, res) => {
 
     let workspace = await Workspace.findOne({
       _id: req.params.id,
-      userId: req.userId,
+      owner: req.userId,
     });
 
     if (!workspace) {
@@ -99,7 +99,7 @@ export const deleteWorkspace = async (req, res) => {
   try {
     const workspace = await Workspace.findOneAndDelete({
       _id: req.params.id,
-      userId: req.userId,
+      owner: req.userId,
     });
 
     if (!workspace) {
