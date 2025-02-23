@@ -7,15 +7,18 @@ import {
 } from "@/components/ui/select";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import { useState } from "react";
 import WorkspaceFormDialog from "@/pages/workspace/WorkspaceFormDialog";
 import { useNavigate } from "react-router-dom";
 
 const WorkSpaceSwitcher = () => {
-  const { workspaces, currentWorkspace, setCurrentWorkspace } =
+  const { workspaces, activeWorkspace, setActiveWorkspace } =
     useWorkspaceStore();
-
   const navigate = useNavigate();
+
+  const handleWorkspaceChange = (workspaceId) => {
+    setActiveWorkspace(workspaceId);
+    navigate(`/workspaces/${workspaceId}`);
+  };
 
   return (
     <div className="flex flex-col gap-y-2 my-2">
@@ -27,14 +30,8 @@ const WorkSpaceSwitcher = () => {
       </div>
 
       <Select
-        value={currentWorkspace?._id} // Set current workspace as selected
-        onValueChange={(value) => {
-          const selectedWorkspace = workspaces.find((ws) => ws._id === value);
-          if (selectedWorkspace) {
-            setCurrentWorkspace(selectedWorkspace);
-            navigate(`/workspaces/${selectedWorkspace._id}`);
-          }
-        }}
+        onValueChange={handleWorkspaceChange}
+        value={activeWorkspace?._id || ""}
       >
         <SelectTrigger className="w-full bg-neutral-200 font-medium p-1">
           <SelectValue />
@@ -44,11 +41,11 @@ const WorkSpaceSwitcher = () => {
                 <SelectItem key={workspace._id} value={workspace._id}>
                   <div className="flex items-center gap-3 font-medium ">
                     {workspace.imageUrl ? (
-                      <div className="size-10 relative rounded-md overflow-hidden">
+                      <div className="min-w-10 w-10 h-10 relative rounded-md overflow-hidden">
                         <img
                           src={workspace.imageUrl}
                           alt={workspace.name}
-                          className=" w-full h-full object-cover"
+                          className="w-full h-full object-cover"
                         />
                       </div>
                     ) : (

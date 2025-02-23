@@ -26,7 +26,7 @@ const WorkspaceFormDialog = () => {
             Fill in the details to create your new workspace.
           </DialogDescription>
         </DialogHeader>
-        <WorkspaceForm setOpen={setOpen} />
+        <WorkspaceForm setOpen={setOpen} mode="create" initialData={null} />
       </DialogContent>
     </Dialog>
   );

@@ -10,6 +10,7 @@ import ResetPassword from "@/pages/auth/ResetPassword";
 import AuthRoutes from "./AuthRoutes";
 import UserProfile from "@/pages/profile/UserProfile";
 import WorkspaceFormCard from "@/pages/workspace/WorkspaceFormCard";
+import Settings from "@/pages/workspace/Settings";
 
 const AppRoutes = () => {
   return (
@@ -28,7 +29,8 @@ const AppRoutes = () => {
         <Route element={<ProtectedRoutes />}>
           <Route path="/" element={<></>} />
           <Route path="/workspaces/create" element={<WorkspaceFormCard />} />
-          <Route path="//workspaces/:workspaceId" element={<WorkspaceLayout />}>
+          <Route path="/workspaces/:workspaceId" element={<WorkspaceLayout />}>
+            <Route path="settings" element={<Settings />} />
             <Route path="profile" element={<UserProfile />} />
           </Route>
         </Route>

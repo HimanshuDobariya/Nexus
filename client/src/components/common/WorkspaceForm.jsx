@@ -11,38 +11,31 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useEffect, useState } from "react";
 import { ImageIcon, Loader } from "lucide-react";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { AvatarFallback } from "@radix-ui/react-avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import DottedSeperator from "./DottedSeperator";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { toast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@radix-ui/react-dialog";
-import { DialogHeader } from "../ui/dialog";
+import { data, useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Workspace name is required." }),
-  image: z.instanceof(File).optional(),
+  image: z.instanceof(File).nullable().optional(),
 });
 
-const WorkspaceForm = ({ setOpen }) => {
-  const [preview, setPreview] = useState(null);
+const WorkspaceForm = ({ mode, initialData, setOpen }) => {
+  const [preview, setPreview] = useState(initialData?.imageUrl || null);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      name: initialData?.name || "",
+      image: null,
     },
   });
   const navigate = useNavigate();
-  const { createWorkspace, loading, currentWorkspace } = useWorkspaceStore();
+  const { createWorkspace, loading, activeWorkspace, updateWorkspace } =
+    useWorkspaceStore();
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -52,35 +45,50 @@ const WorkspaceForm = ({ setOpen }) => {
         setPreview(reader.result);
       };
       reader.readAsDataURL(file);
-      form.setValue("image", file); // Set the image value in the form state
+      form.setValue("image", file);
     }
   };
 
-  useEffect(() => {
-    if (currentWorkspace) {
-      navigate(`/workspaces/${currentWorkspace?._id}`);
-    }
-  }, [currentWorkspace]);
+  const handleRemoveImage = () => {
+    setPreview(null);
+    form.setValue("image", null);
+  };
 
   const onSubmit = async (data) => {
     try {
       const formData = new FormData();
       formData.append("name", data.name);
-      if (data.image) formData.append("image", data.image);
 
-      await createWorkspace(formData);
+      // If an image is present, add it, otherwise, check for removal
+      if (data.image) {
+        formData.append("image", data.image);
+      } else if (!preview) {
+        formData.append("removeImage", "true");
+      }
 
-      toast({
-        description: "Workspace created successfully!",
-      });
-      setPreview(null);
-      form.reset();
+      if (mode === "create") {
+        const newWorkspace = await createWorkspace(formData);
+        if (newWorkspace) {
+          navigate(`/workspaces/${newWorkspace._id}`);
+        }
+        toast({
+          description: "Workspace created successfully!",
+        });
+      }
+
+      if (mode === "edit") {
+        await updateWorkspace(activeWorkspace._id, formData);
+        toast({
+          description: "Workspace Update successfully!",
+        });
+      }
       setOpen(false);
     } catch (error) {
+      console.log(error);
       toast({
         variant: "destructive",
         description:
-          error.response?.data?.message || "Failed to create workspace.",
+          error.response?.data?.message || `Failed to ${mode} workspace.`,
       });
     }
   };
@@ -101,13 +109,17 @@ const WorkspaceForm = ({ setOpen }) => {
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="image"
           render={({ field }) => (
             <div className="flex flex-col items-center gap-y-2 border-2 border-dashed rounded-md py-7">
               <div className="flex items-center gap-x-5">
-                <Avatar className="size-[72px] relative">
+                <Avatar
+                  className="size-[72px] relative"
+                  key={preview || "fallback"}
+                >
                   {preview ? (
                     <AvatarImage
                       src={preview}
@@ -124,18 +136,32 @@ const WorkspaceForm = ({ setOpen }) => {
                   <p className="text-sm">Workspace Image</p>
                   <p className="text-sm text-neutral-500">JPG, JPEG or PNG</p>
 
-                  <Button
-                    type="button"
-                    variant="teritary"
-                    size="xs"
-                    disabled={loading}
-                    onClick={() =>
-                      document.getElementById("file-input")?.click()
-                    }
-                    className="mt-2"
-                  >
-                    Upload Image
-                  </Button>
+                  {preview ? (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="xs"
+                      disabled={loading}
+                      onClick={handleRemoveImage}
+                      className="mt-2"
+                    >
+                      Remove Image
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="teritary"
+                      size="xs"
+                      disabled={loading}
+                      onClick={() =>
+                        document.getElementById("file-input")?.click()
+                      }
+                      className="mt-2"
+                    >
+                      Upload Image
+                    </Button>
+                  )}
+
                   <Input
                     id="file-input"
                     type="file"
@@ -148,23 +174,10 @@ const WorkspaceForm = ({ setOpen }) => {
             </div>
           )}
         />
-
-        <DottedSeperator className="py-7" />
-
-        <div className="flex items-center justify-between">
-          <Button
-            type="button"
-            size="lg"
-            variant="outline"
-            onClick={() => {
-              setOpen(false);
-            }}
-          >
-            Cancel
-          </Button>
+        <div className="flex items-center justify-end">
           <Button type="submit" size="lg" disabled={loading}>
             {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-            Create Workspace
+            {mode === "create" ? "Create Workspace" : "Save Changes"}
           </Button>
         </div>
       </form>

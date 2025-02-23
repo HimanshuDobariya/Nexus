@@ -8,7 +8,7 @@ import WorkSpaceSwitcher from "./WorkSpaceSwitcher";
 
 const AppSidebar = () => {
   return (
-    <Sidebar className="">
+    <Sidebar className=" !bg-red-500">
       <SidebarHeader>
         <Link to="#">
           <img src={logo} alt="" width={164} height={48} />

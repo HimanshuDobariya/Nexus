@@ -17,6 +17,8 @@ const WorkspaceFormCard = () => {
           </div>
           <CardContent className="p-7">
             <WorkspaceForm
+              mode="create"
+              initialData={null}
               setOpen={() => {
                 return null;
               }}
