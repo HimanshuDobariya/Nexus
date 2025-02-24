@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import generateInviteCode from "../utils/generateInviteCode.js";
 
-const workSoaceSchema = new mongoose.Schema(
+const workspaceSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     owner: {
@@ -20,16 +20,10 @@ const workSoaceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-workSoaceSchema.pre("save", async function (next) {
-  if (this.inviteCode) return next();
+workspaceSchema.methods.resetInviteCode = async function () {
+  this.inviteCode = generateInviteCode();
+};
 
-  do {
-    this.inviteCode = generateInviteCode();
-  } while (await mongoose.model("Workspace").exists({ inviteCode: this.inviteCode }));
-
-  next();
-});
-
-const Workspace = mongoose.model("Workspace", workSoaceSchema);
+const Workspace = mongoose.model("Workspace", workspaceSchema);
 
 export default Workspace;

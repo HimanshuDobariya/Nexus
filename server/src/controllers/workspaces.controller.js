@@ -1,7 +1,6 @@
 import Workspace from "../models/workspace.model.js";
 import cloudinary from "../config/cloudinary.config.js";
 import Member from "../models/members.model.js";
-import { ROLES } from "../enums/role.enum.js";
 import generateInviteCode from "../utils/generateInviteCode.js";
 
 //create workspace

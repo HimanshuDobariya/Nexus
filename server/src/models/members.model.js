@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { ROLES } from "../enums/role.enum.js";
 
 const memberSchema = new mongoose.Schema(
   {
@@ -14,9 +13,13 @@ const memberSchema = new mongoose.Schema(
       required: true,
     },
     role: {
-      type: String,
-      enum: Object.values(ROLES),
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
       required: true,
+    },
+    joinedAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   { timestamps: true }

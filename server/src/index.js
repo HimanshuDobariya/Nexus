@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import profileRoutes from "./routes/profile.route.js";
 import workspaceRoutes from "./routes/workspace.route.js";
+import memberRoutes from "./routes/member.route.js";
 import { verifyToken } from "./middlewares/verifyToken.js";
 
 const app = express();
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/workspaces", verifyToken, workspaceRoutes);
+app.use("/api/members", verifyToken, memberRoutes);
 
 app.listen(config.port, async () => {
   console.log(`Server running on port : ${config.port}`);
