@@ -11,6 +11,7 @@ import AuthRoutes from "./AuthRoutes";
 import UserProfile from "@/pages/profile/UserProfile";
 import WorkspaceFormCard from "@/pages/workspace/WorkspaceFormCard";
 import Settings from "@/pages/workspace/Settings";
+import Members from "@/pages/workspace/Members";
 
 const AppRoutes = () => {
   return (
@@ -31,6 +32,7 @@ const AppRoutes = () => {
           <Route path="/workspaces/create" element={<WorkspaceFormCard />} />
           <Route path="/workspaces/:workspaceId" element={<WorkspaceLayout />}>
             <Route path="settings" element={<Settings />} />
+            <Route path="members" element={<Members />} />
             <Route path="profile" element={<UserProfile />} />
           </Route>
         </Route>

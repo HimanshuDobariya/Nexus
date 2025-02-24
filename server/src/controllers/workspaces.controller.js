@@ -2,6 +2,7 @@ import Workspace from "../models/workspace.model.js";
 import cloudinary from "../config/cloudinary.config.js";
 import Member from "../models/members.model.js";
 import { ROLES } from "../enums/role.enum.js";
+import generateInviteCode from "../utils/generateInviteCode.js";
 
 //create workspace
 export const createWorkspace = async (req, res) => {
@@ -137,6 +138,30 @@ export const deleteWorkspace = async (req, res) => {
     await Member.deleteMany({ workspaceId: id });
 
     res.status(200).json({ message: "Workspace deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+// reset invite code
+export const resetInviteCode = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+    const workspace = await Workspace.findOne({ _id: id, owner: userId });
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found." });
+    }
+
+    let newInviteCode;
+    do {
+      newInviteCode = generateInviteCode();
+    } while (await Workspace.exists({ inviteCode: newInviteCode }));
+
+    workspace.inviteCode = newInviteCode;
+    await workspace.save();
+
+    return res.status(200).json({ newInviteCode: workspace.inviteCode });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }

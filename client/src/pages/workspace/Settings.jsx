@@ -12,15 +12,25 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import ConfirmationDilog from "@/components/common/ConfirmationDilog";
 import { toast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { Copy, Loader } from "lucide-react";
+import axios from "axios";
 
 const Settings = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const { deleteWorkspace, activeWorkspace, loading } = useWorkspaceStore();
+  const { workspaceId } = useParams();
+  const baseInviteUrl = `${window.location.origin}/workspaces/${workspaceId}/join`;
+  const [inviteLink, setInviteLink] = useState(
+    `${baseInviteUrl}/${activeWorkspace?.inviteCode}`
+  );
+
   const handleDeleteWorkspace = async () => {
     try {
-      await deleteWorkspace(activeWorkspace?._id);
+      await deleteWorkspace(workspaceId);
       navigate("/");
       toast({
         description: "Workspace deleted.",
@@ -33,12 +43,44 @@ const Settings = () => {
       });
     }
   };
+
   const handleCancel = () => {
     setOpen(false);
   };
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(inviteLink);
+    toast({
+      description: "Invite link copied to clipboard.",
+    });
+  };
+
+  const handleResetInviteCode = async () => {
+    try {
+      setIsLoading(true);
+      const { data } = await axios.put(
+        `${
+          import.meta.env.VITE_SERVER_URL
+        }/api/workspaces/${workspaceId}/reset-invite`
+      );
+      toast({
+        description: "Invite code reset successfully.",
+      });
+      setIsLoading(false);
+      setInviteLink(`${baseInviteUrl}/${data.newInviteCode}`);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description:
+          error.response?.data?.error || "Failed to reset invite code",
+      });
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-screen-sm mx-auto space-y-4">
-      <Card className="w-full">
+      <Card className="w-full border-none shadow-none">
         <CardHeader className="flex p-7">
           <CardTitle className="text-xl font-bold">
             Update your workspace
@@ -58,14 +100,54 @@ const Settings = () => {
         </CardContent>
       </Card>
 
-      <Card className="w-full max-w-screen-sm mx-auto">
+      <Card className="w-full border-none shadow-none">
         <CardHeader className="pb-2">
-          <CardTitle>Delete Workspace</CardTitle>
+          <CardTitle>Invite Members</CardTitle>
           <CardDescription>
-            Deleting a workspace is irreversible remove all associted data
+            Use the invite link to add members to your workspace.
           </CardDescription>
         </CardHeader>
 
+        <CardContent className="flex items-center gap-4">
+          <Input readOnly value={inviteLink} className="text-neutral-500" />
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-12"
+            onClick={handleCopy}
+            disabled={isLoading}
+          >
+            <Copy />
+          </Button>
+        </CardContent>
+
+        <div className="px-7">
+          <DottedSeperator />
+        </div>
+        <CardContent className="mt-5 flex justify-end">
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleResetInviteCode}
+            disabled={isLoading}
+          >
+            {isLoading && <Loader className=" animate-spin" />} Reset Invite
+            Link
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="w-full border-none shadow-none">
+        <CardHeader className="pb-2">
+          <CardTitle>Delete Workspace</CardTitle>
+          <CardDescription>
+            {" "}
+            Deleting a workspace is irreversible and remove all associted data
+          </CardDescription>
+        </CardHeader>
+        <div className="px-7">
+          <DottedSeperator />
+        </div>
         <CardContent className="mt-5 flex justify-end">
           <Button
             onClick={() => {
