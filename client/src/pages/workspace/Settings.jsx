@@ -18,7 +18,10 @@ import { Copy, Loader } from "lucide-react";
 import axios from "axios";
 
 const Settings = () => {
-  const [open, setOpen] = useState(false);
+  const [openWorkspaceDeleteDiolg, setOpenWorkspaceDeleteDiolg] =
+    useState(false);
+  const [openResetLinkDilog, SetOpenResetLinkDilog] = useState(false);
+
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const { deleteWorkspace, activeWorkspace, loading } = useWorkspaceStore();
@@ -44,10 +47,6 @@ const Settings = () => {
     }
   };
 
-  const handleCancel = () => {
-    setOpen(false);
-  };
-
   const handleCopy = async () => {
     await navigator.clipboard.writeText(inviteLink);
     toast({
@@ -68,6 +67,7 @@ const Settings = () => {
       });
       setIsLoading(false);
       setInviteLink(`${baseInviteUrl}/${data.newInviteCode}`);
+      SetOpenResetLinkDilog(false);
     } catch (error) {
       toast({
         variant: "destructive",
@@ -128,11 +128,12 @@ const Settings = () => {
           <Button
             variant="destructive"
             size="sm"
-            onClick={handleResetInviteCode}
+            onClick={() => {
+              SetOpenResetLinkDilog(true);
+            }}
             disabled={isLoading}
           >
-            {isLoading && <Loader className=" animate-spin" />} Reset Invite
-            Link
+            Reset Invite Link
           </Button>
         </CardContent>
       </Card>
@@ -151,7 +152,7 @@ const Settings = () => {
         <CardContent className="mt-5 flex justify-end">
           <Button
             onClick={() => {
-              setOpen(true);
+              setOpenWorkspaceDeleteDiolg(true);
             }}
             variant="destructive"
             size="sm"
@@ -165,11 +166,25 @@ const Settings = () => {
         title="Delete Workspace"
         description="Are you sure you want to delete this item? This action cannot be undone."
         confirmText="Delete"
-        open={open}
-        onOpenChange={setOpen}
+        open={openWorkspaceDeleteDiolg}
+        onOpenChange={setOpenWorkspaceDeleteDiolg}
         handleConfirm={handleDeleteWorkspace}
-        handleCancel={handleCancel}
+        handleCancel={() => {
+          setOpenWorkspaceDeleteDiolg(false);
+        }}
         loading={loading}
+      />
+
+      <ConfirmationDilog
+        title="Reset Invite Link"
+        description="This will invalidate the current invite link"
+        open={openResetLinkDilog}
+        onOpenChange={SetOpenResetLinkDilog}
+        handleConfirm={handleResetInviteCode}
+        handleCancel={() => {
+          SetOpenResetLinkDilog(false);
+        }}
+        loading={isLoading}
       />
     </div>
   );
