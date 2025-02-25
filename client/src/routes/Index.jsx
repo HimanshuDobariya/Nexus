@@ -29,8 +29,8 @@ const AppRoutes = () => {
 
         <Route element={<ProtectedRoutes />}>
           <Route path="/" element={<></>} />
-          <Route path="/workspaces/create" element={<WorkspaceFormCard />} />
-          <Route path="/workspaces/:workspaceId" element={<WorkspaceLayout />}>
+          <Route path="/workspace/create" element={<WorkspaceFormCard />} />
+          <Route path="workspaces/:workspaceId" element={<WorkspaceLayout />}>
             <Route path="settings" element={<Settings />} />
             <Route path="members" element={<Members />} />
             <Route path="profile" element={<UserProfile />} />

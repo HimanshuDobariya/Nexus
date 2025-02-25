@@ -10,7 +10,9 @@ const AuthLayout = () => {
     <div className="bg-neutral-100 min-h-screen">
       <div className="max-w-screen-2xl mx-auto p-4">
         <nav className="flex items-center justify-between">
-          <img src={logo} height={50} width={150} alt="Logo" />
+          <Link to="/">
+            <img src={logo} height={50} width={150} alt="Logo" />
+          </Link>
           <Button asChild variant="secondary">
             <Link to={isLogin ? "/signup" : "/login"}>
               {isLogin ? "Sign up" : "Login"}{" "}

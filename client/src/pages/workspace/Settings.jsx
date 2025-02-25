@@ -34,7 +34,7 @@ const Settings = () => {
   const handleDeleteWorkspace = async () => {
     try {
       await deleteWorkspace(workspaceId);
-      navigate("/");
+      navigate(`/workspaces/${activeWorkspace._id}`);
       toast({
         description: "Workspace deleted.",
       });

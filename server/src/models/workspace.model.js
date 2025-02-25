@@ -20,10 +20,6 @@ const workspaceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-workspaceSchema.methods.resetInviteCode = async function () {
-  this.inviteCode = generateInviteCode();
-};
-
 const Workspace = mongoose.model("Workspace", workspaceSchema);
 
 export default Workspace;
