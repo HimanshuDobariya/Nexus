@@ -13,7 +13,7 @@ const AuthLayout = () => {
           <Link to="/">
             <img src={logo} height={50} width={150} alt="Logo" />
           </Link>
-          <Button asChild variant="secondary">
+          <Button asChild variant="primary">
             <Link to={isLogin ? "/signup" : "/login"}>
               {isLogin ? "Sign up" : "Login"}{" "}
             </Link>

@@ -1,69 +1,103 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import WorkspaceFormDialog from "@/pages/workspace/WorkspaceFormDialog";
-import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { ChevronsUpDown, Plus } from "lucide-react";
+import { AvatarImage } from "@radix-ui/react-avatar";
 
 const WorkSpaceSwitcher = () => {
   const { workspaces, activeWorkspace, setActiveWorkspace } =
     useWorkspaceStore();
-  const navigate = useNavigate();
 
-  const handleWorkspaceChange = (workspaceId) => {
-    setActiveWorkspace(workspaceId);
-    navigate(`/workspaces/${workspaceId}`);
-  };
+  const { isMobile } = useSidebar();
 
   return (
-    <div className="flex flex-col gap-y-2 my-2">
-      <div className="flex items-center justify-between">
+    <SidebarMenu>
+      <div className="flex items-center justify-between my-1">
         <p className="text-sm font-medium uppercase text-neutral-500">
           Workspaces
         </p>
         <WorkspaceFormDialog />
       </div>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground my-1 bg-neutral-200/60 hover:bg-neutral-200"
+            >
+              {activeWorkspace && activeWorkspace.imageUrl ? (
+                <div className="size-10 relative overflow-hidden rounded-md">
+                  <img
+                    src={activeWorkspace?.imageUrl}
+                    alt={activeWorkspace?.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <Avatar className="size-10 relative rounded-md overflow-hidden">
+                  <AvatarFallback className="text-white bg-blue-600 text-xl font-semibold w-full h-full flex items-center justify-center rounded-md">
+                    {activeWorkspace?.name[0]}
+                  </AvatarFallback>
+                </Avatar>
+              )}
 
-      <Select
-        onValueChange={handleWorkspaceChange}
-        value={activeWorkspace?._id || ""}
-      >
-        <SelectTrigger className="w-full bg-neutral-200 font-medium p-1">
-          <SelectValue />
-          <SelectContent>
-            {workspaces.length &&
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">
+                  {activeWorkspace?.name}
+                </span>
+              </div>
+              <ChevronsUpDown className="ml-auto" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+            align="start"
+            side={isMobile ? "bottom" : "right"}
+            sideOffset={4}
+          >
+            {workspaces.length > 0 &&
               workspaces.map((workspace) => (
-                <SelectItem key={workspace._id} value={workspace._id}>
-                  <div className="flex items-center gap-3 font-medium ">
-                    {workspace.imageUrl ? (
-                      <div className="min-w-10 w-10 h-10 relative rounded-md overflow-hidden">
-                        <img
+                <DropdownMenuItem
+                  key={workspace._id}
+                  onClick={() => {
+                    setActiveWorkspace(workspace._id);
+                  }}
+                  className="gap-2 p-2 size-14 w-full"
+                >
+                  <div className="flex items-center justify-center rounded-sm">
+                    <Avatar className="size-10 rounded-md overflow">
+                      {workspace.imageUrl ? (
+                        <AvatarImage
                           src={workspace.imageUrl}
                           alt={workspace.name}
-                          className="w-full h-full object-cover"
+                          className="h-full w-full object-cover"
                         />
-                      </div>
-                    ) : (
-                      <Avatar className="size-10 relative rounded-md overflow-hidden">
-                        <AvatarFallback className="text-white bg-blue-600 text-xl font-semibold w-full h-full flex items-center justify-center rounded-md">
-                          {workspace?.name[0]}
+                      ) : (
+                        <AvatarFallback className="uppercase bg-blue-500 w-full h-full rounded-md text-white font-medium text-xl">
+                          {workspace.name[0]}{" "}
                         </AvatarFallback>
-                      </Avatar>
-                    )}
-
-                    {workspace?.name}
+                      )}
+                    </Avatar>
                   </div>
-                </SelectItem>
+                  <span className="font-medium">{workspace.name}</span>
+                </DropdownMenuItem>
               ))}
-          </SelectContent>
-        </SelectTrigger>
-      </Select>
-    </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 };
 export default WorkSpaceSwitcher;

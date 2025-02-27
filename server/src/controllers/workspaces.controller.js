@@ -87,7 +87,8 @@ export const updateWorkspace = async (req, res) => {
       return res.status(404).json({ message: "Workspace not found" });
     }
 
-    if (workspace.name === name) {
+    const existingWorkspace = await Workspace.findOne({ name, _id: { $ne: workspaceId } });
+    if (existingWorkspace) {
       return res.status(400).json({ message: "Workspace name already exists" });
     }
 

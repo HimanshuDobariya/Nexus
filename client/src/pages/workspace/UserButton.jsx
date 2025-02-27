@@ -11,13 +11,13 @@ import {
 import DottedSeperator from "@/components/common/DottedSeperator";
 import { useAuthStore } from "@/store/authStore";
 import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const UserButton = () => {
   const { profile, loading, getProfile } = useProfileStore();
   const { logout } = useAuthStore();
   const naviagte = useNavigate();
-
+  const { workspaceId } = useParams();
   useEffect(() => {
     getProfile();
   }, []);
@@ -77,19 +77,20 @@ const UserButton = () => {
         </div>
         <DottedSeperator />
 
-        <DropdownMenuGroup className="my-2">
+        <DropdownMenuGroup className="my-2 space-y-1">
           <DropdownMenuItem
             onClick={() => {
-              naviagte("/profile");
+              naviagte(`/workspaces/${workspaceId}/profile`);
             }}
+            className="py-2 text-lg"
           >
-            <User className="!size-5 mr-2" /> Profile
+            <User className="!size-5 mr-2 " /> Profile
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem className="py-2 text-lg">
             <BadgeCheck className="!size-5 mr-2" /> Account
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Bell className="!size-5 mr-2" /> Notifications
+          <DropdownMenuItem className="py-2 text-lg">
+            <Bell className="!size mr-2" /> Notifications
           </DropdownMenuItem>
         </DropdownMenuGroup>
 

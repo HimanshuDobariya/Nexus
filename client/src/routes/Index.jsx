@@ -17,20 +17,19 @@ const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<AuthRoutes />}>
-          <Route element={<AuthLayout />}>
+        <Route element={<AuthLayout />}>
+          <Route element={<AuthRoutes />}>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
           </Route>
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Route>
 
-        <Route element={<ProtectedRoutes />}>
-          <Route path="/" element={<></>} />
-          <Route path="/workspace/create" element={<WorkspaceFormCard />} />
-          <Route path="workspaces/:workspaceId" element={<WorkspaceLayout />}>
+        <Route path="/" element={<ProtectedRoutes />}>
+          <Route path="/workspaces/create" element={<WorkspaceFormCard />} />
+          <Route path="/workspaces/:workspaceId" element={<WorkspaceLayout />}>
             <Route path="settings" element={<Settings />} />
             <Route path="members" element={<Members />} />
             <Route path="profile" element={<UserProfile />} />
