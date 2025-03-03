@@ -60,7 +60,7 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full max-w-screen-lg mx-auto">
       <div className="flex items-center justify-between">
         <h3 className="text-2xl font-medium"> Your Profile </h3>
         {editMode ? (

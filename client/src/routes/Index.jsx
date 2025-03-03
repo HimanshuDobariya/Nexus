@@ -12,6 +12,7 @@ import UserProfile from "@/pages/profile/UserProfile";
 import WorkspaceFormCard from "@/pages/workspace/WorkspaceFormCard";
 import Settings from "@/pages/workspace/Settings";
 import Members from "@/pages/workspace/Members";
+import JoinWorkspace from "@/pages/workspace/JoinWorkspace";
 
 const AppRoutes = () => {
   return (
@@ -35,6 +36,10 @@ const AppRoutes = () => {
             <Route path="profile" element={<UserProfile />} />
           </Route>
         </Route>
+        <Route
+          path="workspaces/:workspaceId/join/:inviteCode"
+          element={<JoinWorkspace />}
+        />
       </Routes>
     </BrowserRouter>
   );

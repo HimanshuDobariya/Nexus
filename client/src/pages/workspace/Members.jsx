@@ -7,57 +7,110 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { toast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-
-import axios from "axios";
 import { EllipsisVertical } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import InviteMembers from "@/components/common/InviteMembers";
+import axios from "axios";
+import { toast } from "@/hooks/use-toast";
 
 const Members = () => {
-  const [members, setMembers] = useState([]);
-  const [loading, setLoading] = useState(false);
   const { workspaceId } = useParams();
-
-  const getWorkspaceMembers = async () => {
+  const [members, setMembers] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const getAllRoles = async () => {
+    setIsLoading(true);
     try {
-      setLoading(true);
       const { data } = await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/api/members/${workspaceId}`
+        `${import.meta.env.VITE_SERVER_URL}/api/roles`
+      );
+
+      const availableRoles = data.roles.filter((role) => role.name !== "OWNER");
+      setRoles(availableRoles);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  };
+  const getWorkSpaceMembers = async () => {
+    try {
+      const { data } = await axios.get(
+        `${
+          import.meta.env.VITE_SERVER_URL
+        }/api/workspaces/${workspaceId}/members`
       );
       setMembers(data.members);
-      setLoading(false);
     } catch (error) {
       console.log(error);
-      setLoading(false);
+    }
+  };
+
+  const changeRoleOfMembers = async (memberId, roleId) => {
+    try {
+      const { data } = await axios.put(
+        `${
+          import.meta.env.VITE_SERVER_URL
+        }/api/workspaces/${workspaceId}/members/change/role`,
+        {
+          memberId,
+          roleId,
+        }
+      );
+      getWorkSpaceMembers();
+      toast({
+        description: data.message,
+      });
+    } catch (error) {
+      console.log(error);
       toast({
         variant: "destructive",
-        description:
-          error.response?.data?.message ||
-          `There is No members associte with workspace.`,
+        description: error.response?.data.message || "Can't change role.",
+      });
+    }
+  };
+
+  const removeMember = async (memberId, email) => {
+    try {
+      const { data } = await axios.delete(
+        `${
+          import.meta.env.VITE_SERVER_URL
+        }/api/workspaces/${workspaceId}/members`,
+        {
+          data: { memberId, email },
+        }
+      );
+      getWorkSpaceMembers();
+      toast({
+        description: data.message,
+      });
+    } catch (error) {
+      console.log(error);
+      toast({
+        variant: "destructive",
+        description: error.response?.data.message || "Can't remove member.",
       });
     }
   };
 
   useEffect(() => {
-    getWorkspaceMembers();
+    getAllRoles();
+    getWorkSpaceMembers();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-
   return (
-    <div className="h-full w-full lg:max-w-screen-sm mx-auto">
-      <Card>
+    <div className="h-full w-full lg:max-w-screen-sm mx-auto space-y-4">
+      <Card className="border-none shadow-none">
         <CardHeader>
           <CardTitle className="text-xl">Members List</CardTitle>
           <CardDescription>
@@ -74,7 +127,7 @@ const Members = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar className="size-10 rounded-full border border-neutral-300 bg-neutral-200 flex items-center justify-center">
-                      <AvatarFallback className="text-xl text-neutral-600">
+                      <AvatarFallback className="text-xl font-medium text-neutral-600">
                         {member.userId.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
@@ -85,40 +138,75 @@ const Members = () => {
                       </p>
                     </div>
                   </div>
+                  <div className="flex items-center justify-center gap-8">
+                    <Badge variant="outline" className="text-sm">
+                      {member?.role.name}
+                    </Badge>
 
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        className="cursor-pointer"
-                        variant="outline"
-                        size="icon"
-                      >
-                        <EllipsisVertical />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent side="bottom" align="end">
-                      <DropdownMenuItem
-                        className="font-medium"
-                        onClick={() => {
-                          console.log("hello");
-                        }}
-                      >
-                        Set as Administrator
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="font-medium"
-                        onClick={() => {
-                          console.log("hello");
-                        }}
-                      >
-                        Set as Member
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="font-medium text-amber-700 hover:text-amber-700">
-                        Remove Member
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    {member?.role.name !== "OWNER" && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            className="cursor-pointer"
+                            variant="outline"
+                            size="icon"
+                          >
+                            <EllipsisVertical />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent side="bottom" align="end">
+                          <DropdownMenuItem
+                            className="font-medium py-2"
+                            onClick={() => {
+                              changeRoleOfMembers(
+                                member.userId._id,
+                                roles.find((role) => role.name === "ADMIN")?._id
+                              );
+                            }}
+                          >
+                            Set as Administrator
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="font-medium py-2"
+                            onClick={() => {
+                              changeRoleOfMembers(
+                                member.userId._id,
+                                roles.find((role) => role.name === "MEMBER")
+                                  ?._id
+                              );
+                            }}
+                          >
+                            Set as Member
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="font-medium py-2"
+                            onClick={() => {
+                              changeRoleOfMembers(
+                                member.userId._id,
+                                roles.find((role) => role.name === "VIEWER")
+                                  ?._id
+                              );
+                            }}
+                          >
+                            Set as Viewer
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="font-medium py-2 text-amber-700 hover:text-amber-700"
+                            onClick={() => {
+                              removeMember(
+                                member.userId._id,
+                                member.userId.email
+                              );
+                            }}
+                          >
+                            Remove {member?.userId.name.split(" ")[0]}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
                 </div>
+                {index < members.length - 1 && <Separator className="my-3" />}
               </div>
             ))
           ) : (
@@ -126,6 +214,8 @@ const Members = () => {
           )}
         </CardContent>
       </Card>
+
+      <InviteMembers roles={roles} isLoading={isLoading} />
     </div>
   );
 };

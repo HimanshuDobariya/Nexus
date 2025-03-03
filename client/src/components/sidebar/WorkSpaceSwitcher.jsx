@@ -13,13 +13,14 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { ChevronsUpDown, Plus } from "lucide-react";
+import { ChevronsUpDown } from "lucide-react";
 import { AvatarImage } from "@radix-ui/react-avatar";
+import { useNavigate } from "react-router-dom";
 
 const WorkSpaceSwitcher = () => {
   const { workspaces, activeWorkspace, setActiveWorkspace } =
     useWorkspaceStore();
-
+  const navigate = useNavigate();
   const { isMobile } = useSidebar();
 
   return (
@@ -73,6 +74,7 @@ const WorkSpaceSwitcher = () => {
                   key={workspace._id}
                   onClick={() => {
                     setActiveWorkspace(workspace._id);
+                    window.location.reload();
                   }}
                   className="gap-2 p-2 size-14 w-full"
                 >

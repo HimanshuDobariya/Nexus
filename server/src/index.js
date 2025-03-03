@@ -7,8 +7,10 @@ import cors from "cors";
 import profileRoutes from "./routes/profile.route.js";
 import workspaceRoutes from "./routes/workspace.route.js";
 import memberRoutes from "./routes/member.route.js";
+import roleRoutes from "./routes/role.route.js";
 import { verifyToken } from "./middlewares/verifyToken.js";
-
+import cron from "node-cron";
+import updateExpiredInvitations from "./services/updateExpiredInvitation.js";
 const app = express();
 
 // middleware
@@ -26,7 +28,10 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/workspaces", verifyToken, workspaceRoutes);
-app.use("/api/members", verifyToken, memberRoutes);
+app.use("/api/members", memberRoutes);
+app.use("/api/roles", roleRoutes);
+
+cron.schedule("0 * * * *", updateExpiredInvitations);
 
 app.listen(config.port, async () => {
   console.log(`Server running on port : ${config.port}`);

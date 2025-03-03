@@ -96,7 +96,7 @@ export const useWorkspaceStore = create((set) => ({
         );
 
         const newActiveWorkspace =
-          state.activeWorkspace?._id === workspaceId
+          updatedWorkspaces.length > 0
             ? updatedWorkspaces[0] || null
             : state.activeWorkspace;
 

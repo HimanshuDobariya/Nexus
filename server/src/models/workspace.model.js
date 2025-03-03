@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import generateInviteCode from "../utils/generateInviteCode.js";
+import { encrypt } from "../utils/crypto-encryption.js";
 
 const workspaceSchema = new mongoose.Schema(
   {
@@ -19,6 +20,13 @@ const workspaceSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+workspaceSchema.pre("save", function (next) {
+  if (this.isNew || this.isModified("inviteCode")) {
+    this.inviteCode = encrypt(this.inviteCode);
+  }
+  next();
+});
 
 const Workspace = mongoose.model("Workspace", workspaceSchema);
 

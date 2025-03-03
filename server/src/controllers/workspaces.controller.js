@@ -2,10 +2,11 @@ import Workspace from "../models/workspace.model.js";
 import cloudinary from "../config/cloudinary.config.js";
 import Member from "../models/members.model.js";
 import Role from "../models/roles-permission.model.js";
+import Invitation from "../models/invitation.model.js";
 import { Permissions, Roles } from "../enums/role.enum.js";
-import generateInviteCode from "../utils/generateInviteCode.js";
-import { getMemberRoleInWorkspace } from "../utils/getMemberRoleInWorkspace.js";
-import { checkPermission } from "../utils/checkPermission.js";
+import { getMemberRoleInWorkspace } from "../services/getMemberRoleInWorkspace.js";
+import { checkPermission } from "../services/checkPermission.js";
+import { decrypt } from "../utils/crypto-encryption.js";
 
 //create workspace
 export const createWorkspace = async (req, res) => {
@@ -47,10 +48,15 @@ export const createWorkspace = async (req, res) => {
 
     await member.save();
 
-    res.status(201).json({ workspace: newWorkspace });
+    res.status(201).json({
+      workspace: {
+        ...newWorkspace._doc,
+        inviteCode: decrypt(newWorkspace.inviteCode),
+      },
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: error.message || "Server Error" });
   }
 };
 
@@ -63,11 +69,15 @@ export const getWorkspaces = async (req, res) => {
       .populate("workspaceId")
       .exec();
 
-    const workspaces = membership.map((membership) => membership.workspaceId);
+    const workspaces = membership
+      .map((membership) => membership.workspaceId)
+      .map((workspace) => {
+        return { ...workspace._doc, inviteCode: decrypt(workspace.inviteCode) };
+      });
     res.status(200).json({ workspaces });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: error.message || "Server Error" });
   }
 };
 
@@ -79,7 +89,7 @@ export const updateWorkspace = async (req, res) => {
 
     // check permission to update workspace
     const { role } = await getMemberRoleInWorkspace(workspaceId, req.userId);
-    checkPermission(role, [Permissions.EDIT_WORKSPACE]);
+    await checkPermission(role, [Permissions.EDIT_WORKSPACE]);
 
     const workspace = await Workspace.findById(workspaceId);
 
@@ -87,7 +97,10 @@ export const updateWorkspace = async (req, res) => {
       return res.status(404).json({ message: "Workspace not found" });
     }
 
-    const existingWorkspace = await Workspace.findOne({ name, _id: { $ne: workspaceId } });
+    const existingWorkspace = await Workspace.findOne({
+      name,
+      _id: { $ne: workspaceId },
+    });
     if (existingWorkspace) {
       return res.status(400).json({ message: "Workspace name already exists" });
     }
@@ -105,10 +118,15 @@ export const updateWorkspace = async (req, res) => {
     workspace.imageUrl = imageUrl;
 
     await workspace.save();
-    res.status(200).json({ workspace });
+    res.status(200).json({
+      workspace: {
+        ...workspace._doc,
+        inviteCode: decrypt(workspace.inviteCode),
+      },
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server Error", error: error.message });
+    res.status(500).json({ message: error.message || "Server Error" });
   }
 };
 
@@ -117,7 +135,7 @@ export const deleteWorkspace = async (req, res) => {
   try {
     const { workspaceId } = req.params;
     const { role } = await getMemberRoleInWorkspace(workspaceId, req.userId);
-    checkPermission(role, [Permissions.DELETE_WORKSPACE]);
+    await checkPermission(role, [Permissions.DELETE_WORKSPACE]);
 
     const workspace = await Workspace.findById(workspaceId);
     if (!workspace) {
@@ -133,30 +151,7 @@ export const deleteWorkspace = async (req, res) => {
     res.status(200).json({ message: "Workspace deleted successfully" });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
-
-// reset invite code
-export const resetInviteCode = async (req, res) => {
-  try {
-    const { workspaceId } = req.params;
-    const workspace = await Workspace.findById(workspaceId);
-
-    const { role } = await getMemberRoleInWorkspace(workspace._id, req.userId);
-    checkPermission(role, [Permissions.CHANGE_WORKSPACE_SETTINGS]);
-
-    if (!workspace) {
-      return res.status(404).json({ message: "Workspace not found." });
-    }
-
-    workspace.inviteCode = generateInviteCode();
-    await workspace.save();
-
-    return res.status(200).json({ newInviteCode: workspace.inviteCode });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Server Error", error: error.message });
+    res.status(500).json({ message: error.message || "Server Error" });
   }
 };
 
@@ -165,7 +160,7 @@ export const getWorkspaceMembers = async (req, res) => {
   try {
     const { workspaceId } = req.params;
     const { role } = await getMemberRoleInWorkspace(workspaceId, req.userId);
-    checkPermission(role, [Permissions.VIEW_ONLY]);
+    await checkPermission(role, [Permissions.VIEW_ONLY]);
 
     const members = await Member.find({ workspaceId })
       .populate("userId", "name email")
@@ -174,7 +169,7 @@ export const getWorkspaceMembers = async (req, res) => {
     res.status(200).json({ members });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server Error", error: error.message });
+    res.status(500).json({ message: error.message || "Server Error" });
   }
 };
 
@@ -185,44 +180,45 @@ export const changeMembersRole = async (req, res) => {
     const { roleId, memberId } = req.body;
 
     const { role } = await getMemberRoleInWorkspace(workspaceId, req.userId);
-    checkPermission(role, [Permissions.CHANGE_MEMBER_ROLE]);
+    await checkPermission(role, [Permissions.CHANGE_MEMBER_ROLE]);
+
+    const member = await Member.findOne({
+      userId: memberId,
+      workspaceId: workspaceId,
+    });
+
+    if (!member) {
+      return res
+        .status(404)
+        .json({ message: "Member not found in the workspace" });
+    }
 
     const isRoleExist = await Role.findById(roleId);
     if (!isRoleExist) {
       return res.status(404).json({ message: "Role not found" });
     }
 
-    const member = await Member.findOne({
-      userId: memberId,
-      workspaceId: workspaceId,
-    });
-
-    if (!member) {
-      return res
-        .status(404)
-        .json({ message: "Member not found in the workspace" });
-    }
-
     member.role = roleId;
     await member.save();
 
-    res.status(200).json({ member });
+    res.status(200).json({ message: "Member role updated successfully" });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server Error", error: error.message });
+    res.status(500).json({ message: error.message || "Server Error" });
   }
 };
 
 export const removeMemberFromWorkspace = async (req, res) => {
   try {
     const { workspaceId } = req.params;
-    const { memberId } = req.body;
+    const { memberId, email } = req.body;
+
     const { role } = await getMemberRoleInWorkspace(workspaceId, req.userId);
-    checkPermission(role, [Permissions.REMOVE_MEMBER]);
+    await checkPermission(role, [Permissions.REMOVE_MEMBER]);
 
     const member = await Member.findOne({
       userId: memberId,
-      workspaceId: workspaceId,
+      workspaceId,
     });
 
     if (!member) {
@@ -231,21 +227,14 @@ export const removeMemberFromWorkspace = async (req, res) => {
         .json({ message: "Member not found in the workspace" });
     }
 
-    const workspace = await Workspace.findById(workspaceId);
-    if (!workspace) {
-      return res.status(404).json({ message: "Workspace not found" });
-    }
-
-    if (member.userId.toString() === workspace.owner.toString()) {
-      return res
-        .status(403)
-        .json({ message: "Cannot remove the workspace owner" });
-    }
-
     await member.deleteOne();
+    await Invitation.deleteMany({
+      workspaceId,
+      inviteeEmail: email,
+    });
 
     res.status(200).json({ message: "Member removed successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
+    res.status(500).json({ message: error.message || "Server Error" });
   }
 };

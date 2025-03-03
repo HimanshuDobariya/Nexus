@@ -3,6 +3,7 @@ import { transporter } from "../config/nodemailer.config.js";
 import {
   VERIFICATION_EMAIL_TEMPLATE,
   PASSWORD_RESET_REQUEST_TEMPLATE,
+  INVITE_MEMBER_TO_WORKSPACE_TEMPLATE,
 } from "./emailTemplates.js";
 
 export const sendVerificationEmail = async (name, email, code) => {
@@ -34,5 +35,29 @@ export const sendPasswordResetEmail = async (name, email, resetUrl) => {
     });
   } catch (error) {
     throw new Error(`Error sendig reset password link : ${error}`);
+  }
+};
+
+export const sendUserInvitationToJoinWorkspaceEmail = async (
+  senderName,
+  senderEmail,
+  workspaceName,
+  recieverEmail,
+  inviteLink
+) => {
+  try {
+    transporter.sendMail({
+      from: { name: senderName, address: senderEmail }, // sender address
+      to: recieverEmail, // list of receivers
+      subject: "Join to workspace", // Subject line
+      html: INVITE_MEMBER_TO_WORKSPACE_TEMPLATE.replace(
+        "[workspaceName]",
+        workspaceName
+      )
+        .replace("[senderName]", senderName)
+        .replace("{inviteURL}", inviteLink),
+    });
+  } catch (error) {
+    throw new Error(`Error sendig invite link : ${error}`);
   }
 };

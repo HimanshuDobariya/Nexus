@@ -43,7 +43,10 @@ const UserButton = () => {
       <DropdownMenuTrigger className="outline-none relative">
         <Avatar className="size-10 hover:opacity-75 transition border border-neutral-300">
           {profile && profile.profileImage ? (
-            <AvatarImage src={profile.profileImage} />
+            <AvatarImage
+              src={profile.profileImage}
+              className="h-full w-full object-cover"
+            />
           ) : (
             <AvatarFallback className="bg-neutral-200 font-medium text-neutral-500 flex items-center justify-center">
               {avatarFallback}
@@ -63,7 +66,10 @@ const UserButton = () => {
         >
           <Avatar className="size-[62px] border border-neutral-300">
             {profile && profile.profileImage ? (
-              <AvatarImage src={profile.profileImage} />
+              <AvatarImage
+                src={profile.profileImage}
+                className="h-full w-full object-cover"
+              />
             ) : (
               <AvatarFallback className="bg-neutral-200 text-4xl font-medium text-neutral-500 flex items-center justify-center">
                 {avatarFallback}
