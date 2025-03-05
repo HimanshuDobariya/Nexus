@@ -34,8 +34,9 @@ const WorkspaceForm = ({ mode, initialData, setOpen }) => {
     },
   });
   const navigate = useNavigate();
-  const { createWorkspace, loading, activeWorkspace, updateWorkspace } =
+  const { createWorkspace, activeWorkspaceId, updateWorkspace } =
     useWorkspaceStore();
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -66,24 +67,29 @@ const WorkspaceForm = ({ mode, initialData, setOpen }) => {
         formData.append("removeImage", "true");
       }
 
+      setLoading(true);
+
       if (mode === "create") {
         const newWorkspace = await createWorkspace(formData);
         if (newWorkspace) {
           navigate(`/workspaces/${newWorkspace._id}`);
         }
+        setLoading(false);
         toast({
           description: "Workspace created successfully!",
         });
       }
 
       if (mode === "edit") {
-        await updateWorkspace(activeWorkspace._id, formData);
+        await updateWorkspace(activeWorkspaceId, formData);
+        setLoading(false);
         toast({
           description: "Workspace Update successfully!",
         });
       }
       setOpen(false);
     } catch (error) {
+      setLoading(false);
       console.log(error);
       toast({
         variant: "destructive",

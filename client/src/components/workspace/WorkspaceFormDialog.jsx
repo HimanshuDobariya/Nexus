@@ -1,24 +1,15 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import WorkspaceForm from "@/components/common/WorkspaceForm";
-import { RiAddCircleFill } from "react-icons/ri";
+import WorkspaceForm from "./WorkspaceForm";
 
-const WorkspaceFormDialog = () => {
-  const [open, setOpen] = useState(false);
-
+const WorkspaceFormDialog = ({ open, setOpen }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <RiAddCircleFill className="!size-5 text-stone-500 cursor-pointer hover:opacity-75 transition" />
-      </DialogTrigger>
       <DialogContent className="sm:max-w-screen-sm">
         <DialogHeader>
           <DialogTitle>Create a new workspace</DialogTitle>

@@ -7,57 +7,70 @@ axios.defaults.withCredentials = true;
 
 export const useWorkspaceStore = create((set) => ({
   workspaces: [],
-  activeWorkspace: null,
-  loading: false,
-
-  setActiveWorkspace: (workspaceId) => {
-    set((state) => ({
-      activeWorkspace:
-        state.workspaces.find((ws) => ws._id === workspaceId) || null,
-    }));
-    localStorage.setItem("activeWorkspaceId", workspaceId);
-  },
+  activeWorkspaceId: localStorage.getItem("activeWorkspaceId") || null,
 
   createWorkspace: async (workspaceData) => {
-    set({ loading: true });
     try {
       const { data } = await axios.post(`${API_URL}`, workspaceData);
-      set((state) => ({
-        workspaces: [...state.workspaces, data.workspace],
-        activeWorkspace: data.workspace,
-        loading: false,
-      }));
-      localStorage.setItem("activeWorkspaceId", data.workspace._id);
+      set((state) => {
+        const updatedWorkspaces = [...state.workspaces, data.workspace];
+        localStorage.setItem("activeWorkspaceId", data.workspace._id);
+        return {
+          workspaces: updatedWorkspaces,
+          activeWorkspaceId: data.workspace._id,
+        };
+      });
       return data.workspace;
     } catch (error) {
       console.error("Error creating workspace:", error);
-      set({ loading: false });
       throw error;
     }
   },
 
   getWorkSpaces: async () => {
-    set({ loading: true });
     try {
       const { data } = await axios.get(`${API_URL}`);
-      set({ workspaces: data.workspaces, loading: false });
 
-      const storedWorkspaceId = localStorage.getItem("activeWorkspaceId");
-      if (storedWorkspaceId) {
-        const activeWorkspace = data.workspaces.find(
-          (ws) => ws._id === storedWorkspaceId
-        );
-        if (activeWorkspace) set({ activeWorkspace });
-      }
+      set(() => {
+        const storedWorkspaceId = localStorage.getItem("activeWorkspaceId");
+        const validWorkspace =
+          data.workspaces.find((ws) => ws._id === storedWorkspaceId) ||
+          data.workspaces[0] ||
+          null;
+
+        if (validWorkspace) {
+          localStorage.setItem("activeWorkspaceId", validWorkspace._id);
+        } else {
+          localStorage.removeItem("activeWorkspaceId");
+        }
+
+        return {
+          workspaces: data.workspaces,
+          activeWorkspaceId: validWorkspace?._id || null,
+        };
+      });
     } catch (error) {
       console.error("Error fetching workspaces:", error);
-      set({ loading: false });
       throw error;
     }
   },
 
+  getWorkspaceById: async (workspaceId) => {
+    try {
+      const { data } = await axios.get(`${API_URL}/${workspaceId}`);
+      return data.workspace; // Return the fetched workspace data
+    } catch (error) {
+      console.error("Error fetching workspace by ID:", error);
+      throw error; // Propagate the error for handling in the component
+    }
+  },
+
+  setActiveWorkspaceId: (workspaceId) => {
+    set({ activeWorkspaceId: workspaceId });
+    localStorage.setItem("activeWorkspaceId", workspaceId);
+  },
+
   updateWorkspace: async (workspaceId, updatedData) => {
-    set({ loading: true });
     try {
       const { data } = await axios.put(
         `${API_URL}/${workspaceId}`,
@@ -69,52 +82,49 @@ export const useWorkspaceStore = create((set) => ({
         );
 
         return {
-          loading: false,
           workspaces: updatedWorkspaces,
-          activeWorkspace:
-            state.activeWorkspace?._id === workspaceId
-              ? data.workspace
-              : state.activeWorkspace,
+          activeWorkspaceId:
+            workspaceId === state.activeWorkspaceId
+              ? workspaceId
+              : state.activeWorkspaceId,
         };
       });
       return data.workspace;
     } catch (error) {
       console.error("Error updating workspace:", error);
-      set({ loading: false });
       throw error;
     }
   },
 
-  deleteWorkspace: async (workspaceId) => {
-    set({ loading: true });
+  deleteWorkspace: async (workspaceId, navigate) => {
     try {
       await axios.delete(`${API_URL}/${workspaceId}`);
-
       set((state) => {
         const updatedWorkspaces = state.workspaces.filter(
           (ws) => ws._id !== workspaceId
         );
 
-        const newActiveWorkspace =
-          updatedWorkspaces.length > 0
-            ? updatedWorkspaces[0] || null
-            : state.activeWorkspace;
-
+        const newActiveWorkspace = updatedWorkspaces[0] || null;
         if (newActiveWorkspace) {
           localStorage.setItem("activeWorkspaceId", newActiveWorkspace._id);
         } else {
           localStorage.removeItem("activeWorkspaceId");
         }
 
+        if (navigate) {
+          navigate(
+            newActiveWorkspace
+              ? `/workspaces/${newActiveWorkspace._id}`
+              : "/workspaces/create"
+          );
+        }
         return {
           workspaces: updatedWorkspaces,
-          activeWorkspace: newActiveWorkspace,
-          loading: false,
+          activeWorkspaceId: newActiveWorkspace?._id || null,
         };
       });
     } catch (error) {
       console.error("Error deleting workspace:", error);
-      set({ loading: false });
       throw error;
     }
   },

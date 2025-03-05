@@ -2,6 +2,7 @@ import express from "express";
 import {
   changeMembersRole,
   createWorkspace,
+  getWorkspaceById,
   deleteWorkspace,
   getWorkspaceMembers,
   getWorkspaces,
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.post("/", upload.single("image"), createWorkspace);
 router.get("/", getWorkspaces);
+router.get("/:workspaceId", getWorkspaceById);
 router.put("/:workspaceId", upload.single("image"), updateWorkspace);
 router.delete("/:workspaceId", deleteWorkspace);
 router.get("/:workspaceId/members", getWorkspaceMembers);

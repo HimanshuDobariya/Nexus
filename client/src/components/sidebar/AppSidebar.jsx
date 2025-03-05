@@ -5,6 +5,7 @@ import logo from "../../assets/logo.svg";
 import Navigation from "./Navigation";
 import DottedSeperator from "../common/DottedSeperator";
 import WorkSpaceSwitcher from "./WorkSpaceSwitcher";
+import NavProjects from "./NavProjects";
 
 const AppSidebar = () => {
   return (
@@ -13,13 +14,19 @@ const AppSidebar = () => {
         <Link to="#">
           <img src={logo} alt="" width={164} height={48} />
         </Link>
-        <DottedSeperator />
+        <div className="px-4">
+          <DottedSeperator />
+        </div>
         <WorkSpaceSwitcher />
         <DottedSeperator />
       </SidebarHeader>
 
       <SidebarContent>
         <Navigation />
+        <div className="px-4">
+          <DottedSeperator />
+        </div>
+        <NavProjects />
       </SidebarContent>
     </Sidebar>
   );

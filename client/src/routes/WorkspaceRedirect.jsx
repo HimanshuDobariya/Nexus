@@ -3,7 +3,7 @@ import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 const WorkspaceRedirect = () => {
-  const { workspaces, activeWorkspace, loading } = useWorkspaceStore();
+  const { workspaces, activeWorkspaceId, loading } = useWorkspaceStore();
   const location = useLocation();
 
   if (loading) return <DefaultSkeleton />;
@@ -12,8 +12,8 @@ const WorkspaceRedirect = () => {
     if (workspaces.length === 0) {
       return <Navigate to="/workspaces/create" />;
     }
-    if (activeWorkspace) {
-      return <Navigate to={`/workspaces/${activeWorkspace._id}`} replace />;
+    if (activeWorkspaceId) {
+      return <Navigate to={`/workspaces/${activeWorkspaceId}`} replace />;
     }
   }
 

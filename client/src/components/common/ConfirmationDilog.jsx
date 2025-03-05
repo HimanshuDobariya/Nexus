@@ -7,7 +7,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { DialogDescription } from "@radix-ui/react-dialog";
-import { FileX, Loader } from "lucide-react";
+import { Loader } from "lucide-react";
 
 const ConfirmationDilog = ({
   title = "Are you sure?",
@@ -41,8 +41,13 @@ const ConfirmationDilog = ({
             variant="destructive"
             type="button"
             onClick={handleConfirm}
+            disabled={loading}
           >
-            {loading ? <Loader className="animate-spin !size-5" /> : `${confirmText}`}
+            {loading ? (
+              <Loader className="animate-spin !size-5" />
+            ) : (
+              `${confirmText}`
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

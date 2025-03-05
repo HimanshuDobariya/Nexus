@@ -7,6 +7,7 @@ import { Permissions, Roles } from "../enums/role.enum.js";
 import { getMemberRoleInWorkspace } from "../services/getMemberRoleInWorkspace.js";
 import { checkPermission } from "../services/checkPermission.js";
 import { decrypt } from "../utils/crypto-encryption.js";
+import Project from "../models/project.model.js";
 
 //create workspace
 export const createWorkspace = async (req, res) => {
@@ -65,16 +66,37 @@ export const getWorkspaces = async (req, res) => {
   try {
     const userId = req.userId;
 
-    const membership = await Member.find({ userId })
+    const memberships = await Member.find({ userId })
       .populate("workspaceId")
       .exec();
 
-    const workspaces = membership
+    const workspaces = memberships
       .map((membership) => membership.workspaceId)
       .map((workspace) => {
         return { ...workspace._doc, inviteCode: decrypt(workspace.inviteCode) };
       });
     res.status(200).json({ workspaces });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message || "Server Error" });
+  }
+};
+
+// get workspace by id
+export const getWorkspaceById = async (req, res) => {
+  try {
+    const { workspaceId } = req.params;
+    const workspace = await Workspace.findById(workspaceId);
+
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+    res.status(200).json({
+      workspace: {
+        ...workspace._doc,
+        inviteCode: decrypt(workspace.inviteCode),
+      },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message || "Server Error" });
@@ -97,12 +119,17 @@ export const updateWorkspace = async (req, res) => {
       return res.status(404).json({ message: "Workspace not found" });
     }
 
-    const existingWorkspace = await Workspace.findOne({
-      name,
-      _id: { $ne: workspaceId },
-    });
-    if (existingWorkspace) {
-      return res.status(400).json({ message: "Workspace name already exists" });
+    if (name && name !== workspace.name) {
+      const existingWorkspace = await Workspace.findOne({
+        name,
+        _id: { $ne: workspaceId },
+      });
+      if (existingWorkspace) {
+        return res
+          .status(400)
+          .json({ message: "Workspace name already exists" });
+      }
+      workspace.name = name;
     }
 
     let imageUrl = workspace.imageUrl;
@@ -147,6 +174,7 @@ export const deleteWorkspace = async (req, res) => {
 
     // Delete associated member records
     await Member.deleteMany({ workspaceId });
+    await Project.deleteMany({ workspace: workspaceId });
 
     res.status(200).json({ message: "Workspace deleted successfully" });
   } catch (error) {

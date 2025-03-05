@@ -1,5 +1,5 @@
 import DottedSeperator from "@/components/common/DottedSeperator";
-import WorkspaceForm from "@/components/common/WorkspaceForm";
+import WorkspaceForm from "./WorkspaceForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const WorkspaceFormCard = () => {

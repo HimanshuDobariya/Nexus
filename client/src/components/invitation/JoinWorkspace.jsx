@@ -28,7 +28,7 @@ const JoinWorkspace = () => {
   const invitationId = searchParams.get("invitationId");
   const [isAccepting, setIsAccepting] = useState(false);
   const navigate = useNavigate();
-  const { setActiveWorkspace, getWorkSpaces, activeWorkspace } =
+  const { setActiveWorkspaceId, getWorkSpaces, activeWorkspaceId } =
     useWorkspaceStore();
   const { checkAuth, isAuthenticated } = useAuthStore();
 
@@ -45,8 +45,8 @@ const JoinWorkspace = () => {
       toast({
         description: data.message,
       });
-      if (activeWorkspace) {
-        navigate(`/workspaces/${activeWorkspace._id}`);
+      if (activeWorkspaceId) {
+        navigate(`/workspaces/${activeWorkspaceId}`);
       } else {
         navigate("/");
       }
@@ -73,7 +73,7 @@ const JoinWorkspace = () => {
           import.meta.env.VITE_SERVER_URL
         }/api/members/workspace/${inviteCode}/join/${invitationId}`
       );
-      await setActiveWorkspace(workspaceId);
+      await setActiveWorkspaceId(workspaceId);
       setIsAccepting(false);
       toast({
         description: data.message,

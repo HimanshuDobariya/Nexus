@@ -9,10 +9,13 @@ import ForgotPassword from "@/pages/auth/ForgotPassword";
 import ResetPassword from "@/pages/auth/ResetPassword";
 import AuthRoutes from "./AuthRoutes";
 import UserProfile from "@/pages/profile/UserProfile";
-import WorkspaceFormCard from "@/pages/workspace/WorkspaceFormCard";
+import WorkspaceFormCard from "@/components/workspace/WorkspaceFormCard";
 import Settings from "@/pages/workspace/Settings";
 import Members from "@/pages/workspace/Members";
-import JoinWorkspace from "@/pages/workspace/JoinWorkspace";
+import JoinWorkspace from "@/components/invitation/JoinWorkspace";
+import Dashboard from "@/pages/workspace/Dashboard";
+import ProjectDetails from "@/pages/workspace/ProjectDetails";
+import Tasks from "@/pages/workspace/Tasks";
 
 const AppRoutes = () => {
   return (
@@ -31,9 +34,12 @@ const AppRoutes = () => {
         <Route path="/" element={<ProtectedRoutes />}>
           <Route path="/workspaces/create" element={<WorkspaceFormCard />} />
           <Route path="/workspaces/:workspaceId" element={<WorkspaceLayout />}>
+            <Route index element={<Dashboard />} />
             <Route path="settings" element={<Settings />} />
             <Route path="members" element={<Members />} />
+            <Route path="tasks" element={<Tasks />} />
             <Route path="profile" element={<UserProfile />} />
+            <Route path="project/:projectId" element={<ProjectDetails />} />
           </Route>
         </Route>
         <Route

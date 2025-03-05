@@ -6,30 +6,54 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import DottedSeperator from "@/components/common/DottedSeperator";
-import WorkspaceForm from "@/components/common/WorkspaceForm";
+import WorkspaceForm from "@/components/workspace/WorkspaceForm";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ConfirmationDilog from "@/components/common/ConfirmationDilog";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import { Loader } from "lucide-react";
 
 const Settings = () => {
   const [openWorkspaceDeleteDiolg, setOpenWorkspaceDeleteDiolg] =
     useState(false);
 
   const navigate = useNavigate();
-  const { deleteWorkspace, activeWorkspace, loading } = useWorkspaceStore();
+  const { deleteWorkspace, getWorkspaceById, activeWorkspaceId } =
+    useWorkspaceStore();
   const { workspaceId } = useParams();
+  const [currentWorkspace, setCurrentWorkspace] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const getWorkspaceCurrentWorkspace = async () => {
+    try {
+      setLoading(true);
+      const workspace = await getWorkspaceById(workspaceId);
+      setCurrentWorkspace(workspace);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getWorkspaceCurrentWorkspace();
+  }, []);
 
   const handleDeleteWorkspace = async () => {
     try {
-      await deleteWorkspace(workspaceId);
-      navigate(`/workspaces/${activeWorkspace._id}`);
+      setLoading(true);
+      await deleteWorkspace(workspaceId, navigate);
       toast({
-        description: "Workspace deleted.",
+        description: "Workspace deleted successfully.",
       });
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
+      console.log(error);
       toast({
         variant: "destructive",
         description:
@@ -50,13 +74,17 @@ const Settings = () => {
           <DottedSeperator />
         </div>
         <CardContent className="p-7">
-          <WorkspaceForm
-            mode="edit"
-            initialData={activeWorkspace}
-            setOpen={() => {
-              return null;
-            }}
-          />
+          {loading ? (
+            <Loader className="animate-spin mx-auto" />
+          ) : (
+            <WorkspaceForm
+              mode="edit"
+              initialData={currentWorkspace}
+              setOpen={() => {
+                return null;
+              }}
+            />
+          )}
         </CardContent>
       </Card>
 
