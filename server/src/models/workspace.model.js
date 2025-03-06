@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import generateInviteCode from "../utils/generateInviteCode.js";
+import {generateInviteCode} from "../utils/uuid.js";
 import { encrypt } from "../utils/crypto-encryption.js";
 
 const workspaceSchema = new mongoose.Schema(

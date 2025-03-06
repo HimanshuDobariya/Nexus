@@ -1,4 +1,5 @@
 import Project from "../models/project.model.js";
+import Task from "../models/task.model.js";
 import { getMemberRoleInWorkspace } from "../services/getMemberRoleInWorkspace.js";
 import { checkPermission } from "../services/checkPermission.js";
 import { Permissions } from "../enums/role.enum.js";
@@ -131,6 +132,8 @@ export const deleteProject = async (req, res) => {
     }
 
     await project.deleteOne();
+
+    await Task.deleteMany({ project: projectId });
 
     res.status(200).json({
       message: "Project deleted successfully",
