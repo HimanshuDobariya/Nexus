@@ -1,6 +1,9 @@
+import TaskViewSwitcher from "@/components/tasks/TaskViewSwitcher";
 const Tasks = () => {
   return (
-    <div>Tasks</div>
-  )
-}
-export default Tasks
+    <div>
+      <TaskViewSwitcher  />
+    </div>
+  );
+};
+export default Tasks;

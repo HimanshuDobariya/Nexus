@@ -9,7 +9,7 @@ import { Navigate, Outlet, useNavigate } from "react-router-dom";
 const AuthRoutes = () => {
   const { isAuthenticated, loading } = useAuthStore();
   const navigate = useNavigate();
-  const { setActiveWorkspace } = useWorkspaceStore();
+  const { setActiveWorkspaceId } = useWorkspaceStore();
   const [isAccepting, setIsAccepting] = useState(false);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ const AuthRoutes = () => {
               import.meta.env.VITE_SERVER_URL
             }/api/members/workspace/${inviteCode}/join/${invitationId}`
           );
-          await setActiveWorkspace(workspaceId);
+          await setActiveWorkspaceId(workspaceId);
           setIsAccepting(false);
           toast({
             description: data.message,

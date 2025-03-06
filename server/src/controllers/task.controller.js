@@ -10,9 +10,16 @@ import { TaskPriorityEnum, TaskStatusEnum } from "../enums/task.enum.js";
 export const createTask = async (req, res) => {
   try {
     const { userId } = req;
-    const { title, description, status, priority, assignedTo, dueDate } =
-      req.body;
-    const { projectId, workspaceId } = req.params;
+    const {
+      title,
+      description,
+      status,
+      priority,
+      assignedTo,
+      dueDate,
+      projectId,
+    } = req.body;
+    const { workspaceId } = req.params;
 
     const { role } = await getMemberRoleInWorkspace(workspaceId, userId);
     await checkPermission(role, [Permissions.CREATE_TASK]);

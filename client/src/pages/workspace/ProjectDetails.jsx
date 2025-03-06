@@ -1,6 +1,8 @@
 import ProjectForm from "@/components/project/ProjectForm";
+import TaskViewSwitcher from "@/components/tasks/TaskViewSwitcher";
+import { Button } from "@/components/ui/button";
 import { useProjectStore } from "@/store/projectStore";
-import { Edit, Loader } from "lucide-react";
+import { Edit, Edit2, Loader } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -30,19 +32,35 @@ const ProjectDetails = () => {
             <Loader className="animate-spin" />
           ) : (
             <h2
-              className="flex items-center gap-3 text-xl font-medium truncate tracking-tight cursor-pointer group"
+              className="flex items-center gap-3 py-2 text-xl font-medium truncate tracking-tight cursor-pointer group"
               onClick={() => {
                 setEdit(true);
               }}
             >
-              <span className="text-4xl">{currentProject?.emoji || "📊"}</span>
-              <span className="text-4xl group-hover:underline">
+              <span className="text-2xl sm:text-4xl">
+                {currentProject?.emoji || "📊"}
+              </span>
+              <span className="text-xl sm:text-4xl group-hover:underline">
                 {currentProject?.name || "Untitled project"}
               </span>
-              <Edit className="size-8 group-hover:underline" />
+              <Edit className="size-6 sm:size-8 group-hover:underline" />
             </h2>
           )}
         </div>
+
+        <Button
+        variant="outline"
+          className="!mt-0 text-xs sm:text-[14px]"
+          onClick={() => {
+            setEdit(true);
+          }}
+        >
+          <Edit2 /> Edit Project
+        </Button>
+      </div>
+
+      <div className="py-6">
+        <TaskViewSwitcher />
       </div>
 
       <ProjectForm initialData={currentProject} open={edit} setOpen={setEdit} />
