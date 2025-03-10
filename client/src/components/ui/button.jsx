@@ -15,7 +15,7 @@ const buttonVariants = cva(
           "bg-gradient-to-b from-amber-600 to-amber-700 text-destructive-foreground hover:from-amber-700 hover:to-amber-700",
         outline:
           "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-white text-black hover:bg-neutral-100",
+        secondary: "bg-white text-black hover:bg-neutral-100/50 shadow",
         ghost:
           "border-transparent shadow-none hover:text-accent-foreground",
         muted: "bg-neutral-200 text-neutral-600 hover:bg-neutral-200/80",

@@ -43,6 +43,9 @@ import axios from "axios";
 import { useProjectStore } from "@/store/projectStore";
 import { useTaskStore } from "@/store/taskStore";
 import { toast } from "@/hooks/use-toast";
+import { getAvatarFallbackText } from "../avatar/getAvatarFallback";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { getAvatarColor } from "../avatar/getAvatarColor";
 
 const taskSchema = z.object({
   title: z
@@ -80,7 +83,7 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
   const [loading, setLoading] = useState(false);
   const [members, setMembers] = useState([]);
   const { projects } = useProjectStore();
-  const { createTask } = useTaskStore();
+  const { createTask, getAllTasks } = useTaskStore();
 
   const getWorkSpaceMembers = async () => {
     try {
@@ -107,6 +110,11 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
         console.log("Edit mode");
       } else if (!isEditMode) {
         const task = await createTask(workspaceId, projectId, data);
+        if (projectId) {
+          await getAllTasks(workspaceId, { projectId });
+        } else {
+          await getAllTasks(workspaceId);
+        }
         toast({
           description: "Task created successfully.",
         });
@@ -238,14 +246,33 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
                           <SelectValue placeholder="Select Assignee" />
                         </SelectTrigger>
                         <SelectContent>
-                          {members.map((member) => (
-                            <SelectItem
-                              key={member.userId._id}
-                              value={member.userId._id}
-                            >
-                              {member.userId.name}
-                            </SelectItem>
-                          ))}
+                          <div className="w-full max-h-[200px] overflow-y-auto">
+                            {members.map((member) => (
+                              <SelectItem
+                                key={member.userId._id}
+                                value={member.userId._id}
+                                className="cursor-pointer"
+                              >
+                                <div className="flex items-center">
+                                  <Avatar className="mr-2 h-7 w-7">
+                                    <AvatarFallback
+                                      className={getAvatarColor(
+                                        member.userId?.name
+                                      )}
+                                    >
+                                      {getAvatarFallbackText(
+                                        member.userId?.name
+                                      )}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="">
+                                    {" "}
+                                    {member.userId?.name}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </div>
                         </SelectContent>
                       </Select>
                     </FormControl>

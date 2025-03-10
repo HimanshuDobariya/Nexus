@@ -125,10 +125,14 @@ export const getAllTasks = async (req, res) => {
     const skip = (pageNumber - 1) * pageSize;
 
     const [tasks, totalCount] = await Promise.all([
-      Task.find(query).skip(skip).limit(pageSize).sort({ createdAt: -1 }),
+      Task.find(query)
+        .skip(skip)
+        .limit(pageSize)
+        .sort({ createdAt: -1 })
+        .populate("project")
+        .populate("assignedTo"),
       Task.countDocuments(query),
     ]);
-
     res.status(200).json({ tasks, totalCount });
   } catch (error) {
     console.log(error);

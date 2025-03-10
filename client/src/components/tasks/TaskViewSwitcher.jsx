@@ -2,42 +2,34 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "../ui/button";
 import { PlusIcon } from "lucide-react";
 import DottedSeperator from "../common/DottedSeperator";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import TaskForm from "./TaskForm";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import TaskTable from "./TaskTable";
-import { useTaskStore } from "@/store/taskStore";
 
 const TaskViewSwitcher = () => {
   const [openCreateTaskForm, setOpenCreateTaskForm] = useState(false);
-  const { projectId, workspaceId } = useParams();
-  const [loading, setLoading] = useState(false);
-  const { getAllTasks, tasks } = useTaskStore();
+  const { projectId } = useParams();
 
-  const fetchAllTasks = async () => {
-    setLoading(true);
-    try {
-      if (projectId) {
-        await getAllTasks(workspaceId, { projectId });
-        setLoading(false);
-      } else {
-        await getAllTasks(workspaceId);
-      }
-      setLoading(false);
-    } catch (error) {
-      console.log(error);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentTab = searchParams.get("task-view") || "table";
+
+  const handleTabChange = (value) => {
+    if (value === "table") {
+      searchParams.delete("task-view");
+      setSearchParams(searchParams);
+    } else {
+      setSearchParams({ "task-view": value });  
     }
   };
 
-  useEffect(() => {
-    fetchAllTasks();
-  }, [projectId]);
-
-  console.log(tasks);
-
   return (
     <>
-      <Tabs className="w-full rounded-lg border flex-1" defaultValue="table">
+      <Tabs
+        className="w-full rounded-lg border flex-1"
+        value={currentTab}
+        onValueChange={handleTabChange}
+      >
         <div className="h-full flex flex-col overflow-auto p-4">
           <div className="flex flex-col gap-y-2 lg:flex-row justify-between items-center">
             <TabsList className="w-full lg:w-auto">
@@ -65,10 +57,7 @@ const TaskViewSwitcher = () => {
           <div className="my-4">
             <DottedSeperator />
           </div>
-          Filters
-          <div className="my-4">
-            <DottedSeperator />
-          </div>
+
           <>
             <TabsContent value="table" className="mt-0">
               <TaskTable />

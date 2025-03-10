@@ -30,8 +30,8 @@ export const useTaskStore = create((set) => ({
       const { data } = await axios.get(
         `${API_URL}/workspace/${workspaceId}/all?${queryParams}`
       );
-      console.log(data);
-      set({ tasks: data?.tasks || [] });
+      set({ tasks: data.tasks || [] });
+      return data;
     } catch (error) {
       throw error;
     }
