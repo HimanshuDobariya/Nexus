@@ -207,7 +207,7 @@ export const updateTask = async (req, res) => {
 
     const updatedTask = await Task.findByIdAndUpdate(
       taskId,
-      { ...req.body },
+      { project: req.body.projectId, ...req.body },
       { new: true }
     );
 

@@ -36,4 +36,37 @@ export const useTaskStore = create((set) => ({
       throw error;
     }
   },
+
+  updateTask: async (workspaceId, projectId, taskId, taskData) => {
+    try {
+      const { data } = await axios.put(
+        `${API_URL}/${taskId}/project/${projectId}/workspace/${workspaceId}/update`,
+        taskData
+      );
+      set((state) => {
+        const updatedTasks = state.tasks.map((task) =>
+          task._id === taskId ? data.task : task
+        );
+        return { tasks: updatedTasks };
+      });
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  },
+
+  deleteTask: async (workspaceId, taskId) => {
+    try {
+      const { data } = await axios.delete(
+        `${API_URL}/${taskId}/workspace/${workspaceId}/delete`
+      );
+      set((state) => ({
+        tasks: state.tasks.filter((task) => task._id !== taskId),
+      }));
+      return data.task;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  },
 }));

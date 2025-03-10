@@ -1,20 +1,4 @@
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  Ellipsis,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight, Ellipsis } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,

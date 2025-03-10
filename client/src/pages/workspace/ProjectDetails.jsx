@@ -31,25 +31,28 @@ const ProjectDetails = () => {
           {loading ? (
             <Loader className="animate-spin" />
           ) : (
-            <h2
-              className="flex items-center gap-3 py-2 text-xl font-medium truncate tracking-tight cursor-pointer group"
-              onClick={() => {
-                setEdit(true);
-              }}
-            >
-              <span className="text-2xl sm:text-4xl">
-                {currentProject?.emoji || "📊"}
-              </span>
-              <span className="text-xl sm:text-4xl group-hover:underline">
-                {currentProject?.name || "Untitled project"}
-              </span>
-              <Edit className="size-6 sm:size-8 group-hover:underline" />
-            </h2>
+            <div>
+              <h2
+                className="flex items-center gap-3 py-2 text-xl font-medium truncate tracking-tight cursor-pointer group"
+                onClick={() => {
+                  setEdit(true);
+                }}
+              >
+                <span className="text-2xl sm:text-4xl">
+                  {currentProject?.emoji || "📊"}
+                </span>
+                <span className="text-xl sm:text-4xl group-hover:underline">
+                  {currentProject?.name || "Untitled project"}
+                </span>
+                <Edit className="size-6 sm:size-8 group-hover:underline" />
+              </h2>
+              <p className="ml-2 mt-2">{currentProject?.description}</p>
+            </div>
           )}
         </div>
 
         <Button
-        variant="outline"
+          variant="outline"
           className="!mt-0 text-xs sm:text-[14px]"
           onClick={() => {
             setEdit(true);

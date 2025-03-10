@@ -3,7 +3,6 @@ import DataTable from "./table/DataTable";
 import { useEffect, useState } from "react";
 import { useTaskStore } from "@/store/taskStore";
 import { useParams } from "react-router-dom";
-import DataFilters from "./table/DataFilters";
 
 const TaskTable = () => {
   const { tasks, getAllTasks } = useTaskStore();
@@ -12,20 +11,19 @@ const TaskTable = () => {
   const [totalCount, setTotalCount] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [filters, setFilters] = useState({
+
+  const initialFilters = {
     projectId: projectId || "",
     status: "",
     priority: "",
     assignedTo: "",
     dueDate: "",
-  });
+  };
+  const [filters, setFilters] = useState(initialFilters);
   const columns = getColumns(projectId);
 
   useEffect(() => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      projectId: projectId || "",
-    }));
+    setFilters(initialFilters);
   }, [projectId]);
 
   const fetchAllTasks = async () => {

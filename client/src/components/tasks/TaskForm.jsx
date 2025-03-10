@@ -61,6 +61,11 @@ const taskSchema = z.object({
 
 const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
   const isEditMode = !!initialData;
+  const { workspaceId } = useParams();
+  const [loading, setLoading] = useState(false);
+  const [members, setMembers] = useState([]);
+  const { projects } = useProjectStore();
+  const { createTask, getAllTasks, updateTask } = useTaskStore();
 
   const form = useForm({
     resolver: zodResolver(taskSchema),
@@ -69,7 +74,7 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
       description: "",
       status: TaskStatusEnum.TODO,
       priority: TaskPriorityEnum.MEDIUM,
-      projectId: projectId,
+      projectId: projectId || undefined,
     },
   });
 
@@ -78,12 +83,6 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
       form.reset(initialData);
     }
   }, [initialData, form]);
-
-  const { workspaceId } = useParams();
-  const [loading, setLoading] = useState(false);
-  const [members, setMembers] = useState([]);
-  const { projects } = useProjectStore();
-  const { createTask, getAllTasks } = useTaskStore();
 
   const getWorkSpaceMembers = async () => {
     try {
@@ -99,6 +98,12 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
   };
 
   useEffect(() => {
+    if (projectId) {
+      form.setValue("projectId", projectId);
+    }
+  }, [projectId, form]);
+
+  useEffect(() => {
     getWorkSpaceMembers();
   }, []);
 
@@ -106,18 +111,25 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
     try {
       setLoading(true);
       if (isEditMode) {
-        // handle task update
-        console.log("Edit mode");
+        await updateTask(
+          workspaceId,
+          projectId || initialData?.projectId,
+          initialData?.id,
+          data
+        );
+        toast({
+          description: "Task Updated successfully.",
+        });
       } else if (!isEditMode) {
         const task = await createTask(workspaceId, projectId, data);
-        if (projectId) {
-          await getAllTasks(workspaceId, { projectId });
-        } else {
-          await getAllTasks(workspaceId);
-        }
         toast({
           description: "Task created successfully.",
         });
+      }
+      if (projectId) {
+        await getAllTasks(workspaceId, { projectId });
+      } else {
+        await getAllTasks(workspaceId);
       }
       setOpen(false);
       form.reset();
@@ -173,7 +185,6 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
                   </FormItem>
                 )}
               />
-
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -230,7 +241,6 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
                   )}
                 />{" "}
               </div>
-
               <FormField
                 control={form.control}
                 name="assignedTo"
@@ -281,7 +291,7 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
                 )}
               />
 
-              {!projectId && (
+              {!projectId ? (
                 <FormField
                   control={form.control}
                   name="projectId"
@@ -312,7 +322,7 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
                     </FormItem>
                   )}
                 />
-              )}
+              ) : null}
 
               <FormField
                 control={form.control}
