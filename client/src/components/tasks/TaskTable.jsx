@@ -19,9 +19,8 @@ const TaskTable = () => {
     assignedTo: "",
     dueDate: "",
   };
-  const [filters, setFilters] = useState(initialFilters);
+  const [filters, setFilters] = useState({});
   const columns = getColumns(projectId);
-
   useEffect(() => {
     setFilters(initialFilters);
   }, [projectId]);
@@ -47,7 +46,7 @@ const TaskTable = () => {
   }, [pageNumber, pageSize, filters]);
 
   return (
-    <div className="w-full relative">
+    <div className="w-full">
       <DataTable
         loading={loading}
         data={tasks}
@@ -59,8 +58,7 @@ const TaskTable = () => {
         }}
         setPageNumber={setPageNumber}
         setPageSize={setPageSize}
-        filters={filters}
-        setFilters={setFilters}
+        filterData={{ filters, setFilters, initialFilters }}
       />
     </div>
   );

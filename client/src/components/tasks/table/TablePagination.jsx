@@ -60,12 +60,12 @@ const TablePagination = ({
   }, [pageNumber, totalPages]);
 
   return (
-    <div className="flex items-center justify-between px-2">
-      <div className="flex-1 text-sm text-muted-foreground">
+    <div className="flex flex-col lg:flex-row gap-2 items-center  justify-between px-2 w-full">
+      <div className=" text-sm text-muted-foreground">
         Showing {(pageNumber - 1) * pageSize + 1}-
         {Math.min(pageNumber * pageSize, totalCount)} of {totalCount}
       </div>
-      <div className="flex items-center space-x-6 lg:space-x-8">
+      <div className="flex flex-col md:flex-row items-center gap-3">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
           <Select

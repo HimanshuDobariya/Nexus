@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useProfileStore } from "@/store/profileStore";
+import Header from "@/components/common/Header";
 
 const UserProfile = () => {
   const { profile, getProfile, loading, updateProfile } = useProfileStore();
@@ -60,9 +61,12 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="space-y-4 w-full max-w-screen-lg mx-auto">
+    <div className="space-y-4 w-full">
       <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-medium"> Your Profile </h3>
+        <Header
+          title="Your Profile"
+          description="Manage your profile with nexus."
+        />
         {editMode ? (
           <Button
             className="flex items-center gap-2"

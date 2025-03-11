@@ -32,6 +32,7 @@ import { Button } from "../ui/button";
 import { toast } from "@/hooks/use-toast";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import ConfirmationDilog from "../common/ConfirmationDilog";
+import { cn } from "@/lib/utils";
 
 const NavProjects = () => {
   const { isMobile } = useSidebar();
@@ -97,24 +98,21 @@ const NavProjects = () => {
   };
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+    <SidebarGroup className="group-data-[collapsible=icon]:hidden  bg-inherit relative overflow-y-auto">
       <SidebarGroupLabel className="flex items-center justify-between">
         <span className="text-sm">Projects</span>
         <Button
-          type="button"
-          variant="outline"
-          className="size-5 p-0 rounded-full"
+          asChild
+          className="flex !size-6 p-1 items-center justify-center rounded-md border bg-background cursor-pointer text-neutral-700"
           onClick={() => {
             setOpenProjectModal(true);
           }}
         >
-          <Plus className="!size-3.5" />
+          <Plus className="size-4" />
         </Button>
       </SidebarGroupLabel>
 
-      <SidebarGroupContent />
-
-      <SidebarMenu>
+      <SidebarMenu className="my-2">
         {!loading ? (
           projects.length === 0 ? (
             <div className="p-2 text-center">
@@ -123,7 +121,7 @@ const NavProjects = () => {
                 will show up here.
               </p>
               <Button
-                variant="outline"
+                variant="secondary"
                 type="button"
                 className=" text-[13px] hover:underline font-semibold mt-4"
                 onClick={() => {
@@ -141,13 +139,14 @@ const NavProjects = () => {
               return (
                 <SidebarMenuItem
                   key={item._id}
-                  className={`rounded-md py-1 flex items-center hover:bg-neutral-100  ${
-                    isActive && "bg-neutral-200/60 font-medium text-neutral-900"
-                  }`}
+                  className={cn(
+                    "h-10 flex items-center rounded-md gap-2.5 font-medium transition hover:text-primary text-neutral-600 hover:bg-neutral-100",
+                    isActive && "bg-neutral-100 text-primary"
+                  )}
                 >
-                  <SidebarMenuButton asChild className="hover:bg-transparent">
+                  <SidebarMenuButton asChild>
                     <Link to={projectUrl}>
-                      <span className="text-xl bg-white rounded-md">
+                      <span className="size-6 text-[16px] flex items-center justify-center bg-white shadow-sm rounded">
                         {item.emoji}
                       </span>
                       <span className="text-[14px]">{item.name}</span>
@@ -155,18 +154,23 @@ const NavProjects = () => {
                   </SidebarMenuButton>
 
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild >
+                    <DropdownMenuTrigger asChild>
                       <SidebarMenuAction showOnHover className="size-6 mr-1">
-                        <MoreHorizontal  />
+                        <MoreHorizontal />
                       </SidebarMenuAction>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       className="w-48 rounded-lg"
                       side={isMobile ? "bottom" : "right"}
                       align={isMobile ? "end" : "start"}
+                      collisionPadding={10}
                     >
                       <DropdownMenuItem
-                        onClick={() => navigate(`${projectUrl}`)}
+                        onClick={() => {
+                          setTimeout(() => {
+                            navigate(projectUrl);
+                          }, 0);
+                        }}
                       >
                         <Folder className="text-muted-foreground" />
                         <span>View Project</span>

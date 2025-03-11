@@ -12,6 +12,8 @@ import DottedSeperator from "@/components/common/DottedSeperator";
 import { useAuthStore } from "@/store/authStore";
 import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
 import { useNavigate, useParams } from "react-router-dom";
+import { getAvatarFallbackText } from "@/components/avatar/getAvatarFallback";
+import { getAvatarColor } from "@/components/avatar/getAvatarColor";
 
 const UserButton = () => {
   const { profile, loading, getProfile } = useProfileStore();
@@ -34,21 +36,20 @@ const UserButton = () => {
 
   const { name, email } = profile;
 
-  const avatarFallback = name
-    ? name.charAt(0).toUpperCase()
-    : email.charAt(0).toUpperCase() ?? "U";
+  const avatarFallback = getAvatarFallbackText(name);
+  const avatarFallbackColor = getAvatarColor(name);
 
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger className="outline-none relative">
-        <Avatar className="size-10 hover:opacity-75 transition border border-neutral-300">
+        <Avatar className="size-10 hover:opacity-75 transition">
           {profile && profile.profileImage ? (
             <AvatarImage
               src={profile.profileImage}
               className="h-full w-full object-cover"
             />
           ) : (
-            <AvatarFallback className="bg-neutral-200 font-medium text-neutral-500 flex items-center justify-center">
+            <AvatarFallback className={`${avatarFallbackColor}`}>
               {avatarFallback}
             </AvatarFallback>
           )}
@@ -64,14 +65,16 @@ const UserButton = () => {
           className="flex items-center justify-center flex-col gap-2 px-2.5
         py-4"
         >
-          <Avatar className="size-[62px] border border-neutral-300">
+          <Avatar className="size-[62px]">
             {profile && profile.profileImage ? (
               <AvatarImage
                 src={profile.profileImage}
                 className="h-full w-full object-cover"
               />
             ) : (
-              <AvatarFallback className="bg-neutral-200 text-4xl font-medium text-neutral-500 flex items-center justify-center">
+              <AvatarFallback
+                className={`${avatarFallbackColor} text-2xl font-semibold`}
+              >
                 {avatarFallback}
               </AvatarFallback>
             )}
@@ -90,13 +93,13 @@ const UserButton = () => {
             }}
             className="py-2 text-lg"
           >
-            <User className="!size-5 mr-2 " /> Profile
+            <User className="!size-6 mr-2 " /> Profile
           </DropdownMenuItem>
           <DropdownMenuItem className="py-2 text-lg">
-            <BadgeCheck className="!size-5 mr-2" /> Account
+            <BadgeCheck className="!size-6 mr-2" /> Account
           </DropdownMenuItem>
           <DropdownMenuItem className="py-2 text-lg">
-            <Bell className="!size mr-2" /> Notifications
+            <Bell className="!size-6 mr-2" /> Notifications
           </DropdownMenuItem>
         </DropdownMenuGroup>
 

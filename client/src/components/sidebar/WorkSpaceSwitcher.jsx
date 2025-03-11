@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
@@ -18,8 +19,8 @@ import { ChevronsUpDown, Loader, Plus } from "lucide-react";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { RiAddCircleFill } from "react-icons/ri";
-import axios from "axios";
+import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
+import { Button } from "../ui/button";
 
 const WorkSpaceSwitcher = () => {
   const {
@@ -29,7 +30,7 @@ const WorkSpaceSwitcher = () => {
     setActiveWorkspaceId,
   } = useWorkspaceStore();
   const navigate = useNavigate();
-  const { isMobile } = useSidebar();
+  const { isMobile, state } = useSidebar();
   const [open, setOpen] = useState(false);
   const [currentWorkspace, setCurrentWorkspace] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -51,115 +52,143 @@ const WorkSpaceSwitcher = () => {
     getWorkspaceCurrentWorkspace();
   }, [activeWorkspaceId, workspaces]);
 
+  useEffect(() => {
+    const handleShortcut = (e) => {
+      if (e.altKey) {
+        const index = parseInt(e.key, 10) - 1;
+        if (index >= 0 && index < workspaces.length) {
+          const targetWorkspace = workspaces[index];
+          setActiveWorkspaceId(targetWorkspace._id);
+          navigate(`/workspaces/${targetWorkspace._id}`);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, [workspaces, setActiveWorkspaceId, navigate]);
+
   return (
-    <SidebarMenu>
-      <div className="flex items-center justify-between my-1">
-        <p className="text-sm font-medium uppercase text-neutral-500">
-          Workspaces
-        </p>
-        <RiAddCircleFill
-          className="!size-5 text-stone-500 cursor-pointer hover:opacity-75 transition"
-          onClick={() => {
-            setOpen(true);
-          }}
-        />
-      </div>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground my-1 bg-neutral-200 hover:bg-neutral-200/60"
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader className="animate-spin !size-6 mx-auto" />
-              ) : (
-                <>
-                  <div className="flex aspect-square size-10 items-center justify-center rounded-md overflow-hidden">
-                    {currentWorkspace && currentWorkspace.imageUrl ? (
-                      <img
-                        src={currentWorkspace?.imageUrl}
-                        alt={currentWorkspace?.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Avatar className="h-full w-full rounded-md">
-                        <AvatarFallback className="text-white bg-blue-600 text-xl font-semibold w-full h-full flex items-center justify-center rounded-md">
-                          {currentWorkspace?.name[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                  </div>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">
-                      {currentWorkspace?.name}
-                    </span>
-                  </div>
-                  <ChevronsUpDown className="ml-auto" />
-                </>
-              )}
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
+    <>
+      <SidebarMenu>
+        {state !== "collapsed" && (
+          <div className="flex items-center justify-between my-1">
+            <p className="text-sm font-medium uppercase text-neutral-500">
+              Workspaces
+            </p>
 
-          <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-            align="start"
-            side={isMobile ? "bottom" : "right"}
-            sideOffset={4}
-          >
-            {workspaces.length > 0 &&
-              workspaces.map((workspace) => (
-                <DropdownMenuItem
-                  key={workspace._id}
-                  onClick={() => {
-                    setActiveWorkspaceId(workspace._id);
-                    navigate(`/workspaces/${workspace._id}`);
-                  }}
-                  className="gap-2 p-2 size-14 w-full"
-                >
-                  <div className="flex items-center justify-center rounded-sm">
-                    <Avatar className="size-10 rounded-md overflow">
-                      {workspace.imageUrl ? (
-                        <AvatarImage
-                          src={workspace.imageUrl}
-                          alt={workspace.name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <AvatarFallback className="uppercase bg-blue-500 w-full h-full rounded-md text-white font-medium text-xl">
-                          {workspace.name[0]}{" "}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                  </div>
-                  <span className="font-medium">{workspace.name}</span>
-                </DropdownMenuItem>
-              ))}
-
-            <div className="px-2">
-              {" "}
-              <DropdownMenuSeparator />
-            </div>
-            <DropdownMenuItem
-              className="gap-2 p-2"
+            <Button
+              asChild
+              className="flex size-6 p-1 items-center justify-center rounded-md border bg-background cursor-pointer text-neutral-700"
               onClick={() => {
                 setOpen(true);
               }}
             >
-              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-                <Plus className="size-4" />
-              </div>
-              <div className="font-medium text-muted-foreground">
-                Add Workspace
-              </div>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-
+              <Plus className="size-4" />
+            </Button>
+          </div>
+        )}
+        <SidebarMenuItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent bg-gray-100 data-[state=open]:text-sidebar-accent-foreground"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader className="animate-spin !size-6 mx-auto" />
+                ) : (
+                  <>
+                    <div className="flex aspect-square items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                      <Avatar
+                        className={`${
+                          state === "collapsed" ? "size-8" : "size-10"
+                        } rounded-md overflow-hidden flex items-center justify-center`}
+                      >
+                        {currentWorkspace && currentWorkspace.imageUrl ? (
+                          <AvatarImage
+                            src={currentWorkspace?.imageUrl}
+                            alt={currentWorkspace?.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <AvatarFallback className="text-white size-10 rounded-md bg-blue-600 text-lg">
+                            {currentWorkspace?.name[0]}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                    </div>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-semibold">
+                        {currentWorkspace?.name}
+                      </span>
+                    </div>
+                  </>
+                )}
+                <ChevronsUpDown className="ml-auto" />
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+              align="start"
+              side={isMobile ? "bottom" : "right"}
+              sideOffset={4}
+            >
+              <DropdownMenuLabel className="text-xs text-muted-foreground my-2 pl-1">
+                Your Workspaces
+              </DropdownMenuLabel>
+              {workspaces.length > 0 &&
+                workspaces.map((workspace, index) => (
+                  <DropdownMenuItem
+                    key={workspace._id}
+                    onClick={() => {
+                      setActiveWorkspaceId(workspace._id);
+                      navigate(`/workspaces/${workspace._id}`);
+                    }}
+                    className="gap-2 p-2 size-14 w-full"
+                  >
+                    <div className="flex items-center justify-center">
+                      <Avatar className="h-10 w-10 rounded-md">
+                        {workspace.imageUrl ? (
+                          <AvatarImage
+                            src={workspace.imageUrl}
+                            alt={workspace.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <AvatarFallback className="text-white bg-blue-600 text-xl font-semibold w-full h-full flex items-center justify-center rounded-md">
+                            {workspace.name[0]}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                    </div>
+                    <span className="font-medium"> {workspace.name}</span>
+                    <DropdownMenuShortcut>
+                      Alt + {index + 1}
+                    </DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="gap-2 p-2"
+                onClick={() => {
+                  setOpen(true);
+                }}
+              >
+                <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+                  <Plus className="size-4" />
+                </div>
+                <div className="font-medium text-muted-foreground">
+                  Add Workspace
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
       <WorkspaceFormDialog open={open} setOpen={setOpen} />
-    </SidebarMenu>
+    </>
   );
 };
 export default WorkSpaceSwitcher;

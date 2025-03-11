@@ -44,7 +44,7 @@ export const getColumns = (projectId) => {
       header: ({ column }) => <ColumnHeader column={column} title="Title" />,
       cell: ({ row }) => {
         return (
-          <div className="flex flex-wrap items-center space-x-2">
+          <div className="flex flex-nowrap items-center space-x-2">
             <Badge
               variant="outline"
               className="capitalize border-neutral-300 shrink-0 h-[25px]"

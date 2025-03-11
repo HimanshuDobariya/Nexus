@@ -1,5 +1,10 @@
-import { SidebarGroup, SidebarMenu } from "@/components/ui/sidebar";
-import { Link, useLocation } from "react-router-dom";
+import {
+  SidebarGroup,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   RiDashboardHorizontalLine,
   RiDashboardHorizontalFill,
@@ -9,9 +14,11 @@ import { HiOutlineUsers, HiUsers } from "react-icons/hi2";
 import { BsCheckCircle, BsCheckCircleFill } from "react-icons/bs";
 import { cn } from "@/lib/utils";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import { Collapsible, CollapsibleTrigger } from "../ui/collapsible";
 
 const Navigation = () => {
   const { activeWorkspaceId } = useWorkspaceStore();
+  const navigate = useNavigate();
   const location = useLocation();
   const routes = [
     {
@@ -48,17 +55,31 @@ const Navigation = () => {
 
           const Icon = isActive ? item.activeIcon : item.icon;
           return (
-            <Link key={item.label} to={finalUrl}>
-              <div
-                className={cn(
-                  "flex items-center gap-2.5 p-2.5 rounded-md font-medium transition  hover:bg-neutral-200/60 hover:text-primary",
-                  isActive && "bg-neutral-200/60 hover:opacity-100 text-primary"
-                )}
+            <Collapsible
+              key={item.label}
+              asChild
+              defaultOpen={item.isActive}
+              className="group/collapsible"
+            >
+              <SidebarMenuItem
+                onClick={() => {
+                  navigate(finalUrl);
+                }}
               >
-                <Icon className="size-5" />
-                {item.label}
-              </div>
-            </Link>
+                <CollapsibleTrigger
+                  asChild
+                  className={cn(
+                    "h-10 flex items-center rounded-md gap-2.5 font-medium transition hover:text-primary text-neutral-600",
+                    isActive && "bg-neutral-100 text-primary"
+                  )}
+                >
+                  <SidebarMenuButton tooltip={item.label}>
+                    {<Icon />}
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+              </SidebarMenuItem>
+            </Collapsible>
           );
         })}
       </SidebarMenu>

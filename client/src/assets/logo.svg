@@ -6,15 +6,15 @@
  preserveAspectRatio="xMidYMid meet">
 
   <defs>
-    <!-- Define Blue Gradient -->
-    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#000046; stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1CB5E0; stop-opacity:1" />
+    <!-- Define Dark Black Gradient -->
+    <linearGradient id="darkBlackGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#000000; stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a1a1a; stop-opacity:1" />
     </linearGradient>
   </defs>
 
   <g transform="translate(0.000000,105.000000) scale(0.100000,-0.100000)"
-     fill="url(#blueGradient)" stroke="none">
+     fill="url(#darkBlackGradient)" stroke="none">
     <path d="M510 866 c0 -80 3 -98 23 -127 20 -30 310 -258 330 -259 11 0 8 125
     -4 174 -13 54 -35 75 -211 205 l-138 101 0 -94z"/>
     <path d="M142 830 c5 -73 10 -97 29 -125 25 -36 685 -520 692 -507 2 4 5 32 6

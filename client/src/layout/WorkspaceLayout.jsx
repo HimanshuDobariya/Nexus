@@ -10,10 +10,10 @@ const WorkspaceLayout = () => {
       <AppSidebar />
       <SidebarInset>
         <Header />
-        <div className="px-4 bg-neutral-100">
+        <div className="px-4 mt-2">
           <DottedSeperator />
         </div>
-        <div className="p-4 h-full w-full bg-neutral-100">
+        <div className="p-4">
           <Outlet />
         </div>
       </SidebarInset>

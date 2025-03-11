@@ -5,11 +5,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, PenLine, Trash } from "lucide-react";
+import {
+  MoreHorizontal,
+  PenLine,
+  SquareArrowOutUpRight,
+  Trash,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import TaskForm from "../TaskForm";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTaskStore } from "@/store/taskStore";
 import ConfirmationDilog from "@/components/common/ConfirmationDilog";
 import { toast } from "@/hooks/use-toast";
@@ -21,6 +26,7 @@ const TableRowAction = ({ row }) => {
   const { deleteTask, getAllTasks } = useTaskStore();
   const [openDeleteTaskDialog, setOpenDeleteTaskDialog] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleEditTask = () => {
     setTaskData({
@@ -75,6 +81,33 @@ const TableRowAction = ({ row }) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => {
+              navigate(
+                `/workspaces/${row.original?.workspace}/tasks/${row.original?._id}`
+              );
+            }}
+            disabled={false}
+          >
+            <SquareArrowOutUpRight className="size-4 mr-2" />
+            Task Details
+          </DropdownMenuItem>
+
+          {!projectId && (
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => {
+                navigate(
+                  `/workspaces/${row.original?.workspace}/project/${row.original?.project?._id}`
+                );
+              }}
+              disabled={false}
+            >
+              <SquareArrowOutUpRight className="size-4 mr-2" />
+              Open Project
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={handleEditTask}

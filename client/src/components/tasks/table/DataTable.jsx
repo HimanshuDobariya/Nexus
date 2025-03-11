@@ -28,8 +28,7 @@ const DataTable = ({
   pagination,
   setPageNumber,
   setPageSize,
-  filters,
-  setFilters,
+  filterData,
 }) => {
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -58,31 +57,27 @@ const DataTable = ({
   });
 
   return (
-    <div className="w-full">
-      <div className="block w-full lg:flex lg:items-center lg:justify-between">
-        <DataFilters
-          table={table}
-          loading={loading}
-          filters={filters}
-          setFilters={setFilters}
-        />
-      </div>
+    <div>
+      {loading ? (
+        <Loader className="animate-spin !size-8 mx-auto" />
+      ) : (
+        <>
+          <DataFilters
+            table={table}
+            loading={loading}
+            filterData={filterData}
+          />
+          <div className="my-4">
+            <DottedSeperator />
+          </div>
 
-      <div className="my-4">
-        <DottedSeperator />
-      </div>
-
-      <div className={`rounded-md ${loading ? "border-none" : "border"}`}>
-        {loading ? (
-          <Loader className="animate-spin mx-auto size-8" />
-        ) : (
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
+          <div className="border rounded-md grid grid-cols-1 overflow-auto">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id} className="px-4 py-2">
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -90,55 +85,60 @@ const DataTable = ({
                               header.getContext()
                             )}
                       </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getPrePaginationRowModel().rows?.length ? (
-                table.getPrePaginationRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
                     ))}
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </div>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getPrePaginationRowModel().rows?.length ? (
+                  table.getPrePaginationRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                      className="hover:bg-gray-100"
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell
+                          key={cell.id}
+                          className="px-4 py-2 whitespace-nowrap"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      No results.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
-      <div className="mt-4">
-        {!loading && (
-          <TablePagination
-            pageNumber={pageNumber}
-            pageSize={pageSize}
-            totalCount={totalCount}
-            setPageNumber={setPageNumber}
-            setPageSize={setPageSize}
-          />
-        )}
-      </div>
+          <div className="mt-4">
+            {!loading && (
+              <TablePagination
+                pageNumber={pageNumber}
+                pageSize={pageSize}
+                totalCount={totalCount}
+                setPageNumber={setPageNumber}
+                setPageSize={setPageSize}
+              />
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };
+
 export default DataTable;

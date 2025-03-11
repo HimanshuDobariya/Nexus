@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import InviteMembers from "@/components/invitation/InviteMembers";
 import axios from "axios";
 import { toast } from "@/hooks/use-toast";
+import Header from "@/components/common/Header";
 
 const Members = () => {
   const { workspaceId } = useParams();
@@ -110,7 +111,11 @@ const Members = () => {
 
   return (
     <div className="h-full w-full lg:max-w-screen-sm mx-auto space-y-4">
-      <Card className="border-none shadow-none">
+      <Header
+        title="Workspace members"
+        description="Manage workspace members"
+      />
+      <Card className="w-full shadow-none">
         <CardHeader>
           <CardTitle className="text-xl">Members List</CardTitle>
           <CardDescription>

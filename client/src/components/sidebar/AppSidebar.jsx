@@ -1,31 +1,39 @@
-import { Sidebar, SidebarContent } from "../ui/sidebar";
+import { Sidebar, SidebarContent, useSidebar } from "../ui/sidebar";
 import { Link } from "react-router-dom";
 import { SidebarHeader } from "../ui/sidebar";
 import logo from "../../assets/logo.svg";
+import logoIcon from "../../assets/logoIcon.svg";
 import Navigation from "./Navigation";
 import DottedSeperator from "../common/DottedSeperator";
 import WorkSpaceSwitcher from "./WorkSpaceSwitcher";
 import NavProjects from "./NavProjects";
 
-const AppSidebar = () => {
+const AppSidebar = ({ ...props }) => {
+  const { state } = useSidebar();
+
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <Link to="#">
-          <img src={logo} alt="" width={164} height={48} />
+        <Link to="/">
+          <img
+            src={state === "collapsed" ? logoIcon : logo}
+            alt=""
+            height={48}
+            width={state === "collapsed" ? 40 : 200}
+          />
         </Link>
-        <div className="px-4">
-          <DottedSeperator />
-        </div>
+        <DottedSeperator />
         <WorkSpaceSwitcher />
         <DottedSeperator />
       </SidebarHeader>
 
       <SidebarContent>
         <Navigation />
-        <div className="px-4">
-          <DottedSeperator />
-        </div>
+        {state !== "collapsed" && (
+          <div className="px-2">
+            <DottedSeperator />
+          </div>
+        )}
         <NavProjects />
       </SidebarContent>
     </Sidebar>

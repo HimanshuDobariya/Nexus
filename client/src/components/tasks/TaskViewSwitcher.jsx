@@ -19,7 +19,7 @@ const TaskViewSwitcher = () => {
       searchParams.delete("task-view");
       setSearchParams(searchParams);
     } else {
-      setSearchParams({ "task-view": value });  
+      setSearchParams({ "task-view": value });
     }
   };
 
@@ -58,7 +58,7 @@ const TaskViewSwitcher = () => {
             <DottedSeperator />
           </div>
 
-          <>
+          <div>
             <TabsContent value="table" className="mt-0">
               <TaskTable />
             </TabsContent>
@@ -68,7 +68,7 @@ const TaskViewSwitcher = () => {
             <TabsContent value="calendar" className="mt-0">
               Calendar View
             </TabsContent>
-          </>
+          </div>
         </div>
       </Tabs>
 

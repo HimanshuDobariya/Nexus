@@ -13,8 +13,8 @@ import { useEffect, useState } from "react";
 import ConfirmationDilog from "@/components/common/ConfirmationDilog";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import { Loader } from "lucide-react";
+import Header from "@/components/common/Header";
 
 const Settings = () => {
   const [openWorkspaceDeleteDiolg, setOpenWorkspaceDeleteDiolg] =
@@ -63,54 +63,61 @@ const Settings = () => {
   };
 
   return (
-    <div className="max-w-screen-sm mx-auto space-y-2">
-      <Card className="w-full border-none shadow-none">
-        <CardHeader className="flex p-7">
-          <CardTitle className="text-xl font-bold">
-            Update your workspace
-          </CardTitle>
-        </CardHeader>
-        <div className="px-7">
-          <DottedSeperator />
-        </div>
-        <CardContent className="p-7">
-          {loading ? (
-            <Loader className="animate-spin mx-auto" />
-          ) : (
-            <WorkspaceForm
-              mode="edit"
-              initialData={currentWorkspace}
-              setOpen={() => {
-                return null;
-              }}
-            />
-          )}
-        </CardContent>
-      </Card>
+    <>
+      <div className="h-full w-full lg:max-w-screen-sm mx-auto space-y-4">
+        <Header
+          title=" Workspace settings"
+          description="Manage your workspace"
+        />
+        <Card className="w-full shadow-none">
+          <CardHeader className="flex px-7">
+            <CardTitle className="text-xl font-bold">
+              Update your workspace
+            </CardTitle>
+            <CardDescription>Update workspace data</CardDescription>
+          </CardHeader>
+          <div className="px-7">
+            <DottedSeperator />
+          </div>
+          <CardContent className="px-7 py-5">
+            {loading ? (
+              <Loader className="animate-spin mx-auto" />
+            ) : (
+              <WorkspaceForm
+                mode="edit"
+                initialData={currentWorkspace}
+                setOpen={() => {
+                  return null;
+                }}
+              />
+            )}
+          </CardContent>
+        </Card>
 
-      <Card className="w-full border-none shadow-none">
-        <CardHeader className="pb-2">
-          <CardTitle>Delete Workspace</CardTitle>
-          <CardDescription>
-            {" "}
-            Deleting a workspace is irreversible and remove all associted data
-          </CardDescription>
-        </CardHeader>
-        <div className="px-7">
-          <DottedSeperator />
-        </div>
-        <CardContent className="mt-5 flex justify-end">
-          <Button
-            onClick={() => {
-              setOpenWorkspaceDeleteDiolg(true);
-            }}
-            variant="destructive"
-            size="sm"
-          >
-            Delete Workspace
-          </Button>
-        </CardContent>
-      </Card>
+        <Card className="w-full shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle>Delete Workspace</CardTitle>
+            <CardDescription>
+              {" "}
+              Deleting a workspace is irreversible and remove all associted data
+            </CardDescription>
+          </CardHeader>
+          <div className="px-7">
+            <DottedSeperator />
+          </div>
+          <CardContent className="mt-5 flex justify-end">
+            <Button
+              onClick={() => {
+                setOpenWorkspaceDeleteDiolg(true);
+              }}
+              variant="destructive"
+              size="sm"
+            >
+              Delete Workspace
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
       <ConfirmationDilog
         title="Delete Workspace"
@@ -124,7 +131,7 @@ const Settings = () => {
         }}
         loading={loading}
       />
-    </div>
+    </>
   );
 };
 export default Settings;

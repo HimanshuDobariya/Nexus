@@ -2,13 +2,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import ProjectForm from "@/components/project/ProjectForm";
+import Header from "../../components/common/Header";
 
 const Dashboard = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   return (
     <main className="mx-auto">
-      <div className="flex justify-between items-center mb-8 gap-2">
-        <h1 className="text-2xl font-bold">Workspace OverView</h1>
+      <div className="flex flex-col sm:flex-row  justify-between mb-8  gap-2">
+        <Header
+          title="Workspace OverView"
+          description="Here is overview a of your workspace."
+        />
         <Button
           onClick={() => {
             setIsFormOpen(true);

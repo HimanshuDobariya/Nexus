@@ -91,7 +91,7 @@ const InviteMembers = ({ roles, isLoading }) => {
   </div>;
 
   return (
-    <Card className="border-none shadow-none">
+    <Card className="w-full shadow-none">
       <CardHeader>
         <CardTitle className="text-xl">
           Invite People to Workspace
