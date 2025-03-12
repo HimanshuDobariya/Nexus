@@ -75,6 +75,7 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
       status: TaskStatusEnum.TODO,
       priority: TaskPriorityEnum.MEDIUM,
       projectId: projectId || undefined,
+      assignedTo: undefined,
     },
   });
 
@@ -114,7 +115,7 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
         await updateTask(
           workspaceId,
           projectId || initialData?.projectId,
-          initialData?.id,
+          initialData._id,
           data
         );
         toast({
@@ -126,14 +127,15 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
           description: "Task created successfully.",
         });
       }
+      setOpen(false);
+      form.reset();
+      setLoading(false);
+
       if (projectId) {
         await getAllTasks(workspaceId, { projectId });
       } else {
         await getAllTasks(workspaceId);
       }
-      setOpen(false);
-      form.reset();
-      setLoading(false);
     } catch (error) {
       console.log(error);
       setOpen(false);
@@ -250,7 +252,7 @@ const TaskForm = ({ initialData = null, setOpen, open, projectId }) => {
                     <FormControl>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        defaultValue={field.value || undefined}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select Assignee" />

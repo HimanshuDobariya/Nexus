@@ -7,38 +7,14 @@ import { getAvatarColor } from "@/components/avatar/GetAvatarColor";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { priorities, statuses } from "./data";
-import TableRowAction from "./TableRowAction";
+import TaskAction from "../TaskAction";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal } from "lucide-react";
 
 const columnHelper = createColumnHelper();
 
 export const getColumns = (projectId) => {
   const columns = [
-    // Id
-    columnHelper.accessor("_id", {
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllRowsSelected() ||
-            (table.getIsSomeRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => {
-            // Toggles selection for all rows (including rows across pages)
-            table.toggleAllRowsSelected(!!value);
-          }}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    }),    
-
     // Task Title
     columnHelper.accessor("title", {
       header: ({ column }) => <ColumnHeader column={column} title="Title" />,
@@ -188,9 +164,19 @@ export const getColumns = (projectId) => {
     columnHelper.accessor("action", {
       header: "Action",
       cell: ({ row }) => {
+        const id = row.original._id;
+        const projectId = row.original.project._id;
         return (
           <>
-            <TableRowAction row={row} />
+            <TaskAction id={id} projectId={projectId}>
+              <Button
+                variant="ghost"
+                className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+              >
+                <MoreHorizontal />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </TaskAction>
           </>
         );
       },

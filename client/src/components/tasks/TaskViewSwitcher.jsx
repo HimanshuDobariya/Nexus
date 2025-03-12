@@ -1,18 +1,60 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "../ui/button";
-import { PlusIcon } from "lucide-react";
+import { Loader, PlusIcon } from "lucide-react";
 import DottedSeperator from "../common/DottedSeperator";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TaskForm from "./TaskForm";
 import { useParams, useSearchParams } from "react-router-dom";
-import TaskTable from "./TaskTable";
+import { getColumns } from "./table/Columns";
+import DataTable from "./table/DataTable";
+import { useTaskStore } from "@/store/taskStore";
+import DataFilters from "./DataFilters";
 
 const TaskViewSwitcher = () => {
   const [openCreateTaskForm, setOpenCreateTaskForm] = useState(false);
-  const { projectId } = useParams();
-
+  const { projectId, workspaceId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { tasks, getAllTasks } = useTaskStore();
+  const [loading, setLoading] = useState(false);
+  const [totalCount, setTotalCount] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const initialFilters = {
+    projectId: projectId || "",
+    status: "",
+    priority: "",
+    assignedTo: "",
+    dueDate: "",
+  };
+  const [filters, setFilters] = useState({});
+  const columns = getColumns(projectId);
+
   const currentTab = searchParams.get("task-view") || "table";
+
+  useEffect(() => {
+    setFilters(initialFilters);
+  }, [projectId]);
+
+  useEffect(() => {
+    const fetchAllTasks = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllTasks(workspaceId, {
+          pageNumber,
+          pageSize,
+          ...filters,
+        });
+        setTotalCount(data.totalCount);
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        console.log(error);
+      }
+    };
+
+    fetchAllTasks();
+  }, [pageNumber, pageSize, filters]);
 
   const handleTabChange = (value) => {
     if (value === "table") {
@@ -54,21 +96,42 @@ const TaskViewSwitcher = () => {
               New
             </Button>
           </div>
-          <div className="my-4">
-            <DottedSeperator />
+          <DottedSeperator className="my-4" />
+          <div className="w-full">
+            <DataFilters
+              filterData={{ filters, setFilters, initialFilters }}
+              setPageNumber={setPageNumber}
+              setPageSize={setPageSize}
+            />
           </div>
-
-          <div>
-            <TabsContent value="table" className="mt-0">
-              <TaskTable />
-            </TabsContent>
-            <TabsContent value="kanban" className="mt-0">
-              Kanban Board
-            </TabsContent>
-            <TabsContent value="calendar" className="mt-0">
-              Calendar View
-            </TabsContent>
-          </div>
+          <DottedSeperator className="my-4" />
+          {loading ? (
+            <div className="w-full rounded-lg border h-[200px] flex flex-col items-center justify-center">
+              <Loader className="!size-6 animate-spin" />
+            </div>
+          ) : (
+            <>
+              <TabsContent value="table" className="mt-0">
+                <DataTable
+                  columns={columns}
+                  data={tasks}
+                  pagination={{
+                    pageNumber,
+                    pageSize,
+                    totalCount,
+                  }}
+                  setPageNumber={setPageNumber}
+                  setPageSize={setPageSize}
+                />
+              </TabsContent>
+              <TabsContent value="kanban" className="mt-0">
+                Kanban Board
+              </TabsContent>
+              <TabsContent value="calendar" className="mt-0">
+                Calendar View
+              </TabsContent>
+            </>
+          )}
         </div>
       </Tabs>
 

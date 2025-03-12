@@ -37,6 +37,17 @@ export const useTaskStore = create((set) => ({
     }
   },
 
+  getTaskById: async (workspaceId, projectId, taskId) => {
+    try {
+      const { data } = await axios.get(
+        `${API_URL}/${taskId}/project/${projectId}/workspace/${workspaceId}`
+      );
+      return data.task;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   updateTask: async (workspaceId, projectId, taskId, taskData) => {
     try {
       const { data } = await axios.put(
