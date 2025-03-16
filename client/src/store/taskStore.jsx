@@ -60,6 +60,7 @@ export const useTaskStore = create((set) => ({
         );
         return { tasks: updatedTasks };
       });
+      return data.task;
     } catch (error) {
       console.log(error);
       throw error;

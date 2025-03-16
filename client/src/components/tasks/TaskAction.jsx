@@ -5,65 +5,40 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  PenLine,
-  SquareArrowOutUpRight,
-  Trash,
-} from "lucide-react";
+import { PenLine, SquareArrowOutUpRight, Trash } from "lucide-react";
 import { useState } from "react";
-import TaskForm from "./TaskForm";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTaskStore } from "@/store/taskStore";
 import ConfirmationDilog from "@/components/common/ConfirmationDilog";
 import { toast } from "@/hooks/use-toast";
+import EditTaskDialog from "./forms/EditTaskDialog";
 
-const TaskAction = ({ id, projectId, children }) => {
+const TaskAction = ({ children, data }) => {
   const { projectId: paramsProjectId, workspaceId } = useParams();
   const [loading, setLoading] = useState(false);
   const [openDeleteTaskDialog, setOpenDeleteTaskDialog] = useState(false);
-  const [isEditTask, setIsEditTask] = useState(false);
-  const [taskData, setTaskData] = useState(null);
-  const { deleteTask, getAllTasks, getTaskById } = useTaskStore();
+  const [openEditTaskDialog, setOpenEditTaskDialog] = useState(false);
+  const { deleteTask } = useTaskStore();
   const navigate = useNavigate();
 
   const handleDeleteTask = async () => {
     try {
       setLoading(true);
-      await deleteTask(workspaceId, id);
+      await deleteTask(workspaceId, data._id);
       toast({
         description: "Task Deleted successfully.",
       });
       setOpenDeleteTaskDialog(false);
       setLoading(false);
-
-      if (projectId) {
-        await getAllTasks(workspaceId, { projectId });
-      } else {
-        await getAllTasks(workspaceId);
-      }
     } catch (error) {
       console.log(error);
       setOpenDeleteTaskDialog(false);
       setLoading(false);
       toast({
         variant: "destructive",
-        description: error.response?.data.message || "Unable to delete task.",
+        description: error.response?.data.message || "Failed to delete task.",
       });
     }
-  };
-
-  const handleEditTask = async () => {
-    try {
-      const task = await getTaskById(workspaceId, projectId, id);
-      setTaskData({
-        ...task,
-        dueDate: new Date(task.dueDate),
-        projectId: task.project,
-      });
-    } catch (error) {
-      console.log(error);
-    }
-    setIsEditTask(true);
   };
 
   return (
@@ -75,7 +50,7 @@ const TaskAction = ({ id, projectId, children }) => {
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={() => {
-                navigate(`/workspaces/${workspaceId}/tasks/${id}`);
+                navigate(`/workspaces/${workspaceId}/tasks/${data._id}`);
               }}
               disabled={false}
             >
@@ -87,7 +62,9 @@ const TaskAction = ({ id, projectId, children }) => {
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => {
-                  navigate(`/workspaces/${workspaceId}/project/${projectId}`);
+                  navigate(
+                    `/workspaces/${workspaceId}/project/${data.project._id}`
+                  );
                 }}
                 disabled={false}
               >
@@ -95,15 +72,19 @@ const TaskAction = ({ id, projectId, children }) => {
                 Open Project
               </DropdownMenuItem>
             )}
+
             <DropdownMenuItem
               className="cursor-pointer"
-              onClick={handleEditTask}
-              disabled={isEditTask}
+              onClick={() => {
+                setOpenEditTaskDialog(true);
+              }}
             >
               <PenLine className="size-4 mr-2" />
               Edit Task
             </DropdownMenuItem>
+            
             <DropdownMenuSeparator />
+
             <DropdownMenuItem
               className={`!text-destructive cursor-pointer`}
               onClick={() => {
@@ -116,12 +97,6 @@ const TaskAction = ({ id, projectId, children }) => {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <TaskForm
-        open={isEditTask}
-        setOpen={setIsEditTask}
-        initialData={taskData}
-        projectId={paramsProjectId}
-      />
 
       <ConfirmationDilog
         title="Are you sure to delete task?"
@@ -134,6 +109,12 @@ const TaskAction = ({ id, projectId, children }) => {
           setOpenDeleteTaskDialog(false);
         }}
         loading={loading}
+      />
+
+      <EditTaskDialog
+        open={openEditTaskDialog}
+        setOpen={setOpenEditTaskDialog}
+        initialData={data}
       />
     </>
   );

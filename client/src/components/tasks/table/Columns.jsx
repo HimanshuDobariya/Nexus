@@ -10,17 +10,25 @@ import { priorities, statuses } from "./data";
 import TaskAction from "../TaskAction";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const columnHelper = createColumnHelper();
 
 export const getColumns = (projectId) => {
+  const navigate = useNavigate();
+  const { workspaceId } = useParams();
   const columns = [
     // Task Title
     columnHelper.accessor("title", {
       header: ({ column }) => <ColumnHeader column={column} title="Title" />,
       cell: ({ row }) => {
         return (
-          <div className="flex flex-nowrap items-center space-x-2">
+          <div
+            className="flex flex-nowrap items-center space-x-2 hover:underline cursor-pointer"
+            onClick={() => {
+              navigate(`/workspaces/${workspaceId}/tasks/${row.original._id}`);
+            }}
+          >
             <Badge
               variant="outline"
               className="capitalize border-neutral-300 shrink-0 h-[25px]"
@@ -164,11 +172,10 @@ export const getColumns = (projectId) => {
     columnHelper.accessor("action", {
       header: "Action",
       cell: ({ row }) => {
-        const id = row.original._id;
-        const projectId = row.original.project._id;
+        const data = row.original;
         return (
           <>
-            <TaskAction id={id} projectId={projectId}>
+            <TaskAction data={data}>
               <Button
                 variant="ghost"
                 className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"

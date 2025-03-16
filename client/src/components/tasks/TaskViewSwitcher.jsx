@@ -2,19 +2,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "../ui/button";
 import { Loader, PlusIcon } from "lucide-react";
 import DottedSeperator from "../common/DottedSeperator";
-import { useState, useEffect } from "react";
-import TaskForm from "./TaskForm";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { getColumns } from "./table/Columns";
 import DataTable from "./table/DataTable";
 import { useTaskStore } from "@/store/taskStore";
 import DataFilters from "./DataFilters";
+import KanabnBoard from "./kanban/KanabnBoard";
+import CreateTaskDailog from "./forms/CreateTaskDialog";
+import axios from "axios";
 
 const TaskViewSwitcher = () => {
   const [openCreateTaskForm, setOpenCreateTaskForm] = useState(false);
   const { projectId, workspaceId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { tasks, getAllTasks } = useTaskStore();
+  const { tasks, getAllTasks, updateTask } = useTaskStore();
   const [loading, setLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
@@ -25,16 +27,50 @@ const TaskViewSwitcher = () => {
     status: "",
     priority: "",
     assignedTo: "",
+    keyword: "",
     dueDate: "",
   };
-  const [filters, setFilters] = useState({});
+
+  const [filters, setFilters] = useState(initialFilters);
   const columns = getColumns(projectId);
 
-  const currentTab = searchParams.get("task-view") || "table";
-
-  useEffect(() => {
+  const [currentTab, setCurrentTab] = useState(
+    searchParams.get("task-view") || "table"
+  );
+  const handleTabChange = (value) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value === "table") {
+      newParams.delete("task-view");
+    } else {
+      newParams.set("task-view", value);
+    }
+    setCurrentTab(value);
+    setSearchParams(newParams);
     setFilters(initialFilters);
-  }, [projectId]);
+  };
+
+  const onKanbanChange = useCallback(
+    async (updatesPayload) => {
+      if (!Array.isArray(updatesPayload) || updatesPayload.length === 0) return;
+
+      try {
+        await axios.patch(
+          `${
+            import.meta.env.VITE_SERVER_URL
+          }/api/tasks/workspace/${workspaceId}/bulk-update`,
+          { tasks: updatesPayload },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } catch (error) {
+        console.error("Error updating tasks:", error);
+      }
+    },
+    [updateTask]
+  );
 
   useEffect(() => {
     const fetchAllTasks = async () => {
@@ -52,18 +88,14 @@ const TaskViewSwitcher = () => {
         console.log(error);
       }
     };
-
     fetchAllTasks();
   }, [pageNumber, pageSize, filters]);
 
-  const handleTabChange = (value) => {
-    if (value === "table") {
-      searchParams.delete("task-view");
-      setSearchParams(searchParams);
-    } else {
-      setSearchParams({ "task-view": value });
-    }
-  };
+  useEffect(() => {
+    setFilters(initialFilters);
+    setPageNumber(1);
+    setPageSize(10);
+  }, [projectId]);
 
   return (
     <>
@@ -97,6 +129,7 @@ const TaskViewSwitcher = () => {
             </Button>
           </div>
           <DottedSeperator className="my-4" />
+
           <div className="w-full">
             <DataFilters
               filterData={{ filters, setFilters, initialFilters }}
@@ -105,9 +138,10 @@ const TaskViewSwitcher = () => {
             />
           </div>
           <DottedSeperator className="my-4" />
+
           {loading ? (
             <div className="w-full rounded-lg border h-[200px] flex flex-col items-center justify-center">
-              <Loader className="!size-6 animate-spin" />
+              <Loader className="!size-8 animate-spin" />
             </div>
           ) : (
             <>
@@ -125,7 +159,7 @@ const TaskViewSwitcher = () => {
                 />
               </TabsContent>
               <TabsContent value="kanban" className="mt-0">
-                Kanban Board
+                <KanabnBoard data={tasks} onChange={onKanbanChange} />
               </TabsContent>
               <TabsContent value="calendar" className="mt-0">
                 Calendar View
@@ -134,11 +168,9 @@ const TaskViewSwitcher = () => {
           )}
         </div>
       </Tabs>
-
-      <TaskForm
+      <CreateTaskDailog
         open={openCreateTaskForm}
         setOpen={setOpenCreateTaskForm}
-        projectId={projectId}
       />
     </>
   );

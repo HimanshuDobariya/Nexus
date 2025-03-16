@@ -44,16 +44,35 @@ export const createTask = async (req, res) => {
       }
     }
 
+    const highestPositionTask = await Task.find({
+      workspace: workspaceId,
+      status: status,
+    })
+      .sort({ position: -1 })
+      .limit(1);
+
+    const newPosition =
+      highestPositionTask.length > 0
+        ? highestPositionTask[0].position + 1000
+        : 1000;
+
+    if (newPosition > 1000000) {
+      return res.status(400).json({
+        message: "Task position limit exceeded.",
+      });
+    }
+
     const task = new Task({
       title,
       description,
-      priority: priority || TaskPriorityEnum.MEDIUM,
-      status: status || TaskStatusEnum.TODO,
+      priority: priority,
+      status: status,
       createdBy: userId,
       workspace: workspaceId,
       project: projectId,
       assignedTo,
       dueDate,
+      position: newPosition,
     });
 
     await task.save();
@@ -112,7 +131,10 @@ export const getAllTasks = async (req, res) => {
     }
 
     if (filters.keyword) {
-      query.title = { $regex: filters.keyword, $options: "i" };
+      query.$or = [
+        { title: { $regex: filters.keyword, $options: "i" } },
+        { taskCode: { $regex: filters.keyword, $options: "i" } },
+      ];
     }
 
     if (filters.dueDate) {
@@ -172,6 +194,37 @@ export const getTaskById = async (req, res) => {
     }
 
     res.status(200).json({ task });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: error.message || "Server error.",
+    });
+  }
+};
+
+export const updateTasksBulk = async (req, res) => {
+  try {
+    const { userId } = req;
+    const { workspaceId } = req.params;
+    const { tasks } = req.body;
+
+    if (!Array.isArray(tasks) || tasks.length === 0) {
+      return res.status(400).json({ message: "Invalid or empty tasks array." });
+    }
+
+    const { role } = await getMemberRoleInWorkspace(workspaceId, userId);
+    await checkPermission(role, [Permissions.EDIT_TASK]);
+
+    const bulkUpdates = tasks.map(({ _id, status, position }) => ({
+      updateOne: {
+        filter: { _id, workspace: workspaceId },
+        update: { $set: { status, position } },
+      },
+    }));
+
+    await Task.bulkWrite(bulkUpdates);
+
+    res.status(200).json({ message: "Tasks updated successfully.", tasks });
   } catch (error) {
     console.log(error);
     res.status(500).json({

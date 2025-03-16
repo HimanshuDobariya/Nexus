@@ -17,7 +17,6 @@ const TaskScheme = new mongoose.Schema(
     description: {
       type: String,
       trim: true,
-      default: null,
     },
     project: {
       type: mongoose.Schema.Types.ObjectId,
@@ -32,12 +31,12 @@ const TaskScheme = new mongoose.Schema(
     status: {
       type: String,
       enum: Object.values(TaskStatusEnum),
-      default: TaskStatusEnum.TODO,
+      required: true,
     },
     priority: {
       type: String,
       enum: Object.values(TaskPriorityEnum),
-      default: TaskPriorityEnum.MEDIUM,
+      required: true,
     },
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,
@@ -53,6 +52,7 @@ const TaskScheme = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    position: { type: Number, required: true, min: 1000, max: 1000000 },
   },
   {
     timestamps: true,

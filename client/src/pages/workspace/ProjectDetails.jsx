@@ -62,7 +62,7 @@ const ProjectDetails = () => {
         </Button>
       </div>
 
-      <div className="py-6">
+      <div className="py-6 max-w-screen-2xl mx-auto">
         <TaskViewSwitcher />
       </div>
 
