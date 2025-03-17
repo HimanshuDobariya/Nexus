@@ -11,6 +11,7 @@ import DataFilters from "./DataFilters";
 import KanabnBoard from "./kanban/KanabnBoard";
 import CreateTaskDailog from "./forms/CreateTaskDialog";
 import axios from "axios";
+import DataCalander from "./calendar/DataCalander";
 
 const TaskViewSwitcher = () => {
   const [openCreateTaskForm, setOpenCreateTaskForm] = useState(false);
@@ -161,8 +162,11 @@ const TaskViewSwitcher = () => {
               <TabsContent value="kanban" className="mt-0">
                 <KanabnBoard data={tasks} onChange={onKanbanChange} />
               </TabsContent>
-              <TabsContent value="calendar" className="mt-0">
-                Calendar View
+              <TabsContent
+                value="calendar"
+                className="mt-0 h-full overflow-x-auto"
+              >
+                <DataCalander data={tasks} />
               </TabsContent>
             </>
           )}
