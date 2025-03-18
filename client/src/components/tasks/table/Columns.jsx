@@ -26,7 +26,9 @@ export const getColumns = (projectId) => {
           <div
             className="flex flex-nowrap items-center space-x-2 hover:underline cursor-pointer"
             onClick={() => {
-              navigate(`/workspaces/${workspaceId}/tasks/${row.original._id}`);
+              navigate(`/workspaces/${workspaceId}/tasks/${row.original._id}`, {
+                state: { projectId: row.original.project._id },
+              });
             }}
           >
             <Badge

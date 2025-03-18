@@ -36,7 +36,9 @@ const EventCard = ({
           statusColorMap[status] || "border-l-gray-400"
         )}
         onClick={() => {
-          navigate(`/workspaces/${workspaceId}/tasks/${id}`);
+          navigate(`/workspaces/${workspaceId}/tasks/${id}`, {
+            state: { projectId: project?._id },
+          });
         }}
       >
         <div className="flex items-center justify-between">

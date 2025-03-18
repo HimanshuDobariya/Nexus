@@ -16,7 +16,8 @@ import JoinWorkspace from "@/components/invitation/JoinWorkspace";
 import Dashboard from "@/pages/workspace/Dashboard";
 import ProjectDetails from "@/pages/workspace/ProjectDetails";
 import Tasks from "@/pages/workspace/Tasks";
-import TaskDetail from "@/components/tasks/TaskDetail";
+import TaskDetails from "@/components/tasks/details/TaskDetails";
+import TaskDetailsPage from "@/pages/workspace/TaskDetailsPage";
 
 const AppRoutes = () => {
   return (
@@ -41,7 +42,7 @@ const AppRoutes = () => {
             <Route path="tasks" element={<Tasks />} />
             <Route path="profile" element={<UserProfile />} />
             <Route path="project/:projectId" element={<ProjectDetails />} />
-            <Route path="tasks/:taskId" element={<TaskDetail />} />
+            <Route path="tasks/:taskId" element={<TaskDetailsPage />} />
           </Route>
         </Route>
         <Route

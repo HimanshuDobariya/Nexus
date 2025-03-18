@@ -185,9 +185,12 @@ export const getTaskById = async (req, res) => {
       _id: taskId,
       workspace: workspaceId,
       project: projectId,
-    });
+    })
+      .populate("assignedTo", "name")
+      .populate("project")
+      .exec();
 
-    if (!task || task.project.toString() !== projectId.toString()) {
+    if (!task || task.project._id.toString() !== projectId.toString()) {
       return res.status(404).json({
         message: "Task not found or does not belong to this project",
       });
