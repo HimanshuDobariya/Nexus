@@ -42,12 +42,10 @@ const TaskDetailsDilalog = ({
     }
   }, [isEditing]);
 
-  if (loading) return <Loader className="animate-spin size-8 mx-auto" />;
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
-        className="max-h-[90vh] max-w-screen-xl overflow-auto"
+        className="max-h-[90vh] min-h-[90vh] max-w-screen-xl overflow-auto"
         aria-describedby={undefined}
       >
         <DialogHeader>
@@ -70,7 +68,7 @@ const TaskDetailsDilalog = ({
             <TaskDetails task={taskData} setIsEditing={setIsEditing} />
 
             {isEditing && (
-              <div className="row-span-2 w-full lg:max-h-[600px] overflow-auto border rounded-lg h-max">
+              <div className="row-span-3 w-full border rounded-lg">
                 <EditTaskCard
                   task={taskData}
                   setIsEditing={setIsEditing}
@@ -79,7 +77,7 @@ const TaskDetailsDilalog = ({
               </div>
             )}
 
-            <div className="h-[300px]">Comment section</div>
+            <div>Comment section</div>
           </div>
         </DialogHeader>
       </DialogContent>

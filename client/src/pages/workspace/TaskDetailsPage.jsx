@@ -56,11 +56,15 @@ const TaskDetailsPage = () => {
       >
         <TaskDetails task={taskData} setIsEditing={setIsEditing} />
         {isEditing && (
-          <div className="row-span-2 w-full lg:max-h-[600px] overflow-auto border rounded-lg h-max">
-            <EditTaskCard task={taskData} setIsEditing={setIsEditing} setProjectId={setProjectId} />
+          <div className="row-span-3 border rounded-lg">
+            <EditTaskCard
+              task={taskData}
+              setIsEditing={setIsEditing}
+              setProjectId={setProjectId}
+            />
           </div>
         )}
-        <div className="h-[300px]">Comment section</div>
+        <div>Comment section</div>
       </div>
     </div>
   );
