@@ -89,7 +89,11 @@ const TaskDetails = ({ task, setIsEditing }) => {
         <DetailProperty label="Priority">
           {capitalizeString(task?.priority)}
         </DetailProperty>
-        <DetailProperty title="Description"></DetailProperty>
+        <DetailProperty label="Description">
+          <div className="bg-white py-3 px-4 rounded-md max-w-screen-md">
+            {task?.description ? task?.description : "No task description."}
+          </div>
+        </DetailProperty>
       </div>
     </div>
   );
