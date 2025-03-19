@@ -1,29 +1,25 @@
 import Header from "@/components/common/Header";
+import CommentsSection from "@/components/tasks/comments/CommentsSection";
 import TaskDetails from "@/components/tasks/details/TaskDetails";
 import EditTaskCard from "@/components/tasks/forms/EditTaskCard";
 import { Badge } from "@/components/ui/badge";
 import { useTaskStore } from "@/store/taskStore";
-import { Loader } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 
 const TaskDetailsPage = () => {
   const location = useLocation();
   const [projectId, setProjectId] = useState(location.state?.projectId);
-  const [loading, setLoading] = useState(false);
   const { getTaskById } = useTaskStore();
   const [taskData, setTaskData] = useState();
   const { taskId, workspaceId } = useParams();
   const [isEditing, setIsEditing] = useState(false);
 
   const getTaskData = async () => {
-    setLoading(true);
     try {
       const data = await getTaskById(workspaceId, projectId, taskId);
       setTaskData(data);
-      setLoading(false);
     } catch (error) {
-      setLoading(false);
       console.log(error);
     }
   };
@@ -34,7 +30,6 @@ const TaskDetailsPage = () => {
     }
   }, [isEditing]);
 
-  if (loading) return <Loader className="animate-spin size-8 mx-auto" />;
   return (
     <div className="w-full max-w-screen-2xl mx-auto">
       <Header
@@ -64,7 +59,7 @@ const TaskDetailsPage = () => {
             />
           </div>
         )}
-        <div>Comment section</div>
+        <CommentsSection />
       </div>
     </div>
   );

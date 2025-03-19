@@ -1,20 +1,12 @@
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useLocation, useParams } from "react-router-dom";
-import { useTaskStore } from "@/store/taskStore";
 import { getAvatarFallbackText } from "@/components/avatar/getAvatarFallback";
 import { getAvatarColor } from "@/components/avatar/getAvatarColor";
-import { Loader, Pencil, PencilIcon, TrashIcon } from "lucide-react";
+import { PencilIcon } from "lucide-react";
 import DottedSeperator from "@/components/common/DottedSeperator";
 import DetailProperty from "./DetailProperty";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { TaskStatusEnum } from "@/components/enums/TaskEnums";
 import { Badge } from "@/components/ui/badge";
 import { statuses } from "../table/data";
-import EditTaskCard from "../forms/EditTaskCard";
 
 const TaskDetails = ({ task, setIsEditing }) => {
   const avatarFallbakText = getAvatarFallbackText(task?.assignedTo?.name);

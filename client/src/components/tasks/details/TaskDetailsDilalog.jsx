@@ -11,6 +11,7 @@ import EditTaskCard from "../forms/EditTaskCard";
 import { useParams } from "react-router-dom";
 import { useTaskStore } from "@/store/taskStore";
 import { Loader } from "lucide-react";
+import CommentsSection from "../comments/CommentsSection";
 
 const TaskDetailsDilalog = ({
   open,
@@ -77,7 +78,7 @@ const TaskDetailsDilalog = ({
               </div>
             )}
 
-            <div>Comment section</div>
+            <CommentsSection id={taskData?._id} />
           </div>
         </DialogHeader>
       </DialogContent>

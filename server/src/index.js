@@ -10,6 +10,7 @@ import projectRoutes from "./routes/project.route.js";
 import taskRoutes from "./routes/task.route.js";
 import memberRoutes from "./routes/member.route.js";
 import roleRoutes from "./routes/role.route.js";
+import commentsRoutes from "./routes/comments.route.js";
 import { verifyToken } from "./middlewares/verifyToken.js";
 import cron from "node-cron";
 import updateExpiredInvitations from "./services/updateExpiredInvitation.js";
@@ -34,6 +35,7 @@ app.use("/api/projects", verifyToken, projectRoutes);
 app.use("/api/tasks", verifyToken, taskRoutes);
 app.use("/api/members", memberRoutes);
 app.use("/api/roles", roleRoutes);
+app.use("/api/comments", verifyToken, commentsRoutes);
 
 cron.schedule("0 * * * *", updateExpiredInvitations);
 
