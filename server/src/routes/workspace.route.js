@@ -8,6 +8,7 @@ import {
   getWorkspaces,
   removeMemberFromWorkspace,
   updateWorkspace,
+  getWorkspaceAnalytics,
 } from "../controllers/workspaces.controller.js";
 import upload from "../middlewares/multer.js";
 
@@ -21,5 +22,6 @@ router.delete("/:workspaceId", deleteWorkspace);
 router.get("/:workspaceId/members", getWorkspaceMembers);
 router.put("/:workspaceId/members/change/role", changeMembersRole);
 router.delete("/:workspaceId/members", removeMemberFromWorkspace);
+router.get("/:workspaceId/analytics", getWorkspaceAnalytics);
 
 export default router;

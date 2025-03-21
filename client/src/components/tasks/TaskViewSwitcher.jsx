@@ -12,6 +12,7 @@ import KanabnBoard from "./kanban/KanabnBoard";
 import CreateTaskDailog from "./forms/CreateTaskDialog";
 import axios from "axios";
 import DataCalander from "./calendar/DataCalander";
+import { useProjectStore } from "@/store/projectStore";
 
 const TaskViewSwitcher = () => {
   const [openCreateTaskForm, setOpenCreateTaskForm] = useState(false);
@@ -22,6 +23,7 @@ const TaskViewSwitcher = () => {
   const [totalCount, setTotalCount] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const { projects } = useProjectStore();
 
   const initialFilters = {
     projectId: projectId || "",
@@ -122,6 +124,10 @@ const TaskViewSwitcher = () => {
               size="sm"
               className="w-full lg:w-auto"
               onClick={() => {
+                if (!projects.length) {
+                  alert("You have to first create project.");
+                  return;
+                }
                 setOpenCreateTaskForm(true);
               }}
             >

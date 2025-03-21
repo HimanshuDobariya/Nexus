@@ -2,12 +2,14 @@ import Workspace from "../models/workspace.model.js";
 import cloudinary from "../config/cloudinary.config.js";
 import Member from "../models/members.model.js";
 import Role from "../models/roles-permission.model.js";
+import Task from "../models/task.model.js";
 import Invitation from "../models/invitation.model.js";
 import { Permissions, Roles } from "../enums/role.enum.js";
 import { getMemberRoleInWorkspace } from "../services/getMemberRoleInWorkspace.js";
 import { checkPermission } from "../services/checkPermission.js";
 import { decrypt } from "../utils/crypto-encryption.js";
 import Project from "../models/project.model.js";
+import { TaskStatusEnum } from "../enums/task.enum.js";
 
 //create workspace
 export const createWorkspace = async (req, res) => {
@@ -175,6 +177,7 @@ export const deleteWorkspace = async (req, res) => {
     // Delete associated member records
     await Member.deleteMany({ workspaceId });
     await Project.deleteMany({ workspace: workspaceId });
+    await Task.deleteMany({ workspace: workspaceId });
 
     res.status(200).json({ message: "Workspace deleted successfully" });
   } catch (error) {
@@ -263,6 +266,32 @@ export const removeMemberFromWorkspace = async (req, res) => {
 
     res.status(200).json({ message: "Member removed successfully" });
   } catch (error) {
+    res.status(500).json({ message: error.message || "Server Error" });
+  }
+};
+
+export const getWorkspaceAnalytics = async (req, res) => {
+  try {
+    const { workspaceId } = req.params;
+
+    const { role } = await getMemberRoleInWorkspace(workspaceId, req.userId);
+    await checkPermission(role, [Permissions.VIEW_ONLY]);
+    const tasks = await Task.find({
+      workspace: workspaceId,
+    })
+      .populate({
+        path: "assignedTo",
+        select: "-password",
+      })
+      .populate("project");
+
+    const projects = await Project.find({
+      workspace: workspaceId,
+    });
+
+    res.status(200).json({ tasks, projects });
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message || "Server Error" });
   }
 };
