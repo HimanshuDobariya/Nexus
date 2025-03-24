@@ -1,5 +1,3 @@
-import { getAvatarColor } from "@/components/avatar/getAvatarColor";
-import { getAvatarFallbackText } from "@/components/avatar/getAvatarFallback";
 import { TaskPriorityEnum, TaskStatusEnum } from "@/components/enums/TaskEnums";
 import {
   Select,
@@ -36,6 +34,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
+import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 
 const DataFilters = ({ filterData, setPageNumber, setPageSize }) => {
   const { filters, setFilters, initialFilters } = filterData;

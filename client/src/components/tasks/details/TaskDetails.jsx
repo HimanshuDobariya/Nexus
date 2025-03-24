@@ -1,6 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { getAvatarFallbackText } from "@/components/avatar/getAvatarFallback";
-import { getAvatarColor } from "@/components/avatar/getAvatarColor";
 import { PencilIcon } from "lucide-react";
 import DottedSeperator from "@/components/common/DottedSeperator";
 import DetailProperty from "./DetailProperty";
@@ -9,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { statuses } from "../table/data";
 
 const TaskDetails = ({ task, setIsEditing }) => {
-  const avatarFallbakText = getAvatarFallbackText(task?.assignedTo?.name);
-  const avatarColor = getAvatarColor(task?.assignedTo?.name || "");
+  // const avatarFallbakText = getAvatarFallbackText(task?.assignedTo?.name);
+  // const avatarColor = getAvatarColor(task?.assignedTo?.name || "");
   const status = statuses.find((status) => status.value === task?.status);
   const formatDate = (date) => {
     if (!date) return;

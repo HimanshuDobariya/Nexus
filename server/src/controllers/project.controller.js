@@ -8,16 +8,26 @@ export const createProject = async (req, res) => {
   try {
     const { userId } = req;
     const { workspaceId } = req.params;
-    const { name, emoji, description } = req.body;
+    const { name, emoji, description, projectKey } = req.body;
 
     const { role } = await getMemberRoleInWorkspace(workspaceId, userId);
     await checkPermission(role, [Permissions.CREATE_PROJECT]);
 
-    // Create the project
+    const existingProject = await Project.findOne({
+      name: { $regex: new RegExp(`^${name}$`, "i") },
+      workspace: workspaceId,
+    });
+    if (existingProject) {
+      return res.status(400).json({
+        message: "A project with this name already exists in the workspace.",
+      });
+    }
+
     const newProject = new Project({
       name,
+      projectKey,
       description,
-      emoji,
+      emoji: emoji || "📊",
       workspace: workspaceId,
       createdBy: userId,
     });
@@ -40,7 +50,9 @@ export const getAllProjects = async (req, res) => {
     const { role } = await getMemberRoleInWorkspace(workspaceId, userId);
     await checkPermission(role, [Permissions.VIEW_ONLY]);
 
-    const projects = await Project.find({ workspace: workspaceId });
+    const projects = await Project.find({ workspace: workspaceId }).sort({
+      createdAt: -1,
+    });
 
     res.status(200).json({ projects });
   } catch (error) {
@@ -80,7 +92,7 @@ export const updateProject = async (req, res) => {
   try {
     const { userId } = req;
     const { projectId, workspaceId } = req.params;
-    const { name, emoji, description } = req.body;
+    const { name, emoji, description, projectKey } = req.body;
 
     const { role } = await getMemberRoleInWorkspace(workspaceId, userId);
     await checkPermission(role, [Permissions.EDIT_PROJECT]);
@@ -97,10 +109,24 @@ export const updateProject = async (req, res) => {
       });
     }
 
+    if (name) {
+      const existingProject = await Project.findOne({
+        name: { $regex: new RegExp(`^${name}$`, "i") },
+        workspace: workspaceId,
+        _id: { $ne: projectId }, // Exclude the current project
+      });
+      if (existingProject) {
+        return res.status(400).json({
+          message: "A project with this name already exists in the workspace.",
+        });
+      }
+      project.name = name;
+    }
+
     // Update the project fields
     if (emoji) project.emoji = emoji;
-    if (name) project.name = name;
     if (description) project.description = description;
+    if (projectKey) project.projectKey = projectKey;
 
     // Save the updated project
     await project.save();

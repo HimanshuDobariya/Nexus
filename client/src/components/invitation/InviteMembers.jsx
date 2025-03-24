@@ -34,6 +34,7 @@ import { toast } from "@/hooks/use-toast";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import useWorkspaceInviteCode from "@/hooks/useWorkspaceInviteCode";
+import { Roles } from "../enums/RoleEnums";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -41,10 +42,12 @@ const formSchema = z.object({
 });
 
 const InviteMembers = ({ roles, isLoading }) => {
-  const memberRoleId = roles.find((role) => role.name === "MEMBER")?._id || "";
+  const memberRoleId =
+    roles.find((role) => role.name === Roles.MEMBER)?._id || "";
   const [isInviting, setIsInviting] = useState(false);
   const { workspaceId } = useParams();
   const { inviteCode } = useWorkspaceInviteCode(workspaceId);
+  const [isOpen, setIsOpen] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -73,6 +76,7 @@ const InviteMembers = ({ roles, isLoading }) => {
         }
       );
       toast({
+        variant: "success",
         description: data.message,
       });
       setIsInviting(false);
@@ -86,24 +90,14 @@ const InviteMembers = ({ roles, isLoading }) => {
       });
     }
   };
-  <div className="flex justify-center p-7">
-    <Loader className="animate-spin" />
-  </div>;
 
   return (
     <Card className="w-full shadow-none">
       <CardHeader>
-        <CardTitle className="text-xl">
-          Invite People to Workspace
-        </CardTitle>
-        <CardDescription>
-          Add people to the workspace with email.
-        </CardDescription>
+        <CardTitle className="text-xl">Invite People to Workspace</CardTitle>
       </CardHeader>
 
-      <div className="px-7">
-        <DottedSeperator />
-      </div>
+      <DottedSeperator className="px-7" />
 
       <CardContent className="p-7">
         {isLoading ? (
@@ -128,29 +122,51 @@ const InviteMembers = ({ roles, isLoading }) => {
               <FormField
                 control={form.control}
                 name="roleId"
-                render={({ field }) => (
-                  <FormItem className="max-w-[240px] relative">
-                    <FormLabel>Select Role</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value || memberRoleId}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {roles.map((role) => (
-                          <SelectItem key={role._id} value={role._id}>
-                            {role.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="error-msg" />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  return (
+                    <FormItem className="max-w-[300px] relative">
+                      <FormLabel>Select Role</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || memberRoleId}
+                        onOpenChange={setIsOpen}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <span className="capitalize">
+                              {roles
+                                .find((role) => role._id === field.value)
+                                ?.name.toLowerCase() || "Select a role"}
+                            </span>
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="max-w-[300px]">
+                          {roles.map((role) => {
+                            return (
+                              <SelectItem
+                                key={role._id}
+                                value={role._id}
+                                className="h-16"
+                              >
+                                <div className="flex flex-col">
+                                  <span className="capitalize">
+                                    {role.name.toLowerCase()}
+                                  </span>
+                                  {isOpen && (
+                                    <span className="text-[10px] leading-tight text-gray-500">
+                                      {role.description}
+                                    </span>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage className="error-msg" />
+                    </FormItem>
+                  );
+                }}
               />
 
               {/* Form Actions */}

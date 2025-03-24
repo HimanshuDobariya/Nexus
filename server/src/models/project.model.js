@@ -7,6 +7,11 @@ const projectSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    projectKey: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     emoji: {
       type: String,
       required: false,

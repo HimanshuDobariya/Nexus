@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useProfileStore } from "@/store/profileStore";
 import Header from "@/components/common/Header";
+import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 
 const UserProfile = () => {
   const { profile, getProfile, loading, updateProfile } = useProfileStore();
@@ -85,22 +86,22 @@ const UserProfile = () => {
         )}
       </div>
       <Card className="p-6 space-y-6">
-        <div className="flex gap-7">
-          <div className="w-36 h-36 rounded-full overflow-hidden flex items-center justify-center relative cursor-pointer group">
+        <div className="flex gap-7 flex-col md:flex-row">
+          <div className="size-20 md:size-32  rounded-full overflow-hidden flex items-center justify-center relative cursor-pointer group">
             {profileData.profileImage ? (
               <img
                 src={profileData.profileImage}
                 alt="Profile"
-                className="w-36 h-36 rounded-full object-cover"
+                className="size-20 md:size-32  rounded-full object-cover"
               />
             ) : (
-              <Avatar className="w-36 h-36 rounded-full bg-gray-600 text-white flex items-center justify-center text-6xl">
-                <AvatarFallback>
-                  {profileData?.name
-                    .split(" ")
-                    .map((word) => word[0])
-                    .join("")
-                    .toUpperCase()}
+              <Avatar>
+                <AvatarFallback
+                  className={`rounded-full size-20 md:size-32 text-4xl md:text-6xl flex items-center justify-center ${getAvatarColor(
+                    profileData?.name
+                  )}`}
+                >
+                  {getAvatarFallbackText(profileData?.name)}
                 </AvatarFallback>
               </Avatar>
             )}

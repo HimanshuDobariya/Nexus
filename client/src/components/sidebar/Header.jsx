@@ -17,13 +17,14 @@ const Header = () => {
   const { workspaceId } = useParams();
 
   const getPageLabel = (pathname) => {
-    if (pathname.includes("/project/")) return "Project";
+    if (pathname.includes("/projects/")) return "Projects";
     if (pathname.includes("/settings")) return "Settings";
     if (pathname.includes("/tasks")) return "Tasks";
     if (pathname.includes("/members")) return "Members";
     if (pathname.includes("/profile")) return "Profile";
-    return null; // Default label
+    return "Dashboard"; // Default label
   };
+
   const pageHeading = getPageLabel(pathname);
 
   return (
@@ -34,18 +35,18 @@ const Header = () => {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block text-[15px]">
-              {pageHeading ? (
+              {pageHeading === "Dashboard" ? (
+                <BreadcrumbPage className="line-clamp-1">
+                  Dashboard
+                </BreadcrumbPage>
+              ) : (
                 <BreadcrumbLink asChild>
                   <Link to={`/workspaces/${workspaceId}`}>Dashboard</Link>
                 </BreadcrumbLink>
-              ) : (
-                <BreadcrumbPage className="line-clamp-1 ">
-                  Dashboard
-                </BreadcrumbPage>
               )}
             </BreadcrumbItem>
 
-            {pageHeading && (
+            {pageHeading !== "Dashboard" && (
               <>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem className="text-[15px]">

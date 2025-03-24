@@ -13,7 +13,7 @@ body {
 
 @layer components {
   .error-msg {
-    @apply text-red-500 text-xs absolute -bottom-5 left-1;
+    @apply !text-red-500 !text-[10px] !absolute !-bottom-[18px] !left-0;
   }
 }
 

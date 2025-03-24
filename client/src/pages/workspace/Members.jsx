@@ -23,6 +23,10 @@ import InviteMembers from "@/components/invitation/InviteMembers";
 import axios from "axios";
 import { toast } from "@/hooks/use-toast";
 import Header from "@/components/common/Header";
+import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
+import { Roles } from "@/components/enums/RoleEnums";
+
+
 
 const Members = () => {
   const { workspaceId } = useParams();
@@ -30,20 +34,38 @@ const Members = () => {
   const [roles, setRoles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
+
+  const roleDescriptions = {
+    [Roles.ADMIN]:
+      "Admins can do most things, like update settings and add other admins.",
+    [Roles.MEMBER]:
+      "Member are the part of the team, and can add, edit and collaborate on all work.",
+    [Roles.VIEWER]:
+      "Viewers can search through, view and comment on your team's work, but not much else.",
+  };
+
+
   const getAllRoles = async () => {
     setIsLoading(true);
     try {
       const { data } = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/roles`
       );
-      const availableRoles = data.roles.filter((role) => role.name !== "OWNER");
-      setRoles(availableRoles);
+      const filteredRoles = data.roles
+        .filter((role) => role.name !== "OWNER")
+        .map((role) => ({
+          ...role,
+          description:
+            roleDescriptions[role.name] || "No description available",
+        }));
+      setRoles(filteredRoles);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
       console.log(error);
     }
   };
+
   const getWorkSpaceMembers = async () => {
     try {
       const { data } = await axios.get(
@@ -118,13 +140,9 @@ const Members = () => {
       <Card className="w-full shadow-none">
         <CardHeader>
           <CardTitle className="text-xl">Members List</CardTitle>
-          <CardDescription>
-            Here is people that members of this workspace
-          </CardDescription>
         </CardHeader>
-        <div className="px-7">
-          <DottedSeperator />
-        </div>
+
+        <DottedSeperator className="px-7" />
         <CardContent className="p-7">
           {!isLoading ? (
             members.length > 0 ? (
@@ -132,9 +150,13 @@ const Members = () => {
                 <div key={member._id}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <Avatar className="size-10 rounded-full border border-neutral-300 bg-neutral-200 flex items-center justify-center">
-                        <AvatarFallback className="text-xl font-medium text-neutral-600">
-                          {member.userId.name.charAt(0)}
+                      <Avatar>
+                        <AvatarFallback
+                          className={`size-10 font-medium text-lg rounded-full flex items-center justify-center ${getAvatarColor(
+                            member?.userId.name
+                          )} `}
+                        >
+                          {getAvatarFallbackText(member?.userId.name)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col">

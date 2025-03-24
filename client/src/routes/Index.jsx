@@ -16,8 +16,8 @@ import JoinWorkspace from "@/components/invitation/JoinWorkspace";
 import Dashboard from "@/pages/workspace/Dashboard";
 import ProjectDetails from "@/pages/workspace/ProjectDetails";
 import Tasks from "@/pages/workspace/Tasks";
-import TaskDetails from "@/components/tasks/details/TaskDetails";
-import TaskDetailsPage from "@/pages/workspace/TaskDetailsPage";
+// import TaskDetails from "@/components/tasks/details/TaskDetails";
+// import TaskDetailsPage from "@/pages/workspace/TaskDetailsPage";
 
 const AppRoutes = () => {
   return (
@@ -37,12 +37,12 @@ const AppRoutes = () => {
           <Route path="/workspaces/create" element={<WorkspaceFormCard />} />
           <Route path="/workspaces/:workspaceId" element={<WorkspaceLayout />}>
             <Route index element={<Dashboard />} />
-            <Route path="settings" element={<Settings />} />
             <Route path="members" element={<Members />} />
-            <Route path="tasks" element={<Tasks />} />
+            <Route path="settings" element={<Settings />} />
+            {/* <Route path="tasks" element={<Tasks />} /> */}
             <Route path="profile" element={<UserProfile />} />
-            <Route path="project/:projectId" element={<ProjectDetails />} />
-            <Route path="tasks/:taskId" element={<TaskDetailsPage />} />
+            <Route path="projects/:projectId" element={<ProjectDetails />} />
+            {/* <Route path="tasks/:taskId" element={<TaskDetailsPage />} /> */}
           </Route>
         </Route>
         <Route

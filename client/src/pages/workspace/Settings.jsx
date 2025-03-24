@@ -48,6 +48,7 @@ const Settings = () => {
       setLoading(true);
       await deleteWorkspace(workspaceId, navigate);
       toast({
+        variant: "success",
         description: "Workspace deleted successfully.",
       });
       setLoading(false);
@@ -74,11 +75,8 @@ const Settings = () => {
             <CardTitle className="text-xl font-bold">
               Update your workspace
             </CardTitle>
-            <CardDescription>Update workspace data</CardDescription>
           </CardHeader>
-          <div className="px-7">
-            <DottedSeperator />
-          </div>
+          <DottedSeperator className="px-7" />
           <CardContent className="px-7 py-5">
             {loading ? (
               <Loader className="animate-spin mx-auto" />
@@ -121,7 +119,7 @@ const Settings = () => {
 
       <ConfirmationDilog
         title="Delete Workspace"
-        description="Are you sure you want to delete this item? This action cannot be undone."
+        description="Are you sure you want to delete this item? This action cannot be undone"
         confirmText="Delete"
         open={openWorkspaceDeleteDiolg}
         onOpenChange={setOpenWorkspaceDeleteDiolg}

@@ -1,5 +1,5 @@
 import { Sidebar, SidebarContent, useSidebar } from "../ui/sidebar";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { SidebarHeader } from "../ui/sidebar";
 import logo from "../../assets/logo.svg";
 import logoIcon from "../../assets/logoIcon.svg";
@@ -7,9 +7,17 @@ import Navigation from "./Navigation";
 import DottedSeperator from "../common/DottedSeperator";
 import WorkSpaceSwitcher from "./WorkSpaceSwitcher";
 import NavProjects from "./NavProjects";
+import { useEffect } from "react";
+import { useProjectStore } from "@/store/projectStore";
 
 const AppSidebar = ({ ...props }) => {
   const { state } = useSidebar();
+  const { getAllProjects } = useProjectStore();
+  const { workspaceId } = useParams();
+
+  useEffect(() => {
+    getAllProjects(workspaceId);
+  }, [workspaceId]);
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -19,22 +27,16 @@ const AppSidebar = ({ ...props }) => {
             src={state === "collapsed" ? logoIcon : logo}
             alt=""
             height={48}
-            width={state === "collapsed" ? 40 : 200}
+            width={state === "collapsed" ? 50 : 142}
           />
         </Link>
-        <DottedSeperator />
+        <DottedSeperator className="mb-1" />
         <WorkSpaceSwitcher />
-        <DottedSeperator />
+        <DottedSeperator className="mt-1" />
       </SidebarHeader>
 
       <SidebarContent>
         <Navigation />
-        {state !== "collapsed" && (
-          <div className="px-2">
-            <DottedSeperator />
-          </div>
-        )}
-        <NavProjects />
       </SidebarContent>
     </Sidebar>
   );

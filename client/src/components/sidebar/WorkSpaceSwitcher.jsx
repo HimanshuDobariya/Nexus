@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
 import { Button } from "../ui/button";
+import { useProjectStore } from "@/store/projectStore";
 
 const WorkSpaceSwitcher = () => {
   const {
@@ -35,7 +36,7 @@ const WorkSpaceSwitcher = () => {
   const [currentWorkspace, setCurrentWorkspace] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const getWorkspaceCurrentWorkspace = async () => {
+  const getCurrentWorkspace = async () => {
     if (!activeWorkspaceId) return;
     try {
       setLoading(true);
@@ -49,7 +50,7 @@ const WorkSpaceSwitcher = () => {
   };
 
   useEffect(() => {
-    getWorkspaceCurrentWorkspace();
+    getCurrentWorkspace();
   }, [activeWorkspaceId, workspaces]);
 
   useEffect(() => {
@@ -72,21 +73,9 @@ const WorkSpaceSwitcher = () => {
     <>
       <SidebarMenu>
         {state !== "collapsed" && (
-          <div className="flex items-center justify-between my-1">
-            <p className="text-sm font-medium uppercase text-neutral-500">
-              Workspaces
-            </p>
-
-            <Button
-              asChild
-              className="flex size-6 p-1 items-center justify-center rounded-md border bg-background cursor-pointer text-neutral-700"
-              onClick={() => {
-                setOpen(true);
-              }}
-            >
-              <Plus className="size-4" />
-            </Button>
-          </div>
+          <p className="text-xs font-medium uppercase text-neutral-500">
+            Workspaces
+          </p>
         )}
         <SidebarMenuItem>
           <DropdownMenu>
@@ -163,10 +152,14 @@ const WorkSpaceSwitcher = () => {
                         )}
                       </Avatar>
                     </div>
-                    <span className="font-medium"> {workspace.name}</span>
-                    <DropdownMenuShortcut>
-                      Alt + {index + 1}
-                    </DropdownMenuShortcut>
+                    <div className="flex items-center gap-3 justify-between w-full">
+                      <span className="font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[70%]">
+                        {workspace.name}
+                      </span>
+                      <DropdownMenuShortcut>
+                        Alt + {index + 1}
+                      </DropdownMenuShortcut>
+                    </div>
                   </DropdownMenuItem>
                 ))}
               <DropdownMenuSeparator />

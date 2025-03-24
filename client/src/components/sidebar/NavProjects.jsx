@@ -37,12 +37,11 @@ import { cn } from "@/lib/utils";
 const NavProjects = () => {
   const { isMobile } = useSidebar();
   const [openProjectModal, setOpenProjectModal] = useState(false);
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const navigate = useNavigate();
   const { workspaceId } = useParams();
   const { getAllProjects, projects, deleteProject } = useProjectStore();
-  const [loading, setLoading] = useState(false);
   const location = useLocation();
 
   const fetchProjectsOfWorkspace = async () => {
@@ -199,18 +198,7 @@ const NavProjects = () => {
       </SidebarMenu>
 
       <ProjectForm open={openProjectModal} setOpen={setOpenProjectModal} />
-      <ConfirmationDilog
-        title="Are you sure to delete project?"
-        description="This action delete project and task associated with project"
-        confirmText="Delete"
-        open={openConfirmDialog}
-        onOpenChange={setOpenConfirmDialog}
-        handleConfirm={handleDeleteProject}
-        handleCancel={() => {
-          setOpenConfirmDialog(false);
-        }}
-        loading={loading}
-      />
+      
     </SidebarGroup>
   );
 };

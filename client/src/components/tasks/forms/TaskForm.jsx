@@ -25,8 +25,6 @@ import { useEffect, useState } from "react";
 import { useTaskStore } from "@/store/taskStore";
 import { useProjectStore } from "@/store/projectStore";
 import axios from "axios";
-import { getAvatarColor } from "@/components/avatar/getAvatarColor";
-import { getAvatarFallbackText } from "@/components/avatar/getAvatarFallback";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Popover,
@@ -37,6 +35,7 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { CalendarIcon, Loader } from "lucide-react";
+import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 
 const taskSchema = z.object({
   title: z.string().trim().min(1, { message: "Task name is required." }),

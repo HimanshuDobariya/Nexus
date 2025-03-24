@@ -1,5 +1,4 @@
-import { getAvatarColor } from "@/components/avatar/getAvatarColor";
-import { getAvatarFallbackText } from "@/components/avatar/getAvatarFallback";
+import { getAvatarFallbackText, getAvatarColor } from "@/lib/avatar.utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";

@@ -1,8 +1,7 @@
-import { getAvatarColor } from "@/components/avatar/getAvatarColor";
-import { getAvatarFallbackText } from "@/components/avatar/getAvatarFallback";
 import { TaskStatusEnum } from "@/components/enums/TaskEnums";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 import { cn } from "@/lib/utils";
 import { Flag } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";

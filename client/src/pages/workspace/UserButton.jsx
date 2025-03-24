@@ -12,8 +12,7 @@ import DottedSeperator from "@/components/common/DottedSeperator";
 import { useAuthStore } from "@/store/authStore";
 import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
 import { useNavigate, useParams } from "react-router-dom";
-import { getAvatarFallbackText } from "@/components/avatar/getAvatarFallback";
-import { getAvatarColor } from "@/components/avatar/getAvatarColor";
+import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 
 const UserButton = () => {
   const { profile, loading, getProfile } = useProfileStore();

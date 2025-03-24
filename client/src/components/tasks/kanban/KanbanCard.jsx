@@ -1,5 +1,3 @@
-import { getAvatarColor } from "@/components/avatar/getAvatarColor";
-import { getAvatarFallbackText } from "@/components/avatar/getAvatarFallback";
 import DottedSeperator from "@/components/common/DottedSeperator";
 import { Avatar } from "@/components/ui/avatar";
 import { AvatarFallback } from "@radix-ui/react-avatar";
@@ -11,6 +9,7 @@ import clsx from "clsx";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
 import TaskDetailsDilalog from "../details/TaskDetailsDilalog";
+import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 
 const KanbanCard = ({ task }) => {
   const avatarFallbakText = getAvatarFallbackText(task?.assignedTo?.name);

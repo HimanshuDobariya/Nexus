@@ -1,9 +1,6 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
 import ColumnHeader from "./ColumnHeader";
 import { Badge } from "@/components/ui/badge";
-import { getAvatarFallbackText } from "@/components/avatar/getAvatarFallback";
-import { getAvatarColor } from "@/components/avatar/GetAvatarColor";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { priorities, statuses } from "./data";
@@ -11,6 +8,7 @@ import TaskAction from "../TaskAction";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 
 const columnHelper = createColumnHelper();
 

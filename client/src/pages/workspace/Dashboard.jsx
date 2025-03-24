@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import ProjectForm from "@/components/project/ProjectForm";
 import Header from "../../components/common/Header";
 import WorkspaceAnalytics from "@/components/workspace/WorkspaceAnalytics";
 import { useProjectStore } from "@/store/projectStore";
 import { useParams } from "react-router-dom";
+import CreateProjectDialog from "@/components/project/CreateProjectDialog";
 
 const Dashboard = () => {
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [openCreateProjectDialog, setOpenCreateProjectDialog] = useState(false);
   const { workspaceId } = useParams();
   const { getAllProjects } = useProjectStore();
 
@@ -26,7 +26,7 @@ const Dashboard = () => {
           />
           <Button
             onClick={() => {
-              setIsFormOpen(true);
+              setOpenCreateProjectDialog(true);
             }}
           >
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -34,9 +34,12 @@ const Dashboard = () => {
           </Button>
         </div>
 
-        <WorkspaceAnalytics />
+        {/* <WorkspaceAnalytics /> */}
       </main>
-      <ProjectForm open={isFormOpen} setOpen={setIsFormOpen} />
+      <CreateProjectDialog
+        open={openCreateProjectDialog}
+        setOpen={setOpenCreateProjectDialog}
+      />
     </>
   );
 };

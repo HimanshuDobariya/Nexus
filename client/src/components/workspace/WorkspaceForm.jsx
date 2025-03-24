@@ -76,6 +76,7 @@ const WorkspaceForm = ({ mode, initialData, setOpen }) => {
         }
         setLoading(false);
         toast({
+          variant: "success",
           description: "Workspace created successfully!",
         });
       }
@@ -84,6 +85,7 @@ const WorkspaceForm = ({ mode, initialData, setOpen }) => {
         await updateWorkspace(activeWorkspaceId, formData);
         setLoading(false);
         toast({
+          variant: "success",
           description: "Workspace Update successfully!",
         });
       }

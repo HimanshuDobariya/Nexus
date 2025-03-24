@@ -5,11 +5,10 @@ import axios from "axios";
 import Comment from "./Comment";
 import CommentForm from "./CommentForm";
 import { useProfileStore } from "@/store/profileStore";
-import { getAvatarFallbackText } from "@/components/avatar/getAvatarFallback";
-import { getAvatarColor } from "@/components/avatar/getAvatarColor";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
 import DottedSeperator from "@/components/common/DottedSeperator";
+import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 
 const API_URL = `${import.meta.env.VITE_SERVER_URL}/api/comments`;
 
