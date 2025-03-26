@@ -3,12 +3,16 @@ import { TaskStatusEnum } from "@/components/enums/TaskEnums";
 import { useCallback, useEffect, useState } from "react";
 import KanbanColumnHeader from "./KanbanColumnHeader";
 import KanbanCard from "./KanbanCard";
-import { useParams } from "react-router-dom";
-import { useTaskStore } from "@/store/taskStore";
+import TaskDetailsDilalog from "../details/TaskDetailsDilalog";
 
 const KanabnBoard = ({ data = [], onChange }) => {
-  const { updateTask } = useTaskStore();
-  const { workspaceId } = useParams();
+  const [openTaskDetailsDialod, setOpenTaskDetailsDailog] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
+
+  const handleCardClick = (id) => {
+    setSelectedTaskId(id);
+    setOpenTaskDetailsDailog(true);
+  };
 
   const boards = [
     TaskStatusEnum.BACKLOG,
@@ -134,51 +138,62 @@ const KanabnBoard = ({ data = [], onChange }) => {
   );
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <div className="w-full grid grid-cols-1 overflow-x-auto">
-        <div className="flex gap-2">
-          {boards.map((board) => (
-            <div
-              key={board}
-              className="min-h-[200px] bg-muted p-1.5 rounded-md min-w-[300px] w-full"
-            >
-              <KanbanColumnHeader
-                board={board}
-                taskCount={tasks[board].length}
-              />
-              <Droppable droppableId={board}>
-                {(provided) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="min-h-[200px] py-1.5"
-                  >
-                    {tasks[board].map((task, index) => (
-                      <Draggable
-                        key={task._id}
-                        draggableId={task._id}
-                        index={index}
-                      >
-                        {(provided) => (
-                          <div
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            ref={provided.innerRef}
-                          >
-                            <KanbanCard task={task} />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </div>
-          ))}
+    <>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div className="w-full grid grid-cols-1 overflow-x-auto">
+          <div className="flex gap-2">
+            {boards.map((board) => (
+              <div
+                key={board}
+                className="min-h-[200px] bg-muted p-1.5 rounded-md min-w-[300px] w-full"
+              >
+                <KanbanColumnHeader
+                  board={board}
+                  taskCount={tasks[board].length}
+                />
+                <Droppable droppableId={board}>
+                  {(provided) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="min-h-[200px] py-1.5"
+                    >
+                      {tasks[board].map((task, index) => (
+                        <Draggable
+                          key={task._id}
+                          draggableId={task._id}
+                          index={index}
+                        >
+                          {(provided) => (
+                            <div
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              ref={provided.innerRef}
+                              onClick={() => handleCardClick(task._id)}
+                            >
+                              <KanbanCard task={task} />
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-    </DragDropContext>
+      </DragDropContext>
+
+      {selectedTaskId && (
+        <TaskDetailsDilalog
+          open={openTaskDetailsDialod}
+          setOpen={setOpenTaskDetailsDailog}
+          taskId={selectedTaskId}
+        />
+      )}
+    </>
   );
 };
 export default KanabnBoard;

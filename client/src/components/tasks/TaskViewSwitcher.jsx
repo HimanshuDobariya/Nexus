@@ -4,15 +4,15 @@ import { Loader, PlusIcon } from "lucide-react";
 import DottedSeperator from "../common/DottedSeperator";
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { getColumns } from "./table/Columns";
 import DataTable from "./table/DataTable";
 import { useTaskStore } from "@/store/taskStore";
-import DataFilters from "./DataFilters";
 import KanabnBoard from "./kanban/KanabnBoard";
 import CreateTaskDailog from "./forms/CreateTaskDialog";
 import axios from "axios";
 import DataCalander from "./calendar/DataCalander";
 import { useProjectStore } from "@/store/projectStore";
+import columns from "./table/Columns";
+import DataFilters from "./DataFilters";
 
 const TaskViewSwitcher = () => {
   const [openCreateTaskForm, setOpenCreateTaskForm] = useState(false);
@@ -23,10 +23,8 @@ const TaskViewSwitcher = () => {
   const [totalCount, setTotalCount] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const { projects } = useProjectStore();
 
   const initialFilters = {
-    projectId: projectId || "",
     status: "",
     priority: "",
     assignedTo: "",
@@ -35,19 +33,18 @@ const TaskViewSwitcher = () => {
   };
 
   const [filters, setFilters] = useState(initialFilters);
-  const columns = getColumns(projectId);
 
   const [currentTab, setCurrentTab] = useState(
     searchParams.get("task-view") || "table"
   );
   const handleTabChange = (value) => {
-    const newParams = new URLSearchParams(searchParams);
-    if (value === "table") {
-      newParams.delete("task-view");
-    } else {
-      newParams.set("task-view", value);
-    }
     setCurrentTab(value);
+
+    const newParams = new URLSearchParams(searchParams);
+    value === "table"
+      ? newParams.delete("task-view")
+      : newParams.set("task-view", value);
+
     setSearchParams(newParams);
     setFilters(initialFilters);
   };
@@ -79,7 +76,7 @@ const TaskViewSwitcher = () => {
     const fetchAllTasks = async () => {
       try {
         setLoading(true);
-        const data = await getAllTasks(workspaceId, {
+        const data = await getAllTasks(workspaceId, projectId, {
           pageNumber,
           pageSize,
           ...filters,
@@ -93,12 +90,6 @@ const TaskViewSwitcher = () => {
     };
     fetchAllTasks();
   }, [pageNumber, pageSize, filters]);
-
-  useEffect(() => {
-    setFilters(initialFilters);
-    setPageNumber(1);
-    setPageSize(10);
-  }, [projectId]);
 
   return (
     <>
@@ -124,10 +115,6 @@ const TaskViewSwitcher = () => {
               size="sm"
               className="w-full lg:w-auto"
               onClick={() => {
-                if (!projects.length) {
-                  alert("You have to first create project.");
-                  return;
-                }
                 setOpenCreateTaskForm(true);
               }}
             >

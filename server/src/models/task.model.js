@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { generateTaskCode } from "../utils/uuid.js";
 import { TaskStatusEnum, TaskPriorityEnum } from "../enums/task.enum.js";
 
 const TaskScheme = new mongoose.Schema(
@@ -7,7 +6,7 @@ const TaskScheme = new mongoose.Schema(
     taskCode: {
       type: String,
       unique: true,
-      default: generateTaskCode,
+      required: true,
     },
     title: {
       type: String,

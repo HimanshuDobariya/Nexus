@@ -34,8 +34,9 @@ import {
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon, Loader } from "lucide-react";
+import { CalendarIcon, Loader, User } from "lucide-react";
 import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
+import { priorities, statuses } from "../data";
 
 const taskSchema = z.object({
   title: z.string().trim().min(1, { message: "Task name is required." }),
@@ -44,8 +45,7 @@ const taskSchema = z.object({
   priority: z.string().optional(),
   assignedTo: z.string().optional().nullable(),
   dueDate: z.date().optional().nullable(),
-  projectId: z.string({ required_error: "Please select project." }),
-});
+  });
 
 const TaskForm = ({
   onSubmit,
@@ -54,9 +54,8 @@ const TaskForm = ({
   mode = "",
   initialData = null,
 }) => {
-  const { workspaceId, projectId: paramasProjectId } = useParams();
+  const { workspaceId } = useParams();
   const [members, setMembers] = useState([]);
-  const { projects } = useProjectStore();
 
   const form = useForm({
     resolver: zodResolver(taskSchema),
@@ -65,7 +64,6 @@ const TaskForm = ({
       description: initialData?.description || "",
       status: initialData?.status || TaskStatusEnum.TODO,
       priority: initialData?.priority || TaskPriorityEnum.MEDIUM,
-      projectId: initialData?.project?._id || paramasProjectId || undefined,
       assignedTo: initialData?.assignedTo?._id || undefined,
       dueDate:
         (initialData?.dueDate && new Date(initialData?.dueDate)) || undefined,
@@ -88,14 +86,6 @@ const TaskForm = ({
     getWorkSpaceMembers();
   }, []);
 
-  const capitalizeString = (status) => {
-    return status
-      .toLowerCase()
-      .replaceAll("_", " ")
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -141,9 +131,12 @@ const TaskForm = ({
                         <SelectValue placeholder="Select Task Status" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.values(TaskStatusEnum).map((status) => (
-                          <SelectItem key={status} value={status}>
-                            {capitalizeString(status)}
+                        {statuses.map((status) => (
+                          <SelectItem key={status.value} value={status.value}>
+                            <span className=" flex items-center gap-2">
+                              <status.icon className="size-4" />
+                              {status.label}
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -166,9 +159,12 @@ const TaskForm = ({
                       <SelectValue placeholder="Select Task Priority" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.values(TaskPriorityEnum).map((priority) => (
-                        <SelectItem key={priority} value={priority}>
-                          {capitalizeString(priority)}
+                      {priorities.map((priority) => (
+                        <SelectItem key={priority.value} value={priority.value}>
+                          <span className=" flex items-center gap-2">
+                            <priority.icon className="size-4" />
+                            {priority.label}
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -189,7 +185,14 @@ const TaskForm = ({
               <FormControl>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select Assignee" />
+                    <SelectValue
+                      placeholder={
+                        <span className="flex items-center">
+                          <User className="size-4 mr-2" />
+                          Assigned To
+                        </span>
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <div className="w-full max-h-[200px] overflow-y-auto">
@@ -219,36 +222,6 @@ const TaskForm = ({
             </FormItem>
           )}
         />
-
-        {!paramasProjectId && (
-          <FormField
-            control={form.control}
-            name="projectId"
-            render={({ field }) => (
-              <FormItem className="relative !mb-6">
-                <FormLabel>Project</FormLabel>
-                <FormControl>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a Project" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {projects.map((project) => (
-                        <SelectItem key={project._id} value={project._id}>
-                          <span className="text-xl">{project.emoji}</span>
-                          <span className="text-[16px] ml-1">
-                            {project.name}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage className="error-msg" />
-              </FormItem>
-            )}
-          />
-        )}
 
         <FormField
           control={form.control}

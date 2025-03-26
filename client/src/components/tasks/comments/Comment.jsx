@@ -1,6 +1,6 @@
 import { getAvatarFallbackText, getAvatarColor } from "@/lib/avatar.utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import CommentForm from "./CommentForm";
@@ -21,7 +21,9 @@ const Comment = ({ comment, currentUserId, onUpdate, onDelete }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const formatTimestamp = (comment) => {
-    return formatDistanceToNow(new Date(comment.updatedAt || comment.createdAt), { addSuffix: true });
+    const date = new Date(comment.updatedAt || comment.createdAt);
+    return format(date, 'dd/MM/yyyy, hh:mm a'); 
+    // return format(date, 'PPpp')
   };
 
   const handleUpdate = async (data) => {

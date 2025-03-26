@@ -3,19 +3,14 @@ import { Avatar } from "@/components/ui/avatar";
 import { AvatarFallback } from "@radix-ui/react-avatar";
 import TaskAction from "../TaskAction";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Flag, MoreHorizontal, User } from "lucide-react";
+import { Calendar, MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import clsx from "clsx";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { useState } from "react";
-import TaskDetailsDilalog from "../details/TaskDetailsDilalog";
 import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 
 const KanbanCard = ({ task }) => {
   const avatarFallbakText = getAvatarFallbackText(task?.assignedTo?.name);
   const avatarColor = getAvatarColor(task?.assignedTo?.name || "");
-  const { projectId: paramsProjectId } = useParams();
-  const [openTaskDetailsDialod, setOpenTaskDetailsDailog] = useState(false);
 
   const formatDate = (date) => {
     if (!date) return;
@@ -36,7 +31,7 @@ const KanbanCard = ({ task }) => {
             "border-pink-400": task.status === "BACKLOG",
             "border-red-400": task.status === "TODO",
             "border-yellow-400": task.status === "IN_PROGRESS",
-            "border-emerald-400": task.status === "IN_REVIEW",
+            "border-blue-400": task.status === "IN_REVIEW",
           }
         )}
       >
@@ -55,31 +50,15 @@ const KanbanCard = ({ task }) => {
               </Button>
             </TaskAction>
           </div>
-          <h3
-            onClick={() => {
-              setOpenTaskDetailsDailog(true);
-            }}
-            className="text-lg font-medium hover:underline cursor-pointer"
-          >
-            {task.title}
-          </h3>
+          <h3 className="text-lg font-medium ">{task.title}</h3>
           <DottedSeperator />
         </div>
 
-        <div className="flex items-center justify-between gap-x-2">
-          {!paramsProjectId && (
-            <div className="flex items-center space-x-2 text-gray-600">
-              {<span>{task.project.emoji}</span>}
-              <span className="font-medium">{task.project.name}</span>
-            </div>
-          )}
-
-          {task.priority && (
-            <div className="flex items-center space-x-2 text-sm text-red-500 font-medium">
-              <Badge variant="secondary">{task.priority}</Badge>
-            </div>
-          )}
-        </div>
+        {task.priority && (
+          <div className="flex items-center space-x-2 text-sm text-red-500 font-medium">
+            <Badge variant="secondary">{task.priority}</Badge>
+          </div>
+        )}
 
         {task.dueDate && (
           <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -103,13 +82,6 @@ const KanbanCard = ({ task }) => {
           </div>
         )}
       </div>
-
-      <TaskDetailsDilalog
-        open={openTaskDetailsDialod}
-        setOpen={setOpenTaskDetailsDailog}
-        taskId={task?._id}
-        projectId={task?.project._id}
-      />
     </>
   );
 };

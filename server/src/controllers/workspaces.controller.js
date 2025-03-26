@@ -75,8 +75,17 @@ export const getWorkspaces = async (req, res) => {
     const workspaces = memberships
       .map((membership) => membership.workspaceId)
       .map((workspace) => {
-        return { ...workspace._doc, inviteCode: decrypt(workspace.inviteCode) };
+        return {
+          ...workspace?._doc,
+          inviteCode: workspace?.inviteCode
+            ? decrypt(workspace?.inviteCode)
+            : null,
+        };
       });
+
+    if (!workspaces) {
+      res.status(404).json({ message: "No Workspaces Found" });
+    }
     res.status(200).json({ workspaces });
   } catch (error) {
     console.error(error);

@@ -5,12 +5,6 @@ import { useProjectStore } from "@/store/projectStore";
 import { Edit2, Loader } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 const ProjectDetails = () => {
   const { projectId, workspaceId } = useParams();
@@ -51,30 +45,17 @@ const ProjectDetails = () => {
     <>
       <div className="px-2 max-w-screen-2xl mx-auto">
         <div className="flex w-full items-center justify-between gap-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <h2 className="flex items-center gap-2">
-                  <span className="text-xl sm:text-3xl">
-                    {currentProject?.emoji || "📊"}
-                  </span>
-                  <span className="text-xl sm:text-2xl font-medium ">
-                    {currentProject?.name || "Untitled project"}
-                  </span>
-                </h2>
-              </TooltipTrigger>
-              {currentProject?.description && (
-                <TooltipContent
-                  side="right"
-                  align="center"
-                  sideOffset={10}
-                  className="bg-muted text-primary px-3 py-2 rounded-md shadow-lg font-medium max-w-60"
-                >
-                  <p>{currentProject?.description}</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
+          <div className="flex gap-2">
+            <span className="text-2xl sm:text-4xl">
+              {currentProject?.emoji || "📊"}
+            </span>
+            <div className="">
+              <h2 className="text-xl sm:text-2xl font-medium ">
+                {currentProject?.name || "Untitled project"}
+              </h2>
+              <p className="text-neutral-600 text-sm">{currentProject?.description}</p>
+            </div>
+          </div>
           <Button
             variant="outline"
             className="!mt-0 px-2 md:px-4 py-1 text-xs sm:text-[14px]"

@@ -20,16 +20,12 @@ const CreateTaskDailog = ({ open, setOpen, initialData }) => {
   const handleCreateTask = async (data) => {
     setLoading(true);
     try {
-      await createTask(workspaceId, data.projectId, data);
-
+      await createTask(workspaceId, projectId, data);
+      await getAllTasks(workspaceId, projectId);
       toast({
+        variant: "success",
         description: "Task created successfully.",
       });
-      if (projectId) {
-        await getAllTasks(workspaceId, { projectId });
-      } else {
-        await getAllTasks(workspaceId);
-      }
       setLoading(false);
       setOpen(false);
     } catch (error) {
@@ -47,7 +43,7 @@ const CreateTaskDailog = ({ open, setOpen, initialData }) => {
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create a new task</DialogTitle>
-          <DialogDescription>Add task in your project.</DialogDescription>
+          <DialogDescription>Add task in your project</DialogDescription>
         </DialogHeader>
         <DottedSeperator />
         <TaskForm

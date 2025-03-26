@@ -15,11 +15,10 @@ import Members from "@/pages/workspace/Members";
 import JoinWorkspace from "@/components/invitation/JoinWorkspace";
 import Dashboard from "@/pages/workspace/Dashboard";
 import ProjectDetails from "@/pages/workspace/ProjectDetails";
-import Tasks from "@/pages/workspace/Tasks";
-// import TaskDetails from "@/components/tasks/details/TaskDetails";
-// import TaskDetailsPage from "@/pages/workspace/TaskDetailsPage";
+import TaskDetailsPage from "@/components/tasks/details/TaskDetailsPage";
 
 const AppRoutes = () => {
+  
   return (
     <BrowserRouter>
       <Routes>
@@ -34,17 +33,20 @@ const AppRoutes = () => {
         </Route>
 
         <Route path="/" element={<ProtectedRoutes />}>
-          <Route path="/workspaces/create" element={<WorkspaceFormCard />} />
-          <Route path="/workspaces/:workspaceId" element={<WorkspaceLayout />}>
+          <Route path="workspaces/create" element={<WorkspaceFormCard />} />
+          <Route path="workspaces/:workspaceId" element={<WorkspaceLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="members" element={<Members />} />
             <Route path="settings" element={<Settings />} />
-            {/* <Route path="tasks" element={<Tasks />} /> */}
             <Route path="profile" element={<UserProfile />} />
             <Route path="projects/:projectId" element={<ProjectDetails />} />
-            {/* <Route path="tasks/:taskId" element={<TaskDetailsPage />} /> */}
+            <Route
+              path="projects/:projectId/tasks/:taskId"
+              element={<TaskDetailsPage />}
+            />
           </Route>
         </Route>
+
         <Route
           path="workspaces/:workspaceId/join/:inviteCode"
           element={<JoinWorkspace />}

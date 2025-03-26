@@ -20,20 +20,13 @@ const EditTaskDialog = ({ open, setOpen, initialData }) => {
   const handleEditTask = async (data) => {
     setLoading(true);
     try {
-      await updateTask(
-        workspaceId,
-        projectId || initialData?.project._id,
-        initialData._id,
-        data
-      );
+      await updateTask(workspaceId, projectId, initialData._id, data);
+      await getAllTasks(workspaceId, projectId);
       toast({
+        variant: "success",
         description: "Task update successfully.",
       });
-      if (projectId) {
-        await getAllTasks(workspaceId, { projectId });
-      } else {
-        await getAllTasks(workspaceId);
-      }
+
       setLoading(false);
       setOpen(false);
     } catch (error) {
@@ -49,7 +42,13 @@ const EditTaskDialog = ({ open, setOpen, initialData }) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="sm:max-w-[500px] z-50 max-h-[90vh] overflow-y-auto"
+        onClick={(e) => {
+          e.stopPropagation();
+          e.nativeEvent.stopImmediatePropagation();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
           <DialogDescription>Update your task data.</DialogDescription>

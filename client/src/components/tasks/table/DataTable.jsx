@@ -16,6 +16,15 @@ import {
 import { useState } from "react";
 import { flexRender } from "@tanstack/react-table";
 import TablePagination from "./TablePagination";
+import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 
 const DataTable = ({
   columns,
@@ -29,6 +38,7 @@ const DataTable = ({
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const { pageNumber, pageSize, totalCount } = pagination;
+  const navigate = useNavigate();
   const table = useReactTable({
     data,
     columns,
@@ -49,7 +59,33 @@ const DataTable = ({
   });
 
   return (
-    <div>
+    <div className="space-y-4">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="flex ml-auto items-center gap-2">
+            Columns
+            <ChevronDown />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {table
+            .getAllColumns()
+            .filter((column) => column.getCanHide())
+            .map((column) => {
+              return (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className="capitalize"
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                >
+                  {column.columnDef.meta?.label || column.id}
+                </DropdownMenuCheckboxItem>
+              );
+            })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       <div className="border rounded-md grid grid-cols-1 overflow-auto">
         <Table>
           <TableHeader>
@@ -74,7 +110,12 @@ const DataTable = ({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="hover:bg-gray-100"
+                  className="hover:bg-gray-100 cursor-pointer"
+                  onClick={() => {
+                    navigate(
+                      `/workspaces/${row.original?.workspace}/projects/${row.original?.project._id}/tasks/${row.original?._id}`
+                    );
+                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
@@ -102,7 +143,7 @@ const DataTable = ({
           </TableBody>
         </Table>
       </div>
-      <div className="mt-4">
+      <div>
         <TablePagination
           pageNumber={pageNumber}
           pageSize={pageSize}

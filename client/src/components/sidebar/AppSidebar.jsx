@@ -6,7 +6,6 @@ import logoIcon from "../../assets/logoIcon.svg";
 import Navigation from "./Navigation";
 import DottedSeperator from "../common/DottedSeperator";
 import WorkSpaceSwitcher from "./WorkSpaceSwitcher";
-import NavProjects from "./NavProjects";
 import { useEffect } from "react";
 import { useProjectStore } from "@/store/projectStore";
 

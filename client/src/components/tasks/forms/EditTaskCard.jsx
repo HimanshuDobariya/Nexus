@@ -12,25 +12,26 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
-const EditTaskCard = ({ task, setIsEditing, setProjectId }) => {
-  const { updateTask } = useTaskStore();
+const EditTaskCard = ({ task, setIsEditMode }) => {
+  const { updateTask, getTaskById } = useTaskStore();
   const [loading, setLoading] = useState(false);
   const { workspaceId } = useParams();
 
   const handleEditTask = async (data) => {
-    setProjectId(data.projectId);
     setLoading(true);
     try {
       await updateTask(workspaceId, task.project._id, task._id, data);
+      await getTaskById(workspaceId, task.project._id, task._id);
       toast({
+        variant: "success",
         description: "Task update successfully.",
       });
       setLoading(false);
-      setIsEditing(false);
+      setIsEditMode(false);
     } catch (error) {
       console.log(error);
       setLoading(false);
-      setIsEditing(false);
+      setIsEditMode(false);
       toast({
         variant: "destructive",
         description: error.response?.data.message || `Failed to update task.`,
@@ -51,7 +52,7 @@ const EditTaskCard = ({ task, setIsEditing, setProjectId }) => {
           onSubmit={handleEditTask}
           loading={loading}
           onCancel={() => {
-            setIsEditing(false);
+            setIsEditMode(false);
           }}
           mode="edit"
           initialData={task}

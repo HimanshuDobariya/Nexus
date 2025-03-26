@@ -39,7 +39,7 @@ export const useWorkspaceStore = create((set) => ({
           null;
 
         if (validWorkspace) {
-          localStorage.setItem("activeWorkspaceId", validWorkspace._id);
+          localStorage.setItem("activeWorkspaceId", validWorkspace?._id);
         } else {
           localStorage.removeItem("activeWorkspaceId");
         }

@@ -10,16 +10,9 @@ import { TaskPriorityEnum, TaskStatusEnum } from "../enums/task.enum.js";
 export const createTask = async (req, res) => {
   try {
     const { userId } = req;
-    const {
-      title,
-      description,
-      status,
-      priority,
-      assignedTo,
-      dueDate,
-      projectId,
-    } = req.body;
-    const { workspaceId } = req.params;
+    const { title, description, status, priority, assignedTo, dueDate } =
+      req.body;
+    const { projectId, workspaceId } = req.params;
 
     const { role } = await getMemberRoleInWorkspace(workspaceId, userId);
     await checkPermission(role, [Permissions.CREATE_TASK]);
@@ -62,6 +55,20 @@ export const createTask = async (req, res) => {
       });
     }
 
+    let nextNumber = 1;
+    const lastTask = await Task.findOne({ project: projectId })
+      .sort({ createdAt: -1 })
+      .select("taskCode");
+
+    if (lastTask && lastTask.taskCode) {
+      const match = lastTask.taskCode.match(/-(\d+)$/);
+      if (match) {
+        nextNumber = parseInt(match[1], 10) + 1;
+      }
+    }
+
+    const taskCode = `${project.projectKey}-${nextNumber}`;
+
     const task = new Task({
       title,
       description,
@@ -73,6 +80,7 @@ export const createTask = async (req, res) => {
       assignedTo,
       dueDate,
       position: newPosition,
+      taskCode,
     });
 
     await task.save();
@@ -90,15 +98,15 @@ export const createTask = async (req, res) => {
 export const getAllTasks = async (req, res) => {
   try {
     const { userId } = req;
-    const { workspaceId } = req.params;
+    const { workspaceId, projectId } = req.params;
 
     const filters = {
-      projectId: req.query.projectId || undefined,
-      status: req.query.status ? req.query.status?.split(",") : undefined,
-      priority: req.query.priority ? req.query.priority?.split(",") : undefined,
-      assignedTo: req.query.assignedTo
-        ? req.query.assignedTo?.split(",")
-        : undefined,
+      status: req.query.status || undefined,
+      priority: req.query.priority || undefined,
+      assignedTo:
+        req.query.assignedTo === "null"
+          ? null
+          : req.query.assignedTo || undefined,
       keyword: req.query.keyword || undefined,
       dueDate: req.query.dueDate || undefined,
     };
@@ -113,21 +121,19 @@ export const getAllTasks = async (req, res) => {
 
     const query = {
       workspace: workspaceId,
+      project: projectId,
     };
 
-    if (filters.projectId) {
-      query.project = filters.projectId;
-    }
-    if (filters.status && filters?.status.length > 0) {
-      query.status = { $in: filters.status };
+    if (filters.status) {
+      query.status = filters.status;
     }
 
-    if (filters.priority && filters.priority?.length > 0) {
-      query.priority = { $in: filters.priority };
+    if (filters.priority) {
+      query.priority = filters.priority;
     }
 
-    if (filters.assignedTo && filters.assignedTo?.length > 0) {
-      query.assignedTo = { $in: filters.assignedTo };
+    if (filters.assignedTo !== undefined) {
+      query.assignedTo = filters.assignedTo;
     }
 
     if (filters.keyword) {
@@ -288,18 +294,19 @@ export const updateTask = async (req, res) => {
 export const deleteTaskTask = async (req, res) => {
   try {
     const { userId } = req;
-    const { id: taskId, workspaceId } = req.params;
+    const { id: taskId, workspaceId, projectId } = req.params;
 
     const { role } = await getMemberRoleInWorkspace(workspaceId, userId);
     await checkPermission(role, [Permissions.DELETE_TASK]);
     const task = await Task.findOneAndDelete({
       _id: taskId,
+      project: projectId,
       workspace: workspaceId,
     });
 
     if (!task) {
       res.status(404).json({
-        message: "Task not found or does not belong to the specified workspace",
+        message: "Task not found or does not belong to the specified project",
       });
     }
 

@@ -1,15 +1,16 @@
 import { Button } from "@/components/ui/button";
-import { PencilIcon } from "lucide-react";
-import DottedSeperator from "@/components/common/DottedSeperator";
-import DetailProperty from "./DetailProperty";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Pencil, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { statuses } from "../table/data";
+import { statuses } from "../data";
+import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
+import { useState } from "react";
+import { Calendar } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import EditTaskCard from "../forms/EditTaskCard";
 
-const TaskDetails = ({ task, setIsEditing }) => {
-  // const avatarFallbakText = getAvatarFallbackText(task?.assignedTo?.name);
-  // const avatarColor = getAvatarColor(task?.assignedTo?.name || "");
-  const status = statuses.find((status) => status.value === task?.status);
+const TaskDetails = ({ task }) => {
   const formatDate = (date) => {
     if (!date) return;
     return new Date(date).toLocaleString("en-US", {
@@ -18,72 +19,130 @@ const TaskDetails = ({ task, setIsEditing }) => {
       day: "2-digit",
     });
   };
+  const [isEditMode, setIsEditMode] = useState(false);
 
-  const capitalizeString = (string) => {
-    if (!string) return;
-    return string
-      .toLowerCase()
-      .replaceAll("_", " ")
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
+  const currentTaskStatus = statuses.filter(
+    (status) => status.value === task?.status
+  )[0];
+
   return (
-    <div className="bg-muted p-4 rounded-lg h-max">
-      <div className="flex items-center justify-between">
-        <p className="text-lg font-semibold">Task Overview</p>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => {
-            setIsEditing((prev) => !prev);
-          }}
-        >
-          <PencilIcon className="size-4 mr-2" />
-          Edit
-        </Button>
+    <div className="">
+      <div className="flex items-start justify-between">
+        <h1 className="text-xl md:text-2xl font-semibold">{task?.title}</h1>
+        {!isEditMode && (
+          <Button size="sm" onClick={() => setIsEditMode(true)}>
+            <Pencil className="size-4 mr-2" /> Edit
+          </Button>
+        )}
       </div>
-      <DottedSeperator className="my-4" />
-      <div className="flex flex-col gap-y-4">
-        <DetailProperty label="Assigned To">
-          {task?.assignedTo ? (
-            <div className="flex items-center gap-2">
-              <Avatar className="size-6">
-                <AvatarFallback className={`${avatarColor} text-xs`}>
-                  {avatarFallbakText}
-                </AvatarFallback>
-              </Avatar>
-              <span>{task.assignedTo?.name}</span>
-            </div>
-          ) : (
-            <span>Not assigned</span>
-          )}
-        </DetailProperty>
-        <DetailProperty label="Due Date">
-          {task?.dueDate ? formatDate(task?.dueDate) : "Add  due date"}
-        </DetailProperty>
-        <DetailProperty label="Status">
-          <Badge
-            className={`flex items-center gap-1 w-auto p-1 px-2 font-medium uppercase border-0 rounded-lg !bg-transparent !shadow-none ${status?.variant}`}
-          >
-            {status?.icon && <status.icon className="h-4 w-4 rounded-full" />}
-            <span>{status?.label}</span>
-          </Badge>
-        </DetailProperty>
-        <DetailProperty label="Project">
-          <span className="bg-white shadow-sm rounded-sm">
-            {task?.project.emoji}
-          </span>{" "}
-          {capitalizeString(task?.project.name)}
-        </DetailProperty>
-        <DetailProperty label="Priority">
-          {capitalizeString(task?.priority)}
-        </DetailProperty>
-        <DetailProperty label="Description">
-          <div className="bg-white py-3 px-4 rounded-md max-w-screen-md">
-            {task?.description ? task?.description : "No task description."}
+
+      <div
+        className={`relative
+          grid gap-6 py-4 grid-rows-[repeat(auto-fill,_minmax(100px,_auto))] 
+          ${
+            isEditMode
+              ? "grid-cols-[4fr_3fr] grid-rows-2"
+              : "grid-cols-[4fr_3fr] grid-rows-1"
+          }
+        `}
+      >
+        <div
+          className={`
+            ${
+              isEditMode
+                ? "col-start-1 col-span-1 row-start-1 row-span-1"
+                : "col-start-1 col-span-1 row-start-1 row-span-1"
+            }
+          `}
+        >
+          <div>
+            <Label>Description</Label>
+            <Card className="shadow-none mt-2 min-h-[150px]">
+              <CardContent className="p-4">
+                <p className="text-sm">
+                  {task?.description || "No description specified..."}
+                </p>
+              </CardContent>
+            </Card>
           </div>
-        </DetailProperty>
+        </div>
+
+        <div
+          className={`
+            ${
+              isEditMode
+                ? "col-start-1 col-span-1 row-start-2 row-span-1"
+                : "col-start-2 col-span-1 row-start-1 row-span-1"
+            }
+          `}
+        >
+          <Card className="shadow-none">
+            <CardHeader className="p-4 pb-2 text-sm font-medium">
+              Details
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              <div className="grid grid-cols-2 items-center gap-2">
+                <Label>Status</Label>
+                <Badge
+                  className={`${currentTaskStatus?.variant} h-8 max-w-max shadow-none`}
+                >
+                  {currentTaskStatus?.icon && (
+                    <currentTaskStatus.icon className="size-4 mr-2" />
+                  )}{" "}
+                  {currentTaskStatus?.label}
+                </Badge>
+              </div>
+              <div className="grid grid-cols-2 items-center gap-2">
+                <Label>Assigned To</Label>
+                <div className="flex items-center gap-2">
+                  <Avatar className="!size-8">
+                    <AvatarFallback
+                      className={`${
+                        task?.assignedTo?.name &&
+                        getAvatarColor(task?.assignedTo?.name || "")
+                      } w-full h-full inline-flex items-center justify-center rounded-full`}
+                    >
+                      {task?.assignedTo?.name ? (
+                        getAvatarFallbackText(task?.assignedTo?.name)
+                      ) : (
+                        <User className="size-4" />
+                      )}
+                    </AvatarFallback>
+                  </Avatar>
+                  {task?.assignedTo?.name || "Unassigned"}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 items-center gap-2">
+                <Label>Priority</Label>
+                <span className="capitalize">
+                  {task?.priority.toLowerCase()}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 items-center gap-2">
+                <Label>Due Date</Label>
+                <div className="flex max-w-max items-center h-8 px-3 border rounded-md text-sm">
+                  <Calendar className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+                  {task?.dueDate ? (
+                    <span>{formatDate(task?.dueDate)}</span>
+                  ) : (
+                    "Not specified"
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {isEditMode && (
+          <div
+            className="
+               border rounded-xl
+              col-start-2 col-span-1 h-max row-span-2  w-full absolute top-4  
+            "
+          >
+            <EditTaskCard task={task} setIsEditMode={setIsEditMode} />
+          </div>
+        )}
       </div>
     </div>
   );

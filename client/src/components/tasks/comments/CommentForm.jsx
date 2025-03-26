@@ -44,6 +44,8 @@ const CommentForm = ({
     }
   };
 
+  console.log(isFocused);
+
   return (
     <div className="w-full">
       <Form {...form}>

@@ -24,14 +24,15 @@ export const useTaskStore = create((set) => ({
     }
   },
 
-  getAllTasks: async (workspaceId, filters = {}) => {
+  getAllTasks: async (workspaceId, projectId, filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString();
     try {
       const { data } = await axios.get(
-        `${API_URL}/workspace/${workspaceId}/all?${queryParams}`
+        `${API_URL}/project/${projectId}/workspace/${workspaceId}/all?${queryParams}`
       );
       set({ tasks: data.tasks || [] });
       return data;
+      console.log(queryParams)
     } catch (error) {
       throw error;
     }
@@ -67,10 +68,10 @@ export const useTaskStore = create((set) => ({
     }
   },
 
-  deleteTask: async (workspaceId, taskId) => {
+  deleteTask: async (workspaceId, projectId, taskId) => {
     try {
       const { data } = await axios.delete(
-        `${API_URL}/${taskId}/workspace/${workspaceId}/delete`
+        `${API_URL}/${taskId}/project/${projectId}/workspace/${workspaceId}/delete`
       );
       set((state) => ({
         tasks: state.tasks.filter((task) => task._id !== taskId),

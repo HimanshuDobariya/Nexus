@@ -16,30 +16,30 @@ const CommentsSection = ({ id = null }) => {
   const [comments, setComments] = useState([]);
   const { taskId: paramsTaskId } = useParams();
   const { profile } = useProfileStore();
-
-  const taskId = id || paramsTaskId;
-
   const getAllCommentsOfTask = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/${taskId}`);
+      const { data } = await axios.get(`${API_URL}/${paramsTaskId || id}`);
       setComments(data.comments);
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching comments:", error);
     }
   };
   useEffect(() => {
-    getAllCommentsOfTask();
+    if (paramsTaskId || id) {
+      getAllCommentsOfTask();
+    }
   }, []);
 
   const addComment = async (content) => {
     try {
-      await axios.post(`${API_URL}/${taskId}/create`, content);
+      await axios.post(`${API_URL}/${paramsTaskId || id}/create`, content);
       await getAllCommentsOfTask();
       toast({
         title: "Comment added",
         description: "Your comment has been added successfully.",
       });
     } catch (error) {
+      console.log(error);
       toast({
         title: "Error creating comment",
         description: error.message,
@@ -86,32 +86,34 @@ const CommentsSection = ({ id = null }) => {
   const avatarColor = getAvatarColor(profile?.name);
 
   return (
-    <div className="w-full max-w-4xl h-[600px] overflow-y-auto relative">
-      <div className="sticky p-4 top-0 bg-white z-10 pb-2">
-        <p className="text-lg font-semibold mb-4">Comments</p>
-        <div className="flex items-start gap-3">
-          <Avatar>
-            <AvatarFallback className={`${avatarColor}`}>
-              {avatarFallbackText}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <CommentForm onSubmit={addComment} />
+    <div className="grid grid-cols-[4fr_3fr] mr-6">
+      <div className="w-full max-h-[500px] overflow-y-auto relative">
+        <div className="sticky  top-0 bg-white z-10 pb-2 ">
+          <p className="text-lg font-semibold mb-4">Comments</p>
+          <div className="flex items-start gap-3">
+            <Avatar>
+              <AvatarFallback className={`${avatarColor}`}>
+                {avatarFallbackText}
+              </AvatarFallback>
+            </Avatar>
+            <div className="w-full px-1">
+              <CommentForm onSubmit={addComment} />
+            </div>
           </div>
+          <DottedSeperator className="my-2" />
         </div>
-        <DottedSeperator className="my-2" />
-      </div>
 
-      <div className="space-y-4 p-4 mt-2">
-        {comments.map((comment) => (
-          <Comment
-            key={comment.id}
-            comment={comment}
-            currentUserId={profile?.userId}
-            onUpdate={updateComment}
-            onDelete={deleteComment}
-          />
-        ))}
+        <div className="space-y-4 p-4 mt-2">
+          {comments.map((comment) => (
+            <Comment
+              key={comment._id}
+              comment={comment}
+              currentUserId={profile?.userId}
+              onUpdate={updateComment}
+              onDelete={deleteComment}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -3,22 +3,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 import { cn } from "@/lib/utils";
-import { Flag } from "lucide-react";
+import { Goal } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
-const EventCard = ({
-  id,
-  title,
-  taskCode,
-  assignedTo,
-  project,
-  priority,
-  status,
-}) => {
+const EventCard = ({ id, title, taskCode, assignedTo, priority, status }) => {
   const avatarFallbackText = getAvatarFallbackText(assignedTo);
   const avatarColor = getAvatarColor(assignedTo || "");
   const navigate = useNavigate();
-  const { workspaceId, projectId: paramsProjectId } = useParams();
+  const { workspaceId, projectId } = useParams();
   const statusColorMap = {
     [TaskStatusEnum.BACKLOG]: "border-l-pink-400",
     [TaskStatusEnum.TODO]: "border-l-red-400",
@@ -35,9 +27,9 @@ const EventCard = ({
           statusColorMap[status] || "border-l-gray-400"
         )}
         onClick={() => {
-          navigate(`/workspaces/${workspaceId}/tasks/${id}`, {
-            state: { projectId: project?._id },
-          });
+          navigate(
+            `/workspaces/${workspaceId}/projects/${projectId}/tasks/${id}`
+          );
         }}
       >
         <div className="flex items-center justify-between">
@@ -50,15 +42,9 @@ const EventCard = ({
           </Badge>
         </div>
 
-        {!paramsProjectId && (
-          <div className="flex text-sm items-center space-x-2 text-gray-600">
-            {project.emoji && <span>{project.emoji}</span>}
-            <span className="font-medium truncate">{project.name}</span>
-          </div>
-        )}
         <div className="flex items-center justify-between space-x-1">
           <div className="flex items-center font-medium">
-            <Flag className="size-3 mr-1 text-neutral-500" />
+            <Goal className="size-3 mr-1 text-neutral-500" />
             <span className="text-neutral-500">{priority}</span>
           </div>
           {assignedTo && (
