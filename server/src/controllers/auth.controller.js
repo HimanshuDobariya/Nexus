@@ -10,6 +10,7 @@ import { generateToken } from "../utils/generateJwtToken.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { config } from "../config/env.config.js";
+import { oauth2Client } from "../config/google.config.js";
 
 //signup controller
 const signup = async (req, res) => {
@@ -75,6 +76,66 @@ const login = async (req, res) => {
 
     res.status(200).json({
       message: "Login successful.",
+      user: {
+        ...user._doc,
+        password: undefined,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Server error.", error: error.message });
+  }
+};
+
+export const googleLogin = async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ message: "Authorization code is missing" });
+
+    const { tokens } = await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(tokens);
+
+    const userResponse = await fetch(
+      `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`
+    );
+    const userData = await userResponse.json();
+
+    if (!userData.email) {
+      return res.status(400).json({ message: "Failed to retrieve user email from Google" });
+    }
+
+    const { email, name, picture, verified_email } = userData;
+    
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({
+        name,
+        email,
+        password: "",
+        isVerified: verified_email,
+      });
+    }
+    generateToken(res, user._id);
+    await user.save();
+
+    let profile = await Profile.findOne({ userId: user._id });
+
+    if (!profile) {
+      // Create profile with name and email
+      profile = new Profile({
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        profileImage: picture,
+      });
+      await profile.save();
+    }
+    
+
+    res.status(200).json({
       user: {
         ...user._doc,
         password: undefined,

@@ -23,6 +23,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/authStore";
 import { Loader } from "lucide-react";
+import GoogleLoginComponent from "./GoogleLoginComponent";
 
 const signupSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -155,9 +156,7 @@ const Signup = () => {
         <DottedSeperator />
       </div>
       <CardContent className="p-7 flex flex-col gap-y-4">
-        <Button variant="outline" size="lg" className="w-full p-0">
-          <FcGoogle className="mr-2 !size-5" /> Login with Google
-        </Button>
+        <GoogleLoginComponent />
 
         <div className="mt-4 text-center text-sm">
           Already have an account?{" "}

@@ -43,6 +43,17 @@ export const useAuthStore = create((set) => ({
     }
   },
 
+  googleLogin: async (code) => {
+    set({ loading: true });
+    try {
+      const { data } = await axios.post(`${API_URL}/google`, {code});
+      set({ loading: false, isAuthenticated: true, user: data.user });
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
+  },
+
   logout: async () => {
     set({ loading: true });
     try {

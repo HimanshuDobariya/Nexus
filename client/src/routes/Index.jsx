@@ -16,16 +16,38 @@ import JoinWorkspace from "@/components/invitation/JoinWorkspace";
 import Dashboard from "@/pages/workspace/Dashboard";
 import ProjectDetails from "@/pages/workspace/ProjectDetails";
 import TaskDetailsPage from "@/components/tasks/details/TaskDetailsPage";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
+const GoogleAuthWrapper = ({ children }) => {
+  return (
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      {children}
+    </GoogleOAuthProvider>
+  );
+};
 
 const AppRoutes = () => {
-  
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<AuthLayout />}>
           <Route element={<AuthRoutes />}>
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route
+              path="/login"
+              element={
+                <GoogleAuthWrapper>
+                  <Login />
+                </GoogleAuthWrapper>
+              }
+            />
+            <Route
+              path="/signup"
+              element={
+                <GoogleAuthWrapper>
+                  <Signup />
+                </GoogleAuthWrapper>
+              }
+            />
             <Route path="/verify-email" element={<VerifyEmail />} />
           </Route>
           <Route path="/forgot-password" element={<ForgotPassword />} />

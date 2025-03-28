@@ -45,6 +45,7 @@ const UserButton = () => {
           {profile && profile.profileImage ? (
             <AvatarImage
               src={profile.profileImage}
+              referrerPolicy="no-referrer" 
               className="h-full w-full object-cover"
             />
           ) : (
@@ -68,6 +69,7 @@ const UserButton = () => {
             {profile && profile.profileImage ? (
               <AvatarImage
                 src={profile.profileImage}
+                referrerPolicy="no-referrer" 
                 className="h-full w-full object-cover"
               />
             ) : (

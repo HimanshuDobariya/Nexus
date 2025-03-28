@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import DottedSeperator from "@/components/common/DottedSeperator";
-import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -23,6 +22,8 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/authStore";
 import { Loader } from "lucide-react";
+
+import GoogleLoginComponent from "./GoogleLoginComponent";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
@@ -131,9 +132,7 @@ const Login = () => {
         <DottedSeperator />
       </div>
       <CardContent className="p-7 flex flex-col gap-y-4">
-        <Button variant="outline" size="lg" className="w-full p-0">
-          <FcGoogle className="mr-2 !size-5" /> Login with Google
-        </Button>
+        <GoogleLoginComponent />
 
         <div className="mt-4 text-center text-sm">
           Don&apos;t have an account?{" "}
