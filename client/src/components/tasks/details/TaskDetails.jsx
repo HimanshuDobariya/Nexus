@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Pencil, User } from "lucide-react";
+import { Link, Pencil, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { statuses } from "../data";
@@ -9,6 +9,12 @@ import { Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import EditTaskCard from "../forms/EditTaskCard";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const TaskDetails = ({ task }) => {
   const formatDate = (date) => {
@@ -20,15 +26,47 @@ const TaskDetails = ({ task }) => {
     });
   };
   const [isEditMode, setIsEditMode] = useState(false);
+  const [tooltipText, setTooltipText] = useState("Copy");
+  const [isOpen, setIsOpen] = useState(false);
 
   const currentTaskStatus = statuses.filter(
     (status) => status.value === task?.status
   )[0];
 
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(
+      `${import.meta.env.VITE_CLIENT_URL}/workspaces/${
+        task.workspace
+      }/projects/${task.project._id}/tasks/${task._id}`
+    );
+    setTooltipText("Copied");
+    setIsOpen(true);
+
+    setTimeout(() => {
+      setTooltipText("Copy");
+      setIsOpen(false);
+    }, 2000);
+  };
+
   return (
     <div className="">
       <div className="flex items-start justify-between">
-        <h1 className="text-xl md:text-2xl font-semibold">{task?.title}</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl md:text-2xl font-semibold">{task?.title}</h1>
+
+          <TooltipProvider>
+            <Tooltip open={isOpen} onOpenChange={setIsOpen}>
+              <TooltipTrigger asChild>
+                <Link
+                  onClick={copyToClipboard}
+                  onMouseEnter={() => setIsOpen(true)}
+                  className="size-4 cursor-pointer"
+                />
+              </TooltipTrigger>
+              <TooltipContent>{tooltipText}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         {!isEditMode && (
           <Button size="sm" onClick={() => setIsEditMode(true)}>
             <Pencil className="size-4 mr-2" /> Edit

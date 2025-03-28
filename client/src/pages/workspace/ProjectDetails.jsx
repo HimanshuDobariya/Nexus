@@ -53,7 +53,7 @@ const ProjectDetails = () => {
               <h2 className="text-xl sm:text-2xl font-medium ">
                 {currentProject?.name || "Untitled project"}
               </h2>
-              <p className="text-neutral-600 text-sm">{currentProject?.description}</p>
+              <p className="text-neutral-600 text-xs max-w-[500px]">{currentProject?.description}</p>
             </div>
           </div>
           <Button

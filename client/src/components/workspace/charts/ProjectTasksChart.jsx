@@ -1,37 +1,27 @@
-import { TrendingUp } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  LabelList,
-  XAxis,
-  YAxis,
-} from "recharts";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import ChartCard from "@/components/common/ChartCard";
+import { Loader } from "lucide-react";
 
-const ProjectTasksChart = ({ data }) => {
+const ProjectTasksChart = ({ data, isLoading }) => {
   const chartData = data?.map((item) => ({
-    project: item.id,
+    project: {
+      id: item.project._id,
+      name: item.project.name,
+      emoji: item.project.emoji,
+    },
     count: item.count,
-    fill: `var(--color-${item.id})`,
+    fill: `var(--color-${item.project._id})`,
   }));
+
   const chartConfig = data?.reduce(
     (config, item, index) => {
-      config[item.id] = {
-        label: item.project,
+      config[item.project._id] = {
+        label: item.project.name,
         color: `hsl(var(--chart-${(index % 5) + 1}))`,
       };
       return config;
@@ -39,40 +29,50 @@ const ProjectTasksChart = ({ data }) => {
     { count: { label: "Count" } }
   );
 
-  console.log(chartConfig);
-
   return (
     <ChartCard className="shadow-none">
-      <ChartContainer config={chartConfig} className="max-h-[300px]">
-        <BarChart
-          accessibilityLayer
-          data={chartData}
-          layout="vertical"
-          margin={{ left: 0 }}
-          barSize={30} // Adjust bar height here
-        >
-          <YAxis
-            dataKey="project"
-            type="category"
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(value) => chartConfig[value]?.label}
-          />
-          <XAxis dataKey="count" type="number" hide />
-          <ChartTooltip
-            cursor={false}
-            content={<ChartTooltipContent hideLabel />}
-          />
-          <Bar dataKey="count" layout="vertical" radius={5} barSize={60}>
-            <LabelList
-              dataKey="count"
-              position="right"
-              fill="#000"
-              fontSize={20}
+      {isLoading ? (
+        <div className="flex items-center justify-center w-full h-[300px]">
+          <Loader className="animate-spin size-10 " />
+        </div>
+      ) : data.length === 0 ? (
+        <div className="flex items-center justify-center w-full h-[300px]">
+          No Data Availabel
+        </div>
+      ) : (
+        <ChartContainer config={chartConfig}>
+          <BarChart
+            accessibilityLayer
+            data={chartData}
+            margin={{
+              top: 40,
+            }}
+          >
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="project.id"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              tickFormatter={(id) => {
+                const project = chartData.find(
+                  (item) => item.project.id === id
+                );
+                return project
+                  ? `${project.project.emoji} ${project.project.name.split(" ")[0]}...`
+                  : "";
+              }}
             />
-          </Bar>
-        </BarChart>
-      </ChartContainer>
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Bar dataKey="count" radius={8}>
+              <LabelList position="top" offset={12} fontSize={18} />
+            </Bar>
+          </BarChart>
+        </ChartContainer>
+      )}
     </ChartCard>
   );
 };

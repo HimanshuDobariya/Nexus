@@ -4,11 +4,14 @@ import { Label, Pie, PieChart } from "recharts";
 
 import {
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { Loader } from "lucide-react";
 
-const TaskStatusChart = ({ data }) => {
+const TaskStatusChart = ({ data, isLoading }) => {
   const capitalizeString = (string) => {
     if (!string) return;
     return string
@@ -36,6 +39,8 @@ const TaskStatusChart = ({ data }) => {
     { count: { label: "Count" } }
   );
 
+  const [activeIndex, setActiveIndex] = React.useState(null);
+
   const totalVisitors = chartData?.reduce((acc, curr) => acc + curr.count, 0);
   return (
     <ChartCard
@@ -43,54 +48,81 @@ const TaskStatusChart = ({ data }) => {
       title="Task Distribution"
       description="Tasks by status"
     >
-      <ChartContainer
-        config={chartConfig}
-        className="mx-auto aspect-square max-h-[250px]"
-      >
-        <PieChart>
-          <ChartTooltip
-            cursor={false}
-            content={<ChartTooltipContent hideLabel />}
-          />
-          <Pie
-            data={chartData}
-            dataKey="count"
-            nameKey="status"
-            innerRadius={60}
-            strokeWidth={5}
-          >
-            <Label
-              content={({ viewBox }) => {
-                if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                  return (
-                    <text
-                      x={viewBox.cx}
-                      y={viewBox.cy}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                    >
-                      <tspan
+      {isLoading ? (
+        <div className="flex items-center justify-center w-full h-[300px]">
+          <Loader className="animate-spin size-10 " />
+        </div>
+      ) : data.length === 0 ? (
+        <div className="flex items-center justify-center w-full h-[300px]">
+          No Data Availabel
+        </div>
+      ) : (
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto aspect-square max-h-[300px]"
+        >
+          <PieChart>
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Pie
+              data={chartData}
+              dataKey="count"
+              nameKey="status"
+              outerRadius={100}
+              innerRadius={60}
+              strokeWidth={5}
+              onMouseEnter={(_, index) => setActiveIndex(index)}
+              onMouseLeave={() => setActiveIndex(null)}
+            >
+              <Label
+                content={({ viewBox }) => {
+                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                    const activeData =
+                      activeIndex !== null ? chartData[activeIndex] : null;
+                    return (
+                      <text
                         x={viewBox.cx}
                         y={viewBox.cy}
-                        className="fill-foreground text-3xl font-bold"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
                       >
-                        {totalVisitors.toLocaleString()}
-                      </tspan>
-                      <tspan
-                        x={viewBox.cx}
-                        y={(viewBox.cy || 0) + 24}
-                        className="fill-muted-foreground"
-                      >
-                        Total Tasks
-                      </tspan>
-                    </text>
-                  );
-                }
-              }}
+                        <tspan
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          className="fill-foreground text-3xl font-bold"
+                        >
+                          {activeData
+                            ? activeData.count.toLocaleString()
+                            : totalVisitors.toLocaleString()}
+                        </tspan>
+                        <tspan
+                          x={viewBox.cx}
+                          y={(viewBox.cy || 0) + 24}
+                          className="fill-muted-foreground"
+                        >
+                          {activeData
+                            ? capitalizeString(activeData.status)
+                            : "Total Tasks"}
+                        </tspan>
+                      </text>
+                    );
+                  }
+                }}
+              />
+            </Pie>
+            <ChartLegend
+              content={
+                <ChartLegendContent
+                  nameKey="status"
+                  className="flex items-center flex-wrap"
+                />
+              }
             />
-          </Pie>
-        </PieChart>
-      </ChartContainer>
+          </PieChart>
+        </ChartContainer>
+      )}
     </ChartCard>
   );
 };

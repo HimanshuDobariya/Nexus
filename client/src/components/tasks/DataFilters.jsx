@@ -171,16 +171,16 @@ const DataFilters = ({ filterData, setPageNumber, setPageSize }) => {
               className="cursor-pointer flex items-center"
             >
               <div className="flex items-center gap-2">
-                <Avatar className="!size-6">
+                <Avatar>
                   <AvatarFallback
                     className={`${getAvatarColor(
                       member.userId.name
-                    )} w-full h-full inline-flex items-center justify-center text-xs rounded-full`}
+                    )} flex items-center justify-center !w-6 !h-6 text-xs rounded-full`}
                   >
                     {getAvatarFallbackText(member.userId?.name)}
                   </AvatarFallback>
                 </Avatar>
-                <span>{member.userId?.name}</span>
+                <span className="truncate">{member.userId?.name}</span>
               </div>
             </SelectItem>
           ))}

@@ -34,7 +34,7 @@ const Dashboard = () => {
           </Button>
         </div>
 
-        {/* <WorkspaceAnalytics /> */}
+        <WorkspaceAnalytics />
       </main>
       <CreateProjectDialog
         open={openCreateProjectDialog}

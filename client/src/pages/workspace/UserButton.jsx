@@ -107,6 +107,7 @@ const UserButton = () => {
           className="h-10 mt-1 flex items-center justify-center text-amber-700 font-medium cursor-pointer"
           onClick={() => {
             logout();
+            localStorage.removeItem("activeWorkspaceId");
           }}
         >
           <LogOut className="!size-4 mr-2" /> Log out

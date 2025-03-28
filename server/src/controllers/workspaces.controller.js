@@ -282,12 +282,17 @@ export const removeMemberFromWorkspace = async (req, res) => {
 export const getWorkspaceAnalytics = async (req, res) => {
   try {
     const { workspaceId } = req.params;
+    const { projectId } = req.query;
 
     const { role } = await getMemberRoleInWorkspace(workspaceId, req.userId);
     await checkPermission(role, [Permissions.VIEW_ONLY]);
-    const tasks = await Task.find({
-      workspace: workspaceId,
-    })
+
+    let taskFilter = { workspace: workspaceId };
+    if (projectId) {
+      taskFilter.project = projectId;
+    }
+
+    const tasks = await Task.find(taskFilter)
       .populate({
         path: "assignedTo",
         select: "-password",

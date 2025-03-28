@@ -96,8 +96,8 @@ const Navigation = () => {
         selectedProjectId,
         workspaceId
       );
-      if(deletedProject?._id === projectId){
-        navigate(`/workspaces/${workspaceId}`)
+      if (deletedProject?._id === projectId) {
+        navigate(`/workspaces/${workspaceId}`);
       }
       setLoading(false);
       toast({
@@ -171,7 +171,9 @@ const Navigation = () => {
                                   to={subItem.url}
                                   className="flex-grow flex items-center truncate"
                                 >
-                                  <span>{subItem.emoji}</span>
+                                  <span className="text-[16px] mr-1">
+                                    {subItem.emoji}
+                                  </span>
                                   <span>{subItem.title}</span>
                                 </Link>
                                 <DropdownMenu>

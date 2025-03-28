@@ -16,6 +16,9 @@ const CommentsSection = ({ id = null }) => {
   const [comments, setComments] = useState([]);
   const { taskId: paramsTaskId } = useParams();
   const { profile } = useProfileStore();
+  const [members, setMembers] = useState([]);
+  const { workspaceId } = useParams();
+
   const getAllCommentsOfTask = async () => {
     try {
       const { data } = await axios.get(`${API_URL}/${paramsTaskId || id}`);
@@ -25,10 +28,27 @@ const CommentsSection = ({ id = null }) => {
     }
   };
   useEffect(() => {
+    const getWorkSpaceMembers = async () => {
+      try {
+        const { data } = await axios.get(
+          `${
+            import.meta.env.VITE_SERVER_URL
+          }/api/workspaces/${workspaceId}/members`
+        );
+        setMembers(data.members);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getWorkSpaceMembers();
+
     if (paramsTaskId || id) {
       getAllCommentsOfTask();
     }
   }, []);
+
+
 
   const addComment = async (content) => {
     try {
@@ -97,7 +117,7 @@ const CommentsSection = ({ id = null }) => {
               </AvatarFallback>
             </Avatar>
             <div className="w-full px-1">
-              <CommentForm onSubmit={addComment} />
+              <CommentForm members={members} onSubmit={addComment} />
             </div>
           </div>
           <DottedSeperator className="my-2" />

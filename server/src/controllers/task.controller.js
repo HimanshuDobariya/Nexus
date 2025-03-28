@@ -4,7 +4,6 @@ import { getMemberRoleInWorkspace } from "../services/getMemberRoleInWorkspace.j
 import { checkPermission } from "../services/checkPermission.js";
 import { Permissions } from "../enums/role.enum.js";
 import Member from "../models/members.model.js";
-import { TaskPriorityEnum, TaskStatusEnum } from "../enums/task.enum.js";
 
 // create task
 export const createTask = async (req, res) => {

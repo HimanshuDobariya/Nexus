@@ -13,7 +13,7 @@ const ChartCard = ({ title, description, children, className }) => {
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 pb-0">{children}</CardContent>
+      <CardContent className="flex-1 py-6">{children}</CardContent>
     </Card>
   );
 };

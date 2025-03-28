@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const useWorkspaceAnalytics = (workspaceId) => {
+const useWorkspaceAnalytics = (workspaceId, projectId, selectedYear) => {
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -13,7 +13,12 @@ const useWorkspaceAnalytics = (workspaceId) => {
       const { data } = await axios.get(
         `${
           import.meta.env.VITE_SERVER_URL
-        }/api/workspaces/${workspaceId}/analytics`
+        }/api/workspaces/${workspaceId}/analytics`,
+        {
+          params: {
+            projectId,
+          },
+        }
       );
       setTasks(data?.tasks);
       setProjects(data?.projects);
@@ -26,7 +31,20 @@ const useWorkspaceAnalytics = (workspaceId) => {
 
   useEffect(() => {
     getWorkspaceAnalytics();
-  }, []);
+  }, [projectId, selectedYear]);
+
+  const totalTasks = tasks?.length;
+  const overdueTasks = tasks?.reduce((acc, task) => {
+    const isOverdue =
+      task.status !== "DONE" && new Date(task.dueDate) < new Date();
+    return isOverdue ? acc + 1 : acc;
+  }, 0);
+  const completedTasks = tasks?.reduce((acc, task) => {
+    return task.status === "DONE" ? acc + 1 : acc;
+  }, 0);
+  const unassignedTasks = tasks?.reduce((acc, task) => {
+    return task.assignedTo === null ? acc + 1 : acc;
+  }, 0);
 
   const taskStatusData = tasks?.reduce((acc, task) => {
     acc[task.status] = acc[task.status] || {
@@ -39,8 +57,7 @@ const useWorkspaceAnalytics = (workspaceId) => {
 
   const taskMemberData = tasks.reduce((acc, task) => {
     if (task.assignedTo && task.assignedTo.name) {
-      // Use a unique key
-      const memberKey = task.assignedTo.name; // Or use ID if available
+      const memberKey = task.assignedTo.name;
       acc[memberKey] = acc[memberKey] || {
         member: task.assignedTo.name,
         count: 0,
@@ -71,19 +88,19 @@ const useWorkspaceAnalytics = (workspaceId) => {
     "December",
   ];
 
+  let count = 0;
+
   const taskMonthData = tasks?.reduce((acc, task) => {
     const createdAt = new Date(task.createdAt);
     const taskYear = createdAt.getFullYear();
-    if (taskYear !== 2025) return acc; // Filter tasks for the given year
+    if (taskYear !== selectedYear) return acc; // Filter tasks for the given year
+
+    if (taskYear === selectedYear) {
+      count++;
+    }
 
     const monthIndex = createdAt.getMonth();
     const monthName = months[monthIndex];
-
-    acc[monthName] = acc[monthName] || {
-      month: monthName,
-      pending: 0,
-      done: 0,
-    };
 
     if (task.status === "DONE") {
       acc[monthName].done++;
@@ -100,13 +117,16 @@ const useWorkspaceAnalytics = (workspaceId) => {
     return acc;
   }, {});
 
-  const projectTaskData = projects.map(({ _id, name }) => ({
-    id: _id,
-    project: name,
-    count: taskCounts[_id] || 0,
+  const projectTaskData = projects.map((project) => ({
+    project,
+    count: taskCounts[project._id] || 0,
   }));
 
   const analytics = {
+    totalTasks,
+    overdueTasks,
+    completedTasks,
+    unassignedTasks,
     taskStatusArray: Object.values(taskStatusData),
     taskMemberArray: Object.values(taskMemberData),
     taskMonthArray: Object.values(taskMonthData),
