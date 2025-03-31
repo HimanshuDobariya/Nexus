@@ -257,7 +257,7 @@ const TaskForm = ({
                         field.onChange(date);
                         setOpen(false);
                       }}
-                      disabled={(date) => date < new Date()}
+                      disabled={(date) => date < new Date().setHours(0, 0, 0, 0)} 
                       initialFocus
                     />
                   </PopoverContent>

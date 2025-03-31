@@ -41,9 +41,14 @@
 }
 
 .rbc-today {
-  @apply bg-blue-100;
+  @apply bg-blue-100 relative;
 }
 
 .rbc-off-range-bg {
-  @apply bg-neutral-200;
+  @apply bg-neutral-100;
+}
+
+.rbc-today::after {
+  content: "Today";
+  @apply absolute top-1 left-1 text-xs text-white font-medium bg-blue-600 px-2 py-0.5 rounded-md;
 }

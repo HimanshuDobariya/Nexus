@@ -2,17 +2,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "../ui/button";
 import { Loader, PlusIcon } from "lucide-react";
 import DottedSeperator from "../common/DottedSeperator";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import DataTable from "./table/DataTable";
 import { useTaskStore } from "@/store/taskStore";
 import KanabnBoard from "./kanban/KanabnBoard";
 import CreateTaskDailog from "./forms/CreateTaskDialog";
-import axios from "axios";
 import DataCalander from "./calendar/DataCalander";
-import { useProjectStore } from "@/store/projectStore";
 import columns from "./table/Columns";
-import DataFilters from "./DataFilters";
+import { debounce, filter, size } from "lodash";
+import axios from "axios";
 
 const TaskViewSwitcher = () => {
   const [openCreateTaskForm, setOpenCreateTaskForm] = useState(false);
@@ -33,21 +32,55 @@ const TaskViewSwitcher = () => {
   };
 
   const [filters, setFilters] = useState(initialFilters);
-
   const [currentTab, setCurrentTab] = useState(
     searchParams.get("task-view") || "table"
   );
+
+  useEffect(() => {
+    setCurrentTab(searchParams.get("task-view") || "table");
+  }, [searchParams]);
+
   const handleTabChange = (value) => {
     setCurrentTab(value);
-
     const newParams = new URLSearchParams(searchParams);
     value === "table"
       ? newParams.delete("task-view")
       : newParams.set("task-view", value);
-
     setSearchParams(newParams);
     setFilters(initialFilters);
+    setPageNumber(1);
+    setPageSize(10);
   };
+  const fetchAllTasks = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await getAllTasks(workspaceId, projectId, {
+        pageNumber,
+        pageSize,
+        ...filters,
+      });
+      setTotalCount(data.totalCount);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [workspaceId, projectId, filters, pageNumber, pageSize]);
+
+  const debouncedFetchAllTasks = useMemo(
+    () => debounce(fetchAllTasks, 1000),
+    [fetchAllTasks]
+  );
+
+  useEffect(() => {
+    if (filters.keyword) {
+      debouncedFetchAllTasks();
+    } else {
+      fetchAllTasks();
+    }
+
+    return () => debouncedFetchAllTasks.cancel();
+  }, [filters, fetchAllTasks]);
 
   const onKanbanChange = useCallback(
     async (updatesPayload) => {
@@ -72,25 +105,6 @@ const TaskViewSwitcher = () => {
     [updateTask]
   );
 
-  useEffect(() => {
-    const fetchAllTasks = async () => {
-      try {
-        setLoading(true);
-        const data = await getAllTasks(workspaceId, projectId, {
-          pageNumber,
-          pageSize,
-          ...filters,
-        });
-        setTotalCount(data.totalCount);
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-        console.log(error);
-      }
-    };
-    fetchAllTasks();
-  }, [pageNumber, pageSize, filters]);
-
   return (
     <>
       <Tabs
@@ -114,9 +128,7 @@ const TaskViewSwitcher = () => {
             <Button
               size="sm"
               className="w-full lg:w-auto"
-              onClick={() => {
-                setOpenCreateTaskForm(true);
-              }}
+              onClick={() => setOpenCreateTaskForm(true)}
             >
               <PlusIcon className="size-4 mr-2" />
               New
@@ -124,45 +136,37 @@ const TaskViewSwitcher = () => {
           </div>
           <DottedSeperator className="my-4" />
 
-          <div className="w-full">
-            <DataFilters
-              filterData={{ filters, setFilters, initialFilters }}
-              setPageNumber={setPageNumber}
-              setPageSize={setPageSize}
-            />
-          </div>
-          <DottedSeperator className="my-4" />
-
-          {loading ? (
-            <div className="w-full rounded-lg border h-[200px] flex flex-col items-center justify-center">
-              <Loader className="!size-8 animate-spin" />
-            </div>
-          ) : (
-            <>
-              <TabsContent value="table" className="mt-0">
-                <DataTable
-                  columns={columns}
-                  data={tasks}
-                  pagination={{
-                    pageNumber,
-                    pageSize,
-                    totalCount,
-                  }}
-                  setPageNumber={setPageNumber}
-                  setPageSize={setPageSize}
-                />
-              </TabsContent>
-              <TabsContent value="kanban" className="mt-0">
-                <KanabnBoard data={tasks} onChange={onKanbanChange} />
-              </TabsContent>
-              <TabsContent
-                value="calendar"
-                className="mt-0 h-full overflow-x-auto"
-              >
-                <DataCalander data={tasks} />
-              </TabsContent>
-            </>
-          )}
+          <>
+            <TabsContent value="table" className="mt-0">
+              <DataTable
+                columns={columns}
+                data={tasks}
+                loading={loading}
+                pagination={{ pageNumber, pageSize, totalCount }}
+                setPageNumber={setPageNumber}
+                setPageSize={setPageSize}
+                filterData={{ filters, setFilters, initialFilters }}
+              />
+            </TabsContent>
+            <TabsContent value="kanban" className="mt-0">
+              <KanabnBoard
+                data={tasks}
+                onChange={onKanbanChange}
+                filterData={{ filters, setFilters, initialFilters }}
+                loading={loading}
+              />
+            </TabsContent>
+            <TabsContent
+              value="calendar"
+              className="mt-0 h-full overflow-x-auto"
+            >
+              <DataCalander
+                data={tasks}
+                filterData={{ filters, setFilters, initialFilters }}
+                loading={loading}
+              />
+            </TabsContent>
+          </>
         </div>
       </Tabs>
       <CreateTaskDailog

@@ -13,6 +13,11 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./data-calendar.css";
 import EventCard from "./EventCard";
 import CustomToolbar from "./CustomToolbar";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import DataFilters from "../DataFilters";
+import DottedSeperator from "@/components/common/DottedSeperator";
 
 const locales = {
   "en-US": enUS,
@@ -26,7 +31,7 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-const DataCalander = ({ data }) => {
+const DataCalander = ({ data, filterData, loading }) => {
   const [value, setValue] = useState(new Date());
   const events = data.map((task) => ({
     start: new Date(task?.dueDate),
@@ -54,6 +59,10 @@ const DataCalander = ({ data }) => {
 
   return (
     <div className="grid grid-cols-1 overflow-x-auto h-full w-full">
+      <div className="flex flex-col gap-4 lg:flex-row lg:justify-between flex-wrap">
+        <DataFilters filterData={filterData} />
+      </div>
+      <DottedSeperator className="my-4" />
       <Calendar
         localizer={localizer}
         date={value}
@@ -74,10 +83,8 @@ const DataCalander = ({ data }) => {
               id={event.id}
               title={event.title}
               assignedTo={event.assignedTo}
-              project={event.project}
               status={event.status}
               taskCode={event.taskCode}
-              priority={event.priority}
             />
           ),
           toolbar: (toolbarProps) => (

@@ -1,78 +1,104 @@
 import { Button } from "@/components/ui/button";
-import {
-  ChevronLeftIcon,
-  Calendar as CalendarIcon,
-  ChevronRightIcon,
-} from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useState } from "react";
+import { format } from "date-fns";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 const CustomToolbar = ({ date, onNavigate }) => {
   const [calendarOpen, setCalendarOpen] = useState(false);
-
+  const months = Array.from({ length: 12 }, (_, i) =>
+    format(new Date(0, i), "MMMM")
+  );
+  const years = Array.from({ length: 31 }, (_, i) => 2000 + i);
   const handleDateSelect = (date) => {
     if (date) {
       onNavigate(date);
       setCalendarOpen(false);
     }
   };
-
   return (
     <div className="flex items-center gap-2 mt-4 mb-6 w-full sm:w-auto justify-center">
       <Button
+        variant="outline"
+        size="icon"
         onClick={() => onNavigate("PREV")}
+        className="h-9 w-9 shadow-none"
+      >
+        <ChevronLeftIcon className="h-4 w-4" />
+        <span className="sr-only">Previous month</span>
+      </Button>
+      <div className="text-center">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className="px-4 !min-w-52 font-normal shadow-none"
+            >
+              {format(date, "MMMM yyyy")}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-4 flex space-x-2">
+            <Select
+              onValueChange={(month) =>
+                onNavigate(new Date(date.getFullYear(), months.indexOf(month)))
+              }
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder={format(date, "MMMM")} />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((month) => (
+                  <SelectItem key={month} value={month}>
+                    {month}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              onValueChange={(year) =>
+                onNavigate(new Date(parseInt(year), date.getMonth()))
+              }
+            >
+              <SelectTrigger className="w-24">
+                <SelectValue placeholder={date.getFullYear()} />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </PopoverContent>
+        </Popover>
+      </div>
+      <Button
         variant="outline"
         size="icon"
-        className="h-10 w-10"
-      >
-        <ChevronLeftIcon className="size-4" />
-      </Button>
-
-      <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              "flex items-center hover:bg-transparent h-10 px-3 font-medium gap-2 min-w-64 justify-center"
-            )}
-          >
-            <CalendarIcon className="size-4" />
-            <span className="text-xs">{format(date, "MMMM yyyy")}</span>
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={handleDateSelect}
-            initialFocus
-          />
-        </PopoverContent>
-      </Popover>
-
-      <Button
         onClick={() => onNavigate("NEXT")}
-        variant="outline"
-        size="icon"
-        className="h-10 w-10"
+        className="h-9 w-9 shadow-none"
       >
-        <ChevronRightIcon className="size-4" />
+        <ChevronRightIcon className="h-4 w-4" />
+        <span className="sr-only">Next month</span>
       </Button>
-
       <Button
-        onClick={() => onNavigate("TODAY")}
         variant="outline"
-        size="sm"
-        className="h-10 ml-2 hidden sm:flex"
+        className="ml-4 shadow-none"
+        onClick={() => onNavigate("TODAY")}
       >
-        Today
+        This Month
       </Button>
     </div>
   );

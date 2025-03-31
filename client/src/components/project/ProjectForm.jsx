@@ -25,7 +25,10 @@ const projectSchema = z.object({
   name: z
     .string()
     .min(3, { message: "Project name must be at least 3 characters" }),
-  description: z.string().optional(),
+  description: z
+    .string()
+    .max(100, { message: "Description must be at most 100 characters" })
+    .optional(),
   emoji: z.string().min(1, { message: "Please select an emoji" }),
   projectKey: z
     .string({ required_error: "Project key is required." })

@@ -15,7 +15,6 @@ import Members from "@/pages/workspace/Members";
 import JoinWorkspace from "@/components/invitation/JoinWorkspace";
 import Dashboard from "@/pages/workspace/Dashboard";
 import ProjectDetails from "@/pages/workspace/ProjectDetails";
-import TaskDetailsPage from "@/components/tasks/details/TaskDetailsPage";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const GoogleAuthWrapper = ({ children }) => {
@@ -62,10 +61,6 @@ const AppRoutes = () => {
             <Route path="settings" element={<Settings />} />
             <Route path="profile" element={<UserProfile />} />
             <Route path="projects/:projectId" element={<ProjectDetails />} />
-            <Route
-              path="projects/:projectId/tasks/:taskId"
-              element={<TaskDetailsPage />}
-            />
           </Route>
         </Route>
 

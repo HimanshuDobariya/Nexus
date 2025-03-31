@@ -5,9 +5,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PenLine, SquareArrowOutUpRight, Trash } from "lucide-react";
+import { PenLine, Trash } from "lucide-react";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useTaskStore } from "@/store/taskStore";
 import ConfirmationDilog from "@/components/common/ConfirmationDilog";
 import { toast } from "@/hooks/use-toast";
@@ -19,7 +19,6 @@ const TaskAction = ({ children, data }) => {
   const [openDeleteTaskDialog, setOpenDeleteTaskDialog] = useState(false);
   const [openEditTaskDialog, setOpenEditTaskDialog] = useState(false);
   const { deleteTask } = useTaskStore();
-  const navigate = useNavigate();
 
   const handleDeleteTask = async () => {
     try {
@@ -49,20 +48,6 @@ const TaskAction = ({ children, data }) => {
           <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
         </div>
         <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(
-                `/workspaces/${workspaceId}/projects/${projectId}/tasks/${data._id}`
-              );
-            }}
-            disabled={false}
-          >
-            <SquareArrowOutUpRight className="size-4 mr-2" />
-            Task Details
-          </DropdownMenuItem>
-
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={(e) => {

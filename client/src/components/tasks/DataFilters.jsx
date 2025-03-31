@@ -32,7 +32,11 @@ import { Input } from "@/components/ui/input";
 import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 import { priorities, statuses } from "./data";
 
-const DataFilters = ({ filterData, setPageNumber, setPageSize }) => {
+const DataFilters = ({
+  filterData,
+  setPageNumber = () => {},
+  setPageSize = () => {},
+}) => {
   const { filters, setFilters, initialFilters } = filterData;
   const [members, setMembers] = useState([]);
   const { workspaceId } = useParams();
@@ -71,9 +75,6 @@ const DataFilters = ({ filterData, setPageNumber, setPageSize }) => {
     if (date) {
       setDate(date);
       handleFilterChange("dueDate", date);
-    } else {
-      setDate(null);
-      handleFilterChange("dueDate", "");
     }
     setOpen(false);
   };
@@ -86,7 +87,7 @@ const DataFilters = ({ filterData, setPageNumber, setPageSize }) => {
   };
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+    <div className="flex flex-col lg:flex-row gap-2">
       <Input
         type="text"
         name="keyword"
@@ -98,7 +99,7 @@ const DataFilters = ({ filterData, setPageNumber, setPageSize }) => {
             [e.target.name]: e.target.value,
           }));
         }}
-        className="h-10 col-span-2 lg:col-span-1"
+        className="h-10"
       />
       {taskView !== "kanban" && (
         <Select

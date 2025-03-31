@@ -14,7 +14,8 @@ const formatLabel = (status) => {
   return status
     .toLowerCase()
     .replace(/_/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+    .replace(/\bTodo\b/, "To Do");
 };
 
 export const statuses = [

@@ -55,6 +55,7 @@ const CommentsSection = ({ id = null }) => {
       await axios.post(`${API_URL}/${paramsTaskId || id}/create`, content);
       await getAllCommentsOfTask();
       toast({
+        variant: "success",
         title: "Comment added",
         description: "Your comment has been added successfully.",
       });
@@ -73,6 +74,7 @@ const CommentsSection = ({ id = null }) => {
       await axios.put(`${API_URL}/${commentId}/update`, content);
       await getAllCommentsOfTask();
       toast({
+        variant: "success",
         title: "Comment updated",
         description: "Your comment has been updated successfully.",
       });
@@ -90,6 +92,7 @@ const CommentsSection = ({ id = null }) => {
       await axios.delete(`${API_URL}/${commentId}/delete`);
       await getAllCommentsOfTask();
       toast({
+        variant: "success",
         title: "Comment deleted",
         description: "Your comment has been deleted successfully.",
       });

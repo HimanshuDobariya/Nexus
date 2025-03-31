@@ -32,7 +32,7 @@ const columns = [
   columnHelper.accessor("title", {
     header: ({ column }) => <ColumnHeader column={column} title="Title" />,
     cell: ({ row }) => {
-      return <div className="font-medium">{row.original.title}</div>;
+      return <div>{row.original.title}</div>;
     },
     meta: { label: "Title" },
   }),

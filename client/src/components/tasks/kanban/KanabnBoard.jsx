@@ -1,35 +1,20 @@
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
-import { TaskStatusEnum } from "@/components/enums/TaskEnums";
 import { useCallback, useEffect, useState } from "react";
 import KanbanColumnHeader from "./KanbanColumnHeader";
 import KanbanCard from "./KanbanCard";
-import TaskDetailsDilalog from "../details/TaskDetailsDilalog";
+import { statuses } from "../data";
+import DataFilters from "../DataFilters";
+import DottedSeperator from "@/components/common/DottedSeperator";
+import { Loader } from "lucide-react";
 
-const KanabnBoard = ({ data = [], onChange }) => {
-  const [openTaskDetailsDialod, setOpenTaskDetailsDailog] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
-
-  const handleCardClick = (id) => {
-    setSelectedTaskId(id);
-    setOpenTaskDetailsDailog(true);
-  };
-
-  const boards = [
-    TaskStatusEnum.BACKLOG,
-    TaskStatusEnum.TODO,
-    TaskStatusEnum.IN_PROGRESS,
-    TaskStatusEnum.IN_REVIEW,
-    TaskStatusEnum.DONE,
-  ];
+const KanabnBoard = ({ data = [], onChange, filterData, loading }) => {
+  const boards = statuses.map((status) => status.value);
 
   const [tasks, setTasks] = useState(() => {
-    const initialTasks = {
-      [TaskStatusEnum.BACKLOG]: [],
-      [TaskStatusEnum.TODO]: [],
-      [TaskStatusEnum.IN_PROGRESS]: [],
-      [TaskStatusEnum.IN_REVIEW]: [],
-      [TaskStatusEnum.DONE]: [],
-    };
+    const initialTasks = statuses.reduce((acc, status) => {
+      acc[status.value] = [];
+      return acc;
+    }, {});
 
     data.map((task) => {
       initialTasks[task.status].push(task);
@@ -43,13 +28,11 @@ const KanabnBoard = ({ data = [], onChange }) => {
   });
 
   useEffect(() => {
-    const newTasks = {
-      [TaskStatusEnum.BACKLOG]: [],
-      [TaskStatusEnum.TODO]: [],
-      [TaskStatusEnum.IN_PROGRESS]: [],
-      [TaskStatusEnum.IN_REVIEW]: [],
-      [TaskStatusEnum.DONE]: [],
-    };
+    const newTasks = statuses.reduce((acc, status) => {
+      acc[status.value] = [];
+      return acc;
+    }, {});
+
     data.map((task) => {
       newTasks[task.status].push(task);
     });
@@ -138,62 +121,65 @@ const KanabnBoard = ({ data = [], onChange }) => {
   );
 
   return (
-    <>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="w-full grid grid-cols-1 overflow-x-auto">
-          <div className="flex gap-2">
-            {boards.map((board) => (
-              <div
-                key={board}
-                className="min-h-[200px] bg-muted p-1.5 rounded-md min-w-[300px] w-full"
-              >
-                <KanbanColumnHeader
-                  board={board}
-                  taskCount={tasks[board].length}
-                />
-                <Droppable droppableId={board}>
-                  {(provided) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className="min-h-[200px] py-1.5"
-                    >
-                      {tasks[board].map((task, index) => (
-                        <Draggable
-                          key={task._id}
-                          draggableId={task._id}
-                          index={index}
-                        >
-                          {(provided) => (
-                            <div
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              ref={provided.innerRef}
-                              onClick={() => handleCardClick(task._id)}
-                            >
-                              <KanbanCard task={task} />
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </div>
-            ))}
-          </div>
-        </div>
-      </DragDropContext>
+    <div className="space-y-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:justify-between flex-wrap">
+        <DataFilters filterData={filterData} />
+      </div>
 
-      {selectedTaskId && (
-        <TaskDetailsDilalog
-          open={openTaskDetailsDialod}
-          setOpen={setOpenTaskDetailsDailog}
-          taskId={selectedTaskId}
-        />
+      <DottedSeperator className="my-4" />
+
+      {loading ? (
+        <div className="w-full rounded-lg border h-[200px] flex flex-col items-center justify-center">
+          <Loader className="!size-8 animate-spin" />
+        </div>
+      ) : (
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="w-full grid grid-cols-1 overflow-x-auto">
+            <div className="flex gap-3">
+              {boards.map((board) => (
+                <div
+                  key={board}
+                  className="min-h-[200px] bg-muted/60  p-1.5 rounded-md min-w-[250px] w-full"
+                >
+                  <KanbanColumnHeader
+                    board={board}
+                    taskCount={tasks[board].length}
+                  />
+                  <Droppable droppableId={board}>
+                    {(provided) => (
+                      <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className="min-h-[200px] py-1.5"
+                      >
+                        {tasks[board].map((task, index) => (
+                          <Draggable
+                            key={task._id}
+                            draggableId={task._id}
+                            index={index}
+                          >
+                            {(provided) => (
+                              <div
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                ref={provided.innerRef}
+                              >
+                                <KanbanCard task={task} />
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </div>
+              ))}
+            </div>
+          </div>
+        </DragDropContext>
       )}
-    </>
+    </div>
   );
 };
 export default KanabnBoard;

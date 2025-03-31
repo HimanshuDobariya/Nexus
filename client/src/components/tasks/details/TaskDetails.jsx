@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Link, Pencil, User } from "lucide-react";
+import { Copy, Link, Pencil, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { statuses } from "../data";
@@ -51,21 +51,22 @@ const TaskDetails = ({ task }) => {
   return (
     <div className="">
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl md:text-2xl font-semibold">{task?.title}</h1>
-
-          <TooltipProvider>
-            <Tooltip open={isOpen} onOpenChange={setIsOpen}>
-              <TooltipTrigger asChild>
-                <Link
-                  onClick={copyToClipboard}
-                  onMouseEnter={() => setIsOpen(true)}
-                  className="size-4 cursor-pointer"
-                />
-              </TooltipTrigger>
-              <TooltipContent>{tooltipText}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <div className="flex gap-2 max-w-[60%]">
+          <h1 className="w-full md:text-xl font-semibold inline-flex items-center gap-2">
+            {task?.title}
+            <TooltipProvider>
+              <Tooltip open={isOpen} onOpenChange={setIsOpen}>
+                <TooltipTrigger asChild>
+                  <Copy
+                    onClick={copyToClipboard}
+                    onMouseEnter={() => setIsOpen(true)}
+                    className="size-5 cursor-pointer"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>{tooltipText}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </h1>
         </div>
         {!isEditMode && (
           <Button size="sm" onClick={() => setIsEditMode(true)}>

@@ -34,21 +34,22 @@ const TaskDetailsDilalog = ({ open, setOpen, taskId }) => {
   const { projectId, workspaceId } = useParams();
   const [loading, setLoading] = useState(false);
 
-  const getTaskData = async () => {
-    try {
-      setLoading(true);
-      const data = await getTaskById(workspaceId, projectId, taskId);
-      setTaskData(data);
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-      console.log(error);
-    }
-  };
-
   useEffect(() => {
+    const getTaskData = async () => {
+      if (!taskId) return;
+      try {
+        setLoading(true);
+        const data = await getTaskById(workspaceId, projectId, taskId);
+        setTaskData(data);
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        console.log(error);
+      }
+    };
+
     getTaskData();
-  }, [tasks, taskId]);
+  }, [taskId, tasks]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -90,16 +91,17 @@ const TaskDetailsDilalog = ({ open, setOpen, taskId }) => {
               </BreadcrumbList>
             </Breadcrumb>
           </DialogTitle>
-
-          <div className="py-6">
-            {loading ? (
-              <Loader className="animate-spin" />
-            ) : (
-              <TaskDetails task={taskData} />
-            )}
-          </div>
-          <CommentsSection id={taskId} />
         </DialogHeader>
+        <div className="py-6">
+          {loading ? (
+            <Loader className="animate-spin" />
+          ) : (
+            <>
+              <TaskDetails task={taskData} />
+              <CommentsSection id={taskId} />
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
