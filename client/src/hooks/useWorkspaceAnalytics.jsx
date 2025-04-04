@@ -31,7 +31,7 @@ const useWorkspaceAnalytics = (workspaceId, projectId, selectedYear) => {
 
   useEffect(() => {
     getWorkspaceAnalytics();
-  }, [projectId, selectedYear]);
+  }, [projectId, selectedYear, workspaceId]);
 
   const totalTasks = tasks?.length;
   const overdueTasks = tasks?.reduce((acc, task) => {

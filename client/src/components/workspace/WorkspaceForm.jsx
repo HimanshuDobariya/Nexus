@@ -183,7 +183,12 @@ const WorkspaceForm = ({ mode, initialData, setOpen }) => {
           )}
         />
         <div className="flex items-center justify-end">
-          <Button type="submit" size="lg" disabled={loading}>
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full sm:w-auto"
+            disabled={loading}
+          >
             {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
             {mode === "create" ? "Create Workspace" : "Save Changes"}
           </Button>

@@ -1,3 +1,5 @@
+"use client";
+
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import WorkspaceFormDialog from "@/components/workspace/WorkspaceFormDialog";
@@ -20,8 +22,6 @@ import { AvatarImage } from "@radix-ui/react-avatar";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
-import { Button } from "../ui/button";
-import { useProjectStore } from "@/store/projectStore";
 
 const WorkSpaceSwitcher = () => {
   const {
@@ -31,7 +31,7 @@ const WorkSpaceSwitcher = () => {
     setActiveWorkspaceId,
   } = useWorkspaceStore();
   const navigate = useNavigate();
-  const { isMobile, state } = useSidebar();
+  const { isMobile, state, setOpenMobile } = useSidebar();
   const [open, setOpen] = useState(false);
   const [currentWorkspace, setCurrentWorkspace] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -56,7 +56,7 @@ const WorkSpaceSwitcher = () => {
   useEffect(() => {
     const handleShortcut = (e) => {
       if (e.altKey) {
-        const index = parseInt(e.key, 10) - 1;
+        const index = Number.parseInt(e.key, 10) - 1;
         if (index >= 0 && index < workspaces.length) {
           const targetWorkspace = workspaces[index];
           setActiveWorkspaceId(targetWorkspace._id);
@@ -68,6 +68,13 @@ const WorkSpaceSwitcher = () => {
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
   }, [workspaces, setActiveWorkspaceId, navigate]);
+
+  // Helper function to close mobile sidebar if on mobile
+  const closeMobileSidebar = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
     <>
@@ -134,6 +141,7 @@ const WorkSpaceSwitcher = () => {
                     onClick={() => {
                       setActiveWorkspaceId(workspace._id);
                       navigate(`/workspaces/${workspace._id}`);
+                      closeMobileSidebar();
                     }}
                     className="gap-2 p-2 size-14 w-full"
                   >
@@ -184,4 +192,5 @@ const WorkSpaceSwitcher = () => {
     </>
   );
 };
+
 export default WorkSpaceSwitcher;
