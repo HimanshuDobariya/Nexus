@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 const ProtectedRoutes = () => {
   const { isAuthenticated, loading: authLoading } = useAuthStore();
   const { workspaces, getWorkSpaces, activeWorkspaceId } = useWorkspaceStore();
-  const [workspaceLoading, setWorkspaceLoading] = useState(false);
+  const [workspaceLoading, setWorkspaceLoading] = useState(true); // Start as true
   const location = useLocation();
 
   useEffect(() => {
@@ -15,37 +15,41 @@ const ProtectedRoutes = () => {
       try {
         setWorkspaceLoading(true);
         await getWorkSpaces();
-        setWorkspaceLoading(false);
-      } catch (error) {
-        setWorkspaceLoading(false);
+      } finally {
+        setWorkspaceLoading(false); // Ensure it gets cleared no matter what
       }
     };
 
     fetchWorkspaces();
   }, [getWorkSpaces]);
 
-  // ✅ Show loading state while fetching user or workspaces
+  // ✅ Still loading auth or workspaces? Show skeleton.
   if (authLoading || workspaceLoading) {
     return <DefaultSkeleton />;
   }
 
-  // ✅ If not authenticated, redirect to login
+  // ✅ Auth done loading: now check if user is authenticated
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // ✅ Get active workspace from localStorage or store
   const activeWorkspace =
     activeWorkspaceId || localStorage.getItem("activeWorkspaceId");
 
-  // ✅ Redirect Logic (Only When Necessary)
   if (!activeWorkspace && workspaces.length === 0) {
     if (location.pathname !== "/workspaces/create") {
       return <Navigate to="/workspaces/create" replace />;
     }
   } else if (activeWorkspace) {
-    if (!location.pathname.startsWith(`/workspaces/${activeWorkspace}`)) {
-      return <Navigate to={`/workspaces/${activeWorkspace}`} replace />;
+    const workspaceBase = `/workspaces/${activeWorkspace}`;
+    const isInWorkspace = location.pathname.startsWith(workspaceBase);
+
+    // Only redirect if user is NOT already in a workspace subpath
+    const shouldRedirect =
+      location.pathname === "/" || location.pathname === "/workspaces";
+
+    if (!isInWorkspace && shouldRedirect) {
+      return <Navigate to={workspaceBase} replace />;
     }
   }
 
