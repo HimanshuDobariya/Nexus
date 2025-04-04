@@ -93,46 +93,68 @@ export const getDueTasksNotifications = async (userId, workspaceId, io) => {
   }
 };
 
-export const handleTaskUpdateNotification = async (oldTask, updatedTask, io) => {
+export const handleTaskUpdateNotification = async (
+  oldTask,
+  updatedTask,
+  io
+) => {
   try {
     const oldDueSoon = isDueSoon(oldTask.dueDate);
     const newDueSoon = isDueSoon(updatedTask.dueDate);
 
-    const oldUserId = oldTask.assignedTo.toString();
-    const newUserId = updatedTask.assignedTo.toString();
+    const oldUserId = oldTask.assignedTo ? oldTask.assignedTo.toString() : null;
+    const newUserId = updatedTask.assignedTo?.toString();
     const taskId = updatedTask._id;
     const workspaceId = updatedTask.workspace.toString();
 
+    //  Case 1: Task marked as DONE → delete notifications
     if (updatedTask.status === "DONE") {
-      await Notification.updateMany({ taskId, isDeleted: false }, { isDeleted: true });
+      await Notification.updateMany(
+        { taskId, isDeleted: false },
+        { isDeleted: true }
+      );
 
-      const remaining = await Notification.find({
-        user: oldUserId,
-        workspace: workspaceId,
-        isDeleted: false,
-        isSent: true,
-      }).sort({ createdAt: -1 });
+      if (oldUserId) {
+        const remaining = await Notification.find({
+          user: oldUserId,
+          workspace: workspaceId,
+          isDeleted: false,
+          isSent: true,
+        }).sort({ createdAt: -1 });
 
-      io.to(oldUserId).emit("task-notifications", remaining);
+        io.to(oldUserId).emit("task-notifications", remaining);
+      }
+
       return;
     }
 
+    //  Case 2: Due date changed from "due soon" to not "due soon" → delete notification
     if (oldDueSoon && !newDueSoon) {
-      await Notification.updateMany({ taskId, isDeleted: false }, { isDeleted: true });
+      await Notification.updateMany(
+        { taskId, isDeleted: false },
+        { isDeleted: true }
+      );
 
-      const remaining = await Notification.find({
-        user: newUserId,
-        workspace: workspaceId,
-        isDeleted: false,
-        isSent: true,
-      }).sort({ createdAt: -1 });
+      if (newUserId) {
+        const remaining = await Notification.find({
+          user: newUserId,
+          workspace: workspaceId,
+          isDeleted: false,
+          isSent: true,
+        }).sort({ createdAt: -1 });
 
-      io.to(newUserId).emit("task-notifications", remaining);
+        io.to(newUserId).emit("task-notifications", remaining);
+      }
+
       return;
     }
 
-    if (oldUserId !== newUserId) {
-      await Notification.updateMany({ taskId, user: oldUserId, isDeleted: false }, { isDeleted: true });
+    //  Case 3: Assigned user changed
+    if (oldUserId && oldUserId !== newUserId) {
+      await Notification.updateMany(
+        { taskId, user: oldUserId, isDeleted: false },
+        { isDeleted: true }
+      );
 
       const oldUserNotifications = await Notification.find({
         user: oldUserId,
@@ -144,11 +166,16 @@ export const handleTaskUpdateNotification = async (oldTask, updatedTask, io) => 
       io.to(oldUserId).emit("task-notifications", oldUserNotifications);
     }
 
+    //  Case 4: Due date changed while still due soon → update message
     if (oldDueSoon && newDueSoon && oldTask.dueDate !== updatedTask.dueDate) {
-      await Notification.updateMany({ taskId, isDeleted: false }, { isDeleted: true });
+      await Notification.updateMany(
+        { taskId, isDeleted: false },
+        { isDeleted: true }
+      );
     }
 
-    if (newDueSoon) {
+    //  Case 5: Still due soon → create or update notification for new user
+    if (newDueSoon && newUserId) {
       const { type, message } = buildMessage(updatedTask);
 
       let existing = await Notification.findOne({
