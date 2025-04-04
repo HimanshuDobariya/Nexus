@@ -14,12 +14,19 @@ import commentsRoutes from "./routes/comments.route.js";
 import { verifyToken } from "./middlewares/verifyToken.js";
 import cron from "node-cron";
 import updateExpiredInvitations from "./services/updateExpiredInvitation.js";
+import notificationsRoutes from "./routes/notifications.routes.js";
+import { createServer } from "http";
+import { initializeSocket } from "./config/socket.config.js";
+
 const app = express();
+const server = createServer(app);
+initializeSocket(server);
 
 // middleware
 app.use(
   cors({
     origin: config.client_url,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   })
 );
@@ -36,10 +43,11 @@ app.use("/api/tasks", verifyToken, taskRoutes);
 app.use("/api/members", memberRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/comments", verifyToken, commentsRoutes);
+app.use("/api/notifications", verifyToken, notificationsRoutes);
 
 cron.schedule("0 * * * *", updateExpiredInvitations);
 
-app.listen(config.port, async () => {
+server.listen(config.port, async () => {
   console.log(`Server running on port : ${config.port}`);
   // connect to database
   await connectDatabase();

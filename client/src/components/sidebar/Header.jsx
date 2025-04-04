@@ -10,11 +10,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import Notifications from "../notification/Notifications";
+import { useAuthStore } from "@/store/authStore";
 
 const Header = () => {
   const location = useLocation();
   const pathname = location.pathname;
   const { workspaceId } = useParams();
+  const { user } = useAuthStore();
 
   const getPageLabel = (pathname) => {
     if (pathname.includes("/projects/")) return "Projects";
@@ -59,7 +62,11 @@ const Header = () => {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <UserButton />
+
+      <div className="flex items-center gap-4">
+        <Notifications userId={user._id} workspaceId={workspaceId} />
+        <UserButton />
+      </div>
     </header>
   );
 };

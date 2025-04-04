@@ -18,7 +18,7 @@ const TaskAction = ({ children, data }) => {
   const [loading, setLoading] = useState(false);
   const [openDeleteTaskDialog, setOpenDeleteTaskDialog] = useState(false);
   const [openEditTaskDialog, setOpenEditTaskDialog] = useState(false);
-  const { deleteTask } = useTaskStore();
+  const { deleteTask, getAllTasks } = useTaskStore();
 
   const handleDeleteTask = async () => {
     try {
@@ -28,6 +28,7 @@ const TaskAction = ({ children, data }) => {
         variant: "success",
         description: "Task Deleted successfully.",
       });
+      getAllTasks(workspaceId, projectId);
       setOpenDeleteTaskDialog(false);
       setLoading(false);
     } catch (error) {

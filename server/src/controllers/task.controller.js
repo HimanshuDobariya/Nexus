@@ -4,6 +4,12 @@ import { getMemberRoleInWorkspace } from "../services/getMemberRoleInWorkspace.j
 import { checkPermission } from "../services/checkPermission.js";
 import { Permissions } from "../enums/role.enum.js";
 import Member from "../models/members.model.js";
+import {
+  getDueTasksNotifications,
+  handleTaskDeletionNotification,
+  handleTaskUpdateNotification,
+} from "../services/getDueTasksNotifications.js";
+import { io } from "../config/socket.config.js";
 
 // create task
 export const createTask = async (req, res) => {
@@ -83,6 +89,10 @@ export const createTask = async (req, res) => {
     });
 
     await task.save();
+
+    if (task.assignedTo) {
+      await getDueTasksNotifications(task.assignedTo, task.workspace, io);
+    }
 
     res.status(200).json({ message: "Task created successfully", task });
   } catch (error) {
@@ -216,28 +226,58 @@ export const updateTasksBulk = async (req, res) => {
     const { workspaceId } = req.params;
     const { tasks } = req.body;
 
+    // Validate input
     if (!Array.isArray(tasks) || tasks.length === 0) {
       return res.status(400).json({ message: "Invalid or empty tasks array." });
     }
 
+    // Permission check
     const { role } = await getMemberRoleInWorkspace(workspaceId, userId);
     await checkPermission(role, [Permissions.EDIT_TASK]);
 
-    const bulkUpdates = tasks.map(({ _id, status, position }) => ({
+    const taskIds = tasks.map((t) => t._id);
+
+    // Fetch existing tasks
+    const existingTasks = await Task.find({
+      _id: { $in: taskIds },
+      workspace: workspaceId,
+    }).populate("project");
+
+    const oldTaskMap = new Map();
+    existingTasks.forEach((task) => {
+      oldTaskMap.set(task._id.toString(), task.toObject()); // Detach from Mongoose
+    });
+
+    // Prepare bulk update operations
+    const bulkOps = tasks.map(({ _id, status, position }) => ({
       updateOne: {
         filter: { _id, workspace: workspaceId },
         update: { $set: { status, position } },
       },
     }));
 
-    await Task.bulkWrite(bulkUpdates);
+    await Task.bulkWrite(bulkOps);
 
-    res.status(200).json({ message: "Tasks updated successfully.", tasks });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      message: error.message || "Server error.",
+    // Fetch updated tasks
+    const updatedTasks = await Task.find({ _id: { $in: taskIds } }).populate(
+      "project"
+    );
+
+    // Trigger notifications
+    for (const updatedTask of updatedTasks) {
+      const oldTask = oldTaskMap.get(updatedTask._id.toString());
+      if (oldTask) {
+        await handleTaskUpdateNotification(oldTask, updatedTask, io);
+      }
+    }
+
+    res.status(200).json({
+      message: "Tasks updated successfully.",
+      tasks: updatedTasks,
     });
+  } catch (error) {
+    console.error("❌ Bulk update error:", error);
+    res.status(500).json({ message: error.message || "Server error." });
   }
 };
 
@@ -278,6 +318,8 @@ export const updateTask = async (req, res) => {
       });
     }
 
+    await handleTaskUpdateNotification(task, updatedTask, io);
+
     res.status(200).json({
       message: "Task updated successfully",
       task: updatedTask,
@@ -308,6 +350,8 @@ export const deleteTaskTask = async (req, res) => {
         message: "Task not found or does not belong to the specified project",
       });
     }
+
+    await handleTaskDeletionNotification(task, io);
 
     res.status(200).json({
       message: "Task deleted successfully",
