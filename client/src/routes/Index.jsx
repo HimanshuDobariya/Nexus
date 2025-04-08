@@ -16,6 +16,7 @@ import JoinWorkspace from "@/components/invitation/JoinWorkspace";
 import Dashboard from "@/pages/workspace/Dashboard";
 import ProjectDetails from "@/pages/workspace/ProjectDetails";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import PageNotFound from "@/pages/PageNotFound";
 
 const GoogleAuthWrapper = ({ children }) => {
   return (
@@ -68,6 +69,8 @@ const AppRoutes = () => {
           path="workspaces/:workspaceId/join/:inviteCode"
           element={<JoinWorkspace />}
         />
+
+        <Route path="*" element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>
   );
