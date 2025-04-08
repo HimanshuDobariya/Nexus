@@ -1,27 +1,30 @@
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import ChartCard from "@/components/common/ChartCard";
 import { Loader } from "lucide-react";
 
 const ProjectTasksChart = ({ data, isLoading }) => {
   const chartData = data?.map((item) => ({
-    project: {
-      id: item.project._id,
-      name: item.project.name,
-      emoji: item.project.emoji,
-    },
+    project: item.project,
     count: item.count,
-    fill: `var(--color-${item.project._id})`,
+    fill: `var(--color-${item.project.replace(/\s+/g, "-").toLowerCase()})`,
   }));
 
   const chartConfig = data?.reduce(
     (config, item, index) => {
-      config[item.project._id] = {
-        label: item.project.name,
+      const projectId = item.project.replace(/\s+/g, "-").toLowerCase();
+      config[projectId] = {
+        label: item.project,
         color: `hsl(var(--chart-${(index % 5) + 1}))`,
       };
       return config;
@@ -30,7 +33,7 @@ const ProjectTasksChart = ({ data, isLoading }) => {
   );
 
   return (
-    <ChartCard className="shadow-none">
+    <>
       {isLoading ? (
         <div className="flex items-center justify-center w-full h-[300px]">
           <Loader className="animate-spin size-10 " />
@@ -42,38 +45,55 @@ const ProjectTasksChart = ({ data, isLoading }) => {
       ) : (
         <ChartContainer config={chartConfig}>
           <BarChart
-            accessibilityLayer
             data={chartData}
             margin={{
               top: 40,
+              right: 30,
+              bottom: 30,
             }}
+            barCategoryGap={40}
           >
             <CartesianGrid vertical={false} />
+
+            <YAxis
+              label={{
+                value: "Tasks",
+                angle: -90,
+                position: "insideLeft",
+                offset: 10,
+                style: { textAnchor: "middle", fontSize: 14, fill: "#555" },
+              }}
+              tickMargin={10}
+              tick={{ fontSize: 12 }}
+            />
+
             <XAxis
-              dataKey="project.id"
+              dataKey="project"
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(id) => {
-                const project = chartData.find(
-                  (item) => item.project.id === id
-                );
-                return project
-                  ? `${project.project.emoji} ${project.project.name.split(" ")[0]}...`
-                  : "";
+              tickFormatter={(value) => {
+                return `${value.slice(0, 10)}...`;
+              }}
+              label={{
+                value: "Projects",
+                position: "insideBottom",
+                offset: -30,
+                style: { textAnchor: "middle", fontSize: 14, fill: "#555" },
               }}
             />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
             />
-            <Bar dataKey="count" radius={8}>
-              <LabelList position="top" offset={12} fontSize={18} />
+
+            <Bar dataKey="count" radius={6} barSize={60}>
+              <LabelList position="top" offset={12} fontSize={14} />
             </Bar>
           </BarChart>
         </ChartContainer>
       )}
-    </ChartCard>
+    </>
   );
 };
 export default ProjectTasksChart;

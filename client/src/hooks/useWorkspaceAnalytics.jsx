@@ -1,139 +1,246 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
-const useWorkspaceAnalytics = (workspaceId, projectId, selectedYear) => {
+const useWorkspaceAnalytics = (workspaceId, projectId) => {
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const getWorkspaceAnalytics = async () => {
-    if (!workspaceId) return;
-    try {
-      setIsLoading(true);
-      const { data } = await axios.get(
-        `${
-          import.meta.env.VITE_SERVER_URL
-        }/api/workspaces/${workspaceId}/analytics`,
-        {
-          params: {
-            projectId,
-          },
-        }
-      );
-      setTasks(data?.tasks);
-      setProjects(data?.projects);
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      console.log(error);
-    }
+  const initialAnalytics = {
+    totalTasks: 0,
+    overdueTasks: 0,
+    completedTasks: 0,
+    unassignedTasks: 0,
+    taskPriorityArray: [],
+    taskStatusArray: [],
+    taskMemberArray: [],
+    projectTaskArray: [],
+    incompleteTasksByMember: [],
   };
+
+  const [analyticsData, setAnalyticsData] = useState(initialAnalytics);
+  const [loadingStates, setLoadingStates] = useState(
+    Object.fromEntries(Object.keys(initialAnalytics).map((key) => [key, false]))
+  );
+
+  const setLoading = useCallback((keys, isLoading) => {
+    const updates = Array.isArray(keys) ? keys : [keys];
+    setLoadingStates((prev) => {
+      const updated = { ...prev };
+      updates.forEach((key) => (updated[key] = isLoading));
+      return updated;
+    });
+  }, []);
+
+  const calculateAnalytics = useCallback((keys, tasksData, projectsData) => {
+    const updates = {};
+
+    if (keys.includes("totalTasks")) {
+      updates.totalTasks = tasksData.length;
+    }
+
+    if (keys.includes("overdueTasks")) {
+      updates.overdueTasks = tasksData.filter(
+        (task) => task.status !== "DONE" && new Date(task.dueDate) < new Date()
+      ).length;
+    }
+
+    if (keys.includes("completedTasks")) {
+      updates.completedTasks = tasksData.filter(
+        (task) => task.status === "DONE"
+      ).length;
+    }
+
+    if (keys.includes("unassignedTasks")) {
+      updates.unassignedTasks = tasksData.filter(
+        (task) => !task.assignedTo
+      ).length;
+    }
+
+    if (keys.includes("taskPriorityArray")) {
+      updates.totalTasks = tasksData.length;
+      updates.taskPriorityArray = Object.values(
+        tasksData.reduce((acc, task) => {
+          acc[task.priority] = acc[task.priority] || {
+            priority: task.priority,
+            count: 0,
+            percentage: 0,
+          };
+          acc[task.priority].count++;
+          acc[task.priority].percentage = (
+            (acc[task.priority].count / updates.totalTasks) *
+            100
+          ).toFixed(2);
+          return acc;
+        }, {})
+      );
+    }
+
+    if (keys.includes("taskStatusArray")) {
+      updates.taskStatusArray = Object.values(
+        tasksData.reduce((acc, task) => {
+          acc[task.status] = acc[task.status] || {
+            status: task.status,
+            count: 0,
+          };
+          acc[task.status].count++;
+          return acc;
+        }, {})
+      );
+    }
+
+    if (keys.includes("taskMemberArray")) {
+      updates.taskMemberArray = Object.values(
+        tasksData.reduce((acc, task) => {
+          const member = task.assignedTo?.name || "Unassigned";
+          acc[member] = acc[member] || { member, count: 0 };
+          acc[member].count++;
+          return acc;
+        }, {})
+      );
+    }
+
+    if (keys.includes("incompleteTasksByMember")) {
+      const filteredTasks = tasksData.filter(
+        (task) => task.status !== "DONE" && task.assignedTo
+      );
+
+      const totalIncompleteAssigned = filteredTasks.length;
+
+      const memberMap = filteredTasks.reduce((acc, task) => {
+        const member = task.assignedTo.name;
+        const status = task.status;
+
+        if (!acc[member]) {
+          acc[member] = {
+            member,
+            count: 0,
+            percentage: 0,
+            statusCounts: {},
+          };
+        }
+
+        acc[member].count++;
+        acc[member].statusCounts[status] =
+          (acc[member].statusCounts[status] || 0) + 1;
+
+        return acc;
+      }, {});
+
+      updates.incompleteTasksByMember = Object.values(memberMap).map(
+        (entry) => ({
+          ...entry,
+          percentage: ((entry.count / totalIncompleteAssigned) * 100).toFixed(
+            2
+          ),
+        })
+      );
+    }
+
+    if (keys.includes("projectTaskArray") && projectsData) {
+      const countMap = tasksData.reduce((acc, task) => {
+        const id = task.project?._id;
+        if (id) acc[id] = (acc[id] || 0) + 1;
+        return acc;
+      }, {});
+
+      updates.projectTaskArray = projectsData.map((project) => ({
+        project: project.name,
+        count: countMap[project._id] || 0,
+      }));
+    }
+
+    setAnalyticsData((prev) => ({ ...prev, ...updates }));
+  }, []);
+
+  const fetchTasks = useCallback(
+    async (keys) => {
+      if (!workspaceId) return;
+      setLoading(["tasks", ...keys], true);
+
+      try {
+        const { data } = await axios.get(
+          `${
+            import.meta.env.VITE_SERVER_URL
+          }/api/workspaces/${workspaceId}/analytics`,
+          { params: { projectId } }
+        );
+
+        const newTasks = data.tasks || [];
+        setTasks(newTasks);
+        return newTasks;
+      } catch (error) {
+        console.error("Failed to fetch tasks:", error);
+        return [];
+      } finally {
+        setLoading(["tasks", ...keys], false);
+      }
+    },
+    [workspaceId, projectId, setLoading]
+  );
+
+  const fetchProjects = useCallback(
+    async (keys, tasksData = []) => {
+      if (!workspaceId) return;
+      setLoading(["projects", ...keys], true);
+
+      try {
+        const { data } = await axios.get(
+          `${
+            import.meta.env.VITE_SERVER_URL
+          }/api/workspaces/${workspaceId}/analytics`,
+          { params: { projectId } }
+        );
+
+        const newProjects = data.projects || [];
+        setProjects(newProjects);
+        calculateAnalytics(keys, tasksData, newProjects);
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+      } finally {
+        setLoading(["projects", ...keys], false);
+      }
+    },
+    [workspaceId, projectId, calculateAnalytics, setLoading]
+  );
 
   useEffect(() => {
-    getWorkspaceAnalytics();
-  }, [projectId, selectedYear, workspaceId]);
+    const loadAnalytics = async () => {
+      const taskKeys = [
+        "totalTasks",
+        "overdueTasks",
+        "completedTasks",
+        "unassignedTasks",
+        "taskPriorityArray",
+        "taskStatusArray",
+        "taskMemberArray",
+        "incompleteTasksByMember",
+      ];
+      const projectKeys = ["projectTaskArray"];
 
-  const totalTasks = tasks?.length;
-  const overdueTasks = tasks?.reduce((acc, task) => {
-    const isOverdue =
-      task.status !== "DONE" && new Date(task.dueDate) < new Date();
-    return isOverdue ? acc + 1 : acc;
-  }, 0);
-  const completedTasks = tasks?.reduce((acc, task) => {
-    return task.status === "DONE" ? acc + 1 : acc;
-  }, 0);
-  const unassignedTasks = tasks?.reduce((acc, task) => {
-    return task.assignedTo === null ? acc + 1 : acc;
-  }, 0);
-
-  const taskStatusData = tasks?.reduce((acc, task) => {
-    acc[task.status] = acc[task.status] || {
-      status: task.status,
-      count: 0,
+      const taskData = await fetchTasks(taskKeys);
+      await fetchProjects(projectKeys, taskData);
+      calculateAnalytics(taskKeys, taskData, projects);
     };
-    acc[task.status].count++;
-    return acc;
-  }, {});
 
-  const taskMemberData = tasks.reduce((acc, task) => {
-    if (task.assignedTo && task.assignedTo.name) {
-      const memberKey = task.assignedTo.name;
-      acc[memberKey] = acc[memberKey] || {
-        member: task.assignedTo.name,
-        count: 0,
-      };
-      acc[memberKey].count++;
-    } else {
-      acc["unassigned"] = acc["unassigned"] || {
-        member: "Unassigned",
-        count: 0,
-      };
-      acc["unassigned"].count++;
-    }
-    return acc;
-  }, {});
+    if (workspaceId) loadAnalytics();
+  }, [workspaceId, projectId]);
 
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+  const handleRefresh = useCallback(
+    async (keys = []) => {
+      const projectKeys = keys.filter((k) => k === "projectTaskArray");
+      const taskKeys = keys.filter((k) => k !== "projectTaskArray");
 
-  let count = 0;
+      const taskData = taskKeys.length ? await fetchTasks(taskKeys) : tasks;
+      if (projectKeys.length) await fetchProjects(projectKeys, taskData);
+      if (taskKeys.length) calculateAnalytics(taskKeys, taskData, projects);
+    },
+    [fetchTasks, fetchProjects, calculateAnalytics, tasks, projects]
+  );
 
-  const taskMonthData = tasks?.reduce((acc, task) => {
-    const createdAt = new Date(task.createdAt);
-    const taskYear = createdAt.getFullYear();
-    if (taskYear !== selectedYear) return acc; // Filter tasks for the given year
-
-    if (taskYear === selectedYear) {
-      count++;
-    }
-
-    const monthIndex = createdAt.getMonth();
-    const monthName = months[monthIndex];
-
-    if (task.status === "DONE") {
-      acc[monthName].done++;
-    } else {
-      acc[monthName].pending++;
-    }
-
-    return acc;
-  }, Object.fromEntries(months.map((month) => [month, { month, pending: 0, done: 0 }])));
-
-  const taskCounts = tasks.reduce((acc, task) => {
-    const projectId = task.project._id;
-    acc[projectId] = (acc[projectId] || 0) + 1;
-    return acc;
-  }, {});
-
-  const projectTaskData = projects.map((project) => ({
-    project,
-    count: taskCounts[project._id] || 0,
-  }));
-
-  const analytics = {
-    totalTasks,
-    overdueTasks,
-    completedTasks,
-    unassignedTasks,
-    taskStatusArray: Object.values(taskStatusData),
-    taskMemberArray: Object.values(taskMemberData),
-    taskMonthArray: Object.values(taskMonthData),
-    projectTaskArray: projectTaskData,
+  return {
+    handleRefresh,
+    loading: loadingStates,
+    analytics: analyticsData,
   };
-
-  return { getWorkspaceAnalytics, analytics, isLoading };
 };
 
 export default useWorkspaceAnalytics;

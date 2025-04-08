@@ -1,17 +1,14 @@
-import ChartCard from "@/components/common/ChartCard";
 import * as React from "react";
 import { Label, Pie, PieChart } from "recharts";
-
 import {
   ChartContainer,
   ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Loader } from "lucide-react";
 
-const TaskStatusChart = ({ data, isLoading }) => {
+const TaskStatusChart = ({ data, isLoading, isDialog = false }) => {
   const capitalizeString = (string) => {
     if (!string) return;
     return string
@@ -42,12 +39,12 @@ const TaskStatusChart = ({ data, isLoading }) => {
   const [activeIndex, setActiveIndex] = React.useState(null);
 
   const totalVisitors = chartData?.reduce((acc, curr) => acc + curr.count, 0);
+
+  const baseOuter = isDialog ? 220 : 100;
+  const baseInner = isDialog ? baseOuter * 0.6 : 60;
+
   return (
-    <ChartCard
-      className="flex flex-col shadow-none"
-      title="Task Distribution"
-      description="Tasks by status"
-    >
+    <div className="overflow-auto">
       {isLoading ? (
         <div className="flex items-center justify-center w-full h-[300px]">
           <Loader className="animate-spin size-10 " />
@@ -57,10 +54,7 @@ const TaskStatusChart = ({ data, isLoading }) => {
           No Data Availabel
         </div>
       ) : (
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square max-h-[300px]"
-        >
+        <ChartContainer config={chartConfig} className="mx-auto">
           <PieChart>
             <ChartTooltip
               cursor={false}
@@ -70,8 +64,8 @@ const TaskStatusChart = ({ data, isLoading }) => {
               data={chartData}
               dataKey="count"
               nameKey="status"
-              outerRadius={100}
-              innerRadius={60}
+              outerRadius={baseOuter}
+              innerRadius={baseInner}
               strokeWidth={5}
               onMouseEnter={(_, index) => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(null)}
@@ -113,17 +107,39 @@ const TaskStatusChart = ({ data, isLoading }) => {
               />
             </Pie>
             <ChartLegend
-              content={
-                <ChartLegendContent
-                  nameKey="status"
-                  className="flex items-center flex-wrap"
-                />
-              }
+              verticalAlign="middle"
+              align="right"
+              layout="vertical"
+              content={({ payload }) => (
+                <ul className="flex flex-col gap-2 items-start mr-10">
+                  <li className="flex items-center gap-2">
+                    
+                    <span className="text-muted-foreground text-sm">
+                      Status - Tasks
+                    </span>
+                  </li>
+                  {payload?.map((entry, index) => (
+                    <li
+                      key={`item-${index}`}
+                      className="flex items-center gap-2"
+                    >
+                      <span
+                        className="w-3 h-3 rounded-[2px]"
+                        style={{ backgroundColor: entry.color }}
+                      />
+                      <span className="text-muted-foreground text-sm">
+                        {capitalizeString(entry.payload.status)} -{" "}
+                        {entry.payload.count}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             />
           </PieChart>
         </ChartContainer>
       )}
-    </ChartCard>
+    </div>
   );
 };
 export default TaskStatusChart;
