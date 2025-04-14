@@ -184,75 +184,80 @@ const Members = () => {
                         {member?.role.name}
                       </Badge>
 
-                      {member?.role.name !== "OWNER" && (
-                        <PermissionGuard
-                          requiredPermission={[
-                            Permissions.CHANGE_MEMBER_ROLE,
-                            Permissions.REMOVE_MEMBER,
-                          ]}
-                        >
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                className="cursor-pointer"
-                                variant="outline"
-                                size="icon"
-                              >
-                                <EllipsisVertical />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent side="bottom" align="end">
-                              <DropdownMenuItem
-                                className="font-medium py-2"
-                                onClick={() => {
-                                  changeRoleOfMembers(
-                                    member.userId._id,
-                                    roles.find((role) => role.name === "ADMIN")
-                                      ?._id
-                                  );
-                                }}
-                              >
-                                Set as Administrator
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="font-medium py-2"
-                                onClick={() => {
-                                  changeRoleOfMembers(
-                                    member.userId._id,
-                                    roles.find((role) => role.name === "MEMBER")
-                                      ?._id
-                                  );
-                                }}
-                              >
-                                Set as Member
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="font-medium py-2"
-                                onClick={() => {
-                                  changeRoleOfMembers(
-                                    member.userId._id,
-                                    roles.find((role) => role.name === "VIEWER")
-                                      ?._id
-                                  );
-                                }}
-                              >
-                                Set as Viewer
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="font-medium py-2 text-amber-700 hover:text-amber-700"
-                                onClick={() => {
-                                  removeMember(
-                                    member.userId._id,
-                                    member.userId.email
-                                  );
-                                }}
-                              >
-                                Remove {member?.userId.name.split(" ")[0]}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </PermissionGuard>
-                      )}
+                      {/* Only show menu if the member is not the current user */}
+                      {member.userId._id !== user?._id &&
+                        member?.role.name !== "OWNER" && (
+                          <PermissionGuard
+                            requiredPermission={[
+                              Permissions.CHANGE_MEMBER_ROLE,
+                              Permissions.REMOVE_MEMBER,
+                            ]}
+                          >
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  className="cursor-pointer"
+                                  variant="outline"
+                                  size="icon"
+                                >
+                                  <EllipsisVertical />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent side="bottom" align="end">
+                                <DropdownMenuItem
+                                  className="font-medium py-2"
+                                  onClick={() => {
+                                    changeRoleOfMembers(
+                                      member.userId._id,
+                                      roles.find(
+                                        (role) => role.name === "ADMIN"
+                                      )?._id
+                                    );
+                                  }}
+                                >
+                                  Set as Administrator
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="font-medium py-2"
+                                  onClick={() => {
+                                    changeRoleOfMembers(
+                                      member.userId._id,
+                                      roles.find(
+                                        (role) => role.name === "MEMBER"
+                                      )?._id
+                                    );
+                                  }}
+                                >
+                                  Set as Member
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="font-medium py-2"
+                                  onClick={() => {
+                                    changeRoleOfMembers(
+                                      member.userId._id,
+                                      roles.find(
+                                        (role) => role.name === "VIEWER"
+                                      )?._id
+                                    );
+                                  }}
+                                >
+                                  Set as Viewer
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="font-medium py-2 text-amber-700 hover:text-amber-700"
+                                  onClick={() => {
+                                    removeMember(
+                                      member.userId._id,
+                                      member.userId.email
+                                    );
+                                  }}
+                                >
+                                  Remove {member?.userId.name.split(" ")[0]}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </PermissionGuard>
+                        )}
                     </div>
                   </div>
                   {index < sortedMembers.length - 1 && (
