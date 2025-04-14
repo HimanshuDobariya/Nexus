@@ -21,13 +21,13 @@ const Settings = () => {
     useState(false);
 
   const navigate = useNavigate();
-  const { deleteWorkspace, getWorkspaceById, activeWorkspaceId } =
+  const { deleteWorkspace, getWorkspaceById } =
     useWorkspaceStore();
   const { workspaceId } = useParams();
   const [currentWorkspace, setCurrentWorkspace] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const getWorkspaceCurrentWorkspace = async () => {
+  const getCurrentWorkspace = async () => {
     try {
       setLoading(true);
       const workspace = await getWorkspaceById(workspaceId);
@@ -40,7 +40,7 @@ const Settings = () => {
   };
 
   useEffect(() => {
-    getWorkspaceCurrentWorkspace();
+    getCurrentWorkspace();
   }, []);
 
   const handleDeleteWorkspace = async () => {

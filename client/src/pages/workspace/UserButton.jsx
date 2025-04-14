@@ -45,7 +45,7 @@ const UserButton = () => {
           {profile && profile.profileImage ? (
             <AvatarImage
               src={profile.profileImage}
-              referrerPolicy="no-referrer" 
+              referrerPolicy="no-referrer"
               className="h-full w-full object-cover"
             />
           ) : (
@@ -69,7 +69,7 @@ const UserButton = () => {
             {profile && profile.profileImage ? (
               <AvatarImage
                 src={profile.profileImage}
-                referrerPolicy="no-referrer" 
+                referrerPolicy="no-referrer"
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -95,12 +95,6 @@ const UserButton = () => {
             className="py-2 text-lg"
           >
             <User className="!size-6 mr-2 " /> Profile
-          </DropdownMenuItem>
-          <DropdownMenuItem className="py-2 text-lg">
-            <BadgeCheck className="!size-6 mr-2" /> Account
-          </DropdownMenuItem>
-          <DropdownMenuItem className="py-2 text-lg">
-            <Bell className="!size-6 mr-2" /> Notifications
           </DropdownMenuItem>
         </DropdownMenuGroup>
 

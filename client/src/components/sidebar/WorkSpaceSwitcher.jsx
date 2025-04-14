@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ChevronsUpDown, Loader, Plus } from "lucide-react";
 import { AvatarImage } from "@radix-ui/react-avatar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
 
@@ -35,6 +35,7 @@ const WorkSpaceSwitcher = () => {
   const [open, setOpen] = useState(false);
   const [currentWorkspace, setCurrentWorkspace] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { workspaceId } = useParams();
 
   const getCurrentWorkspace = async () => {
     if (!activeWorkspaceId) return;
@@ -52,6 +53,10 @@ const WorkSpaceSwitcher = () => {
   useEffect(() => {
     getCurrentWorkspace();
   }, [activeWorkspaceId, workspaces]);
+
+  useEffect(() => {
+    setActiveWorkspaceId(workspaceId);
+  }, [workspaceId]);
 
   useEffect(() => {
     const handleShortcut = (e) => {

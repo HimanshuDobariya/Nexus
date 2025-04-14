@@ -1,12 +1,6 @@
 import DottedSeperator from "@/components/common/DottedSeperator";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import {
   DropdownMenu,
@@ -16,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { EllipsisVertical, Loader } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import InviteMembers from "@/components/invitation/InviteMembers";
@@ -25,15 +19,22 @@ import { toast } from "@/hooks/use-toast";
 import Header from "@/components/common/Header";
 import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 import { Roles } from "@/components/enums/RoleEnums";
-
-
+import { useRolesAndMembersStore } from "@/store/useRolesAndMembersStore";
+import PermissionGuard from "@/components/common/PermissionGuard";
+import { Permissions } from "@/components/enums/PermissionsEnum";
+import { useAuthStore } from "@/store/authStore";
 
 const Members = () => {
   const { workspaceId } = useParams();
-  const [members, setMembers] = useState([]);
-  const [roles, setRoles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
+  const {
+    getAllWorkspaceMembers,
+    members,
+    getAvailableRolesAndPermissions,
+    roles,
+  } = useRolesAndMembersStore();
+  const [filteredRoles, setFilteredRoles] = useState([]);
+  const { user } = useAuthStore();
 
   const roleDescriptions = {
     [Roles.ADMIN]:
@@ -42,41 +43,6 @@ const Members = () => {
       "Member are the part of the team, and can add, edit and collaborate on all work.",
     [Roles.VIEWER]:
       "Viewers can search through, view and comment on your team's work, but not much else.",
-  };
-
-
-  const getAllRoles = async () => {
-    setIsLoading(true);
-    try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/api/roles`
-      );
-      const filteredRoles = data.roles
-        .filter((role) => role.name !== "OWNER")
-        .map((role) => ({
-          ...role,
-          description:
-            roleDescriptions[role.name] || "No description available",
-        }));
-      setRoles(filteredRoles);
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      console.log(error);
-    }
-  };
-
-  const getWorkSpaceMembers = async () => {
-    try {
-      const { data } = await axios.get(
-        `${
-          import.meta.env.VITE_SERVER_URL
-        }/api/workspaces/${workspaceId}/members`
-      );
-      setMembers(data.members);
-    } catch (error) {
-      console.log(error);
-    }
   };
 
   const changeRoleOfMembers = async (memberId, roleId) => {
@@ -90,8 +56,9 @@ const Members = () => {
           roleId,
         }
       );
-      getWorkSpaceMembers();
+      getAllWorkspaceMembers(workspaceId);
       toast({
+        variant: "success",
         description: data.message,
       });
     } catch (error) {
@@ -113,8 +80,9 @@ const Members = () => {
           data: { memberId, email },
         }
       );
-      getWorkSpaceMembers();
+      getAllWorkspaceMembers(workspaceId);
       toast({
+        variant: "success",
         description: data.message,
       });
     } catch (error) {
@@ -127,16 +95,54 @@ const Members = () => {
   };
 
   useEffect(() => {
+    const getWorkSpaceMembers = async () => {
+      try {
+        await getAllWorkspaceMembers(workspaceId);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const getAllRoles = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getAvailableRolesAndPermissions();
+        const filteredRoles = data
+          .filter((role) => role.name !== "OWNER")
+          .map((role) => ({
+            _id: role._id,
+            name: role.name,
+            description:
+              roleDescriptions[role.name] || "No description available",
+          }));
+        setFilteredRoles(filteredRoles);
+        setIsLoading(false);
+      } catch (error) {
+        setIsLoading(false);
+        console.log(error);
+      }
+    };
     getAllRoles();
     getWorkSpaceMembers();
   }, []);
 
+  const sortedMembers = useMemo(() => {
+    if (!members) return [];
+
+    return [...members].sort((a, b) => {
+      if (a.role.name === "OWNER") return -1;
+      if (b.role.name === "OWNER") return 1;
+
+      if (a.userId._id === user?._id) return -1;
+      if (b.userId._id === user?._id) return 1;
+
+      return 0;
+    });
+  }, [members, user?._id]);
+
   return (
     <div className="h-full w-full lg:max-w-screen-sm mx-auto space-y-4">
-      <Header
-        title="Workspace members"
-        description="Manage workspace members"
-      />
+      <Header title="Workspace members" />
       <Card className="w-full shadow-none">
         <CardHeader>
           <CardTitle className="text-xl">Members List</CardTitle>
@@ -145,8 +151,8 @@ const Members = () => {
         <DottedSeperator className="px-7" />
         <CardContent className="p-7">
           {!isLoading ? (
-            members.length > 0 ? (
-              members.map((member, index) => (
+            sortedMembers && sortedMembers.length > 0 ? (
+              sortedMembers.map((member, index) => (
                 <div key={member._id}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -154,13 +160,20 @@ const Members = () => {
                         <AvatarFallback
                           className={`size-10 font-medium text-lg rounded-full flex items-center justify-center ${getAvatarColor(
                             member?.userId.name
-                          )} `}
+                          )}`}
                         >
                           {getAvatarFallbackText(member?.userId.name)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col">
-                        <p className=" font-medium">{member.userId.name}</p>
+                        <p className="font-medium">
+                          {member.userId.name}
+                          {member.userId._id === user?._id && (
+                            <span className="text-sm text-muted-foreground ml-1">
+                              (You)
+                            </span>
+                          )}
+                        </p>
                         <p className="text-sm text-muted-foreground">
                           {member.userId.email}
                         </p>
@@ -172,70 +185,79 @@ const Members = () => {
                       </Badge>
 
                       {member?.role.name !== "OWNER" && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              className="cursor-pointer"
-                              variant="outline"
-                              size="icon"
-                            >
-                              <EllipsisVertical />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent side="bottom" align="end">
-                            <DropdownMenuItem
-                              className="font-medium py-2"
-                              onClick={() => {
-                                changeRoleOfMembers(
-                                  member.userId._id,
-                                  roles.find((role) => role.name === "ADMIN")
-                                    ?._id
-                                );
-                              }}
-                            >
-                              Set as Administrator
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="font-medium py-2"
-                              onClick={() => {
-                                changeRoleOfMembers(
-                                  member.userId._id,
-                                  roles.find((role) => role.name === "MEMBER")
-                                    ?._id
-                                );
-                              }}
-                            >
-                              Set as Member
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="font-medium py-2"
-                              onClick={() => {
-                                changeRoleOfMembers(
-                                  member.userId._id,
-                                  roles.find((role) => role.name === "VIEWER")
-                                    ?._id
-                                );
-                              }}
-                            >
-                              Set as Viewer
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="font-medium py-2 text-amber-700 hover:text-amber-700"
-                              onClick={() => {
-                                removeMember(
-                                  member.userId._id,
-                                  member.userId.email
-                                );
-                              }}
-                            >
-                              Remove {member?.userId.name.split(" ")[0]}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <PermissionGuard
+                          requiredPermission={[
+                            Permissions.CHANGE_MEMBER_ROLE,
+                            Permissions.REMOVE_MEMBER,
+                          ]}
+                        >
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                className="cursor-pointer"
+                                variant="outline"
+                                size="icon"
+                              >
+                                <EllipsisVertical />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent side="bottom" align="end">
+                              <DropdownMenuItem
+                                className="font-medium py-2"
+                                onClick={() => {
+                                  changeRoleOfMembers(
+                                    member.userId._id,
+                                    roles.find((role) => role.name === "ADMIN")
+                                      ?._id
+                                  );
+                                }}
+                              >
+                                Set as Administrator
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="font-medium py-2"
+                                onClick={() => {
+                                  changeRoleOfMembers(
+                                    member.userId._id,
+                                    roles.find((role) => role.name === "MEMBER")
+                                      ?._id
+                                  );
+                                }}
+                              >
+                                Set as Member
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="font-medium py-2"
+                                onClick={() => {
+                                  changeRoleOfMembers(
+                                    member.userId._id,
+                                    roles.find((role) => role.name === "VIEWER")
+                                      ?._id
+                                  );
+                                }}
+                              >
+                                Set as Viewer
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="font-medium py-2 text-amber-700 hover:text-amber-700"
+                                onClick={() => {
+                                  removeMember(
+                                    member.userId._id,
+                                    member.userId.email
+                                  );
+                                }}
+                              >
+                                Remove {member?.userId.name.split(" ")[0]}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </PermissionGuard>
                       )}
                     </div>
                   </div>
-                  {index < members.length - 1 && <Separator className="my-3" />}
+                  {index < sortedMembers.length - 1 && (
+                    <Separator className="my-3" />
+                  )}
                 </div>
               ))
             ) : (
@@ -247,7 +269,9 @@ const Members = () => {
         </CardContent>
       </Card>
 
-      <InviteMembers roles={roles} isLoading={isLoading} />
+      <PermissionGuard requiredPermission={[Permissions.ADD_MEMBER]}>
+        <InviteMembers roles={filteredRoles} isLoading={isLoading} />
+      </PermissionGuard>
     </div>
   );
 };

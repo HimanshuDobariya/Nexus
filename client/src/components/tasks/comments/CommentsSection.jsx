@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
 import DottedSeperator from "@/components/common/DottedSeperator";
 import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
+import { useRolesAndMembersStore } from "@/store/useRolesAndMembersStore";
 
 const API_URL = `${import.meta.env.VITE_SERVER_URL}/api/comments`;
 
@@ -16,7 +17,7 @@ const CommentsSection = ({ id = null }) => {
   const [comments, setComments] = useState([]);
   const { taskId: paramsTaskId } = useParams();
   const { profile } = useProfileStore();
-  const [members, setMembers] = useState([]);
+  const { getAllWorkspaceMembers, members } = useRolesAndMembersStore();
   const { workspaceId } = useParams();
 
   const getAllCommentsOfTask = async () => {
@@ -28,27 +29,12 @@ const CommentsSection = ({ id = null }) => {
     }
   };
   useEffect(() => {
-    const getWorkSpaceMembers = async () => {
-      try {
-        const { data } = await axios.get(
-          `${
-            import.meta.env.VITE_SERVER_URL
-          }/api/workspaces/${workspaceId}/members`
-        );
-        setMembers(data.members);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    getWorkSpaceMembers();
+    getAllWorkspaceMembers(workspaceId);
 
     if (paramsTaskId || id) {
       getAllCommentsOfTask();
     }
   }, []);
-
-
 
   const addComment = async (content) => {
     try {

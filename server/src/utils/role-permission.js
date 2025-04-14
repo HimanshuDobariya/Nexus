@@ -36,8 +36,6 @@ export const RolePermissions = {
     Permissions.EDIT_PROJECT,
     Permissions.DELETE_PROJECT,
 
-    Permissions.CHANGE_WORKSPACE_SETTINGS,
-
     Permissions.CREATE_TASK,
     Permissions.EDIT_TASK,
     Permissions.DELETE_TASK,

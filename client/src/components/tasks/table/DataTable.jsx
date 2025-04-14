@@ -82,7 +82,9 @@ const DataTable = ({
             <DropdownMenuContent align="end">
               {table
                 .getAllColumns()
-                .filter((column) => column.getCanHide())
+                .filter(
+                  (column) => column.getCanHide() && column.id !== "action"
+                )
                 .map((column) => {
                   return (
                     <DropdownMenuCheckboxItem

@@ -76,7 +76,6 @@ const WorkspaceAnalytics = () => {
     pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
     pdf.save(`${title}.pdf`);
   };
-  console.log(analytics);
   const capitalizeString = (string) => {
     if (!string) return;
     return string

@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const roles = await Role.find({}).select("-permissions");
+    const roles = await Role.find({});
     res.status(200).json({ roles });
   } catch (error) {
     console.log(error);

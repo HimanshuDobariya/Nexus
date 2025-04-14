@@ -1,3 +1,5 @@
+import PermissionGuard from "@/components/common/PermissionGuard";
+import { Permissions } from "@/components/enums/PermissionsEnum";
 import EditProjectDilaog from "@/components/project/EditProjectDilaog";
 import TaskViewSwitcher from "@/components/tasks/TaskViewSwitcher";
 import { Button } from "@/components/ui/button";
@@ -53,18 +55,22 @@ const ProjectDetails = () => {
               <h2 className="text-xl sm:text-2xl font-medium ">
                 {currentProject?.name || "Untitled project"}
               </h2>
-              <p className="text-neutral-600 text-xs max-w-[500px]">{currentProject?.description}</p>
+              <p className="text-neutral-600 text-xs max-w-[500px]">
+                {currentProject?.description}
+              </p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            className="!mt-0 px-2 md:px-4 py-1 text-xs sm:text-[14px]"
-            onClick={() => {
-              setEdit(true);
-            }}
-          >
-            <Edit2 /> Edit Project
-          </Button>
+          <PermissionGuard requiredPermission={[Permissions.EDIT_PROJECT]}>
+            <Button
+              variant="outline"
+              className="!mt-0 px-2 md:px-4 py-1 text-xs sm:text-[14px]"
+              onClick={() => {
+                setEdit(true);
+              }}
+            >
+              <Edit2 /> Edit Project
+            </Button>
+          </PermissionGuard>
         </div>
 
         <div className="py-6">

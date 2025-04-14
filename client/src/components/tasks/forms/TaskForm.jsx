@@ -37,6 +37,7 @@ import { format } from "date-fns";
 import { CalendarIcon, Loader, User } from "lucide-react";
 import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 import { priorities, statuses } from "../data";
+import { useRolesAndMembersStore } from "@/store/useRolesAndMembersStore";
 
 const taskSchema = z.object({
   title: z.string().trim().min(1, { message: "Task name is required." }),
@@ -45,7 +46,7 @@ const taskSchema = z.object({
   priority: z.string().optional(),
   assignedTo: z.string().optional().nullable(),
   dueDate: z.date().optional().nullable(),
-  });
+});
 
 const TaskForm = ({
   onSubmit,
@@ -55,7 +56,7 @@ const TaskForm = ({
   initialData = null,
 }) => {
   const { workspaceId } = useParams();
-  const [members, setMembers] = useState([]);
+  const { getAllWorkspaceMembers, members } = useRolesAndMembersStore();
 
   const form = useForm({
     resolver: zodResolver(taskSchema),
@@ -71,19 +72,7 @@ const TaskForm = ({
   });
 
   useEffect(() => {
-    const getWorkSpaceMembers = async () => {
-      try {
-        const { data } = await axios.get(
-          `${
-            import.meta.env.VITE_SERVER_URL
-          }/api/workspaces/${workspaceId}/members`
-        );
-        setMembers(data.members);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getWorkSpaceMembers();
+    getAllWorkspaceMembers(workspaceId);
   }, []);
 
   return (
@@ -257,7 +246,9 @@ const TaskForm = ({
                         field.onChange(date);
                         setOpen(false);
                       }}
-                      disabled={(date) => date < new Date().setHours(0, 0, 0, 0)} 
+                      disabled={(date) =>
+                        date < new Date().setHours(0, 0, 0, 0)
+                      }
                       initialFocus
                     />
                   </PopoverContent>

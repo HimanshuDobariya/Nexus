@@ -31,6 +31,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 import { priorities, statuses } from "./data";
+import { useRolesAndMembersStore } from "@/store/useRolesAndMembersStore";
 
 const DataFilters = ({
   filterData,
@@ -38,7 +39,7 @@ const DataFilters = ({
   setPageSize = () => {},
 }) => {
   const { filters, setFilters, initialFilters } = filterData;
-  const [members, setMembers] = useState([]);
+  const { getAllWorkspaceMembers, members } = useRolesAndMembersStore();
   const { workspaceId } = useParams();
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(null);
@@ -46,20 +47,7 @@ const DataFilters = ({
   const taskView = searchParams.get("task-view");
 
   useEffect(() => {
-    const getWorkSpaceMembers = async () => {
-      try {
-        const { data } = await axios.get(
-          `${
-            import.meta.env.VITE_SERVER_URL
-          }/api/workspaces/${workspaceId}/members`
-        );
-        setMembers(data.members);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    getWorkSpaceMembers();
+    getAllWorkspaceMembers(workspaceId);
   }, []);
 
   const handleFilterChange = (field, value) => {
@@ -165,26 +153,27 @@ const DataFilters = ({
           </SelectItem>
           <SelectSeparator />
 
-          {members.map((member) => (
-            <SelectItem
-              key={member.userId._id}
-              value={member.userId._id}
-              className="cursor-pointer flex items-center"
-            >
-              <div className="flex items-center gap-2">
-                <Avatar>
-                  <AvatarFallback
-                    className={`${getAvatarColor(
-                      member.userId.name
-                    )} flex items-center justify-center !w-6 !h-6 text-xs rounded-full`}
-                  >
-                    {getAvatarFallbackText(member.userId?.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="truncate">{member.userId?.name}</span>
-              </div>
-            </SelectItem>
-          ))}
+          {members &&
+            members.map((member) => (
+              <SelectItem
+                key={member.userId._id}
+                value={member.userId._id}
+                className="cursor-pointer flex items-center"
+              >
+                <div className="flex items-center gap-2">
+                  <Avatar>
+                    <AvatarFallback
+                      className={`${getAvatarColor(
+                        member.userId.name
+                      )} flex items-center justify-center !w-6 !h-6 text-xs rounded-full`}
+                    >
+                      {getAvatarFallbackText(member.userId?.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="truncate">{member.userId?.name}</span>
+                </div>
+              </SelectItem>
+            ))}
           <SelectItem value="unassigned">
             <span className="flex items-center gap-2">
               <UserX className="size-4" />

@@ -40,6 +40,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import PermissionGuard from "../common/PermissionGuard";
+import { Permissions } from "../enums/PermissionsEnum";
+import { useRolesAndMembersStore } from "@/store/useRolesAndMembersStore";
 
 const Navigation = () => {
   const { isMobile, state, setOpenMobile } = useSidebar();
@@ -52,9 +55,17 @@ const Navigation = () => {
   const { workspaceId, projectId } = useParams();
   const isCollapsed = state === "collapsed";
   const [projectsPopoverOpen, setProjectsPopoverOpen] = useState(false);
+  const { getAllWorkspaceMembers, getAvailableRolesAndPermissions } =
+    useRolesAndMembersStore();
 
   useEffect(() => {
-    getAllProjects(workspaceId);
+    if (!workspaceId) return;
+
+    (async () => {
+      await getAllProjects(workspaceId);
+      await getAllWorkspaceMembers(workspaceId);
+      await getAvailableRolesAndPermissions();
+    })();
   }, [workspaceId]);
 
   const handleNavigationClick = (url) => {
@@ -178,17 +189,21 @@ const Navigation = () => {
                         <span>View Project</span>
                       </DropdownMenuItem>
 
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setSelectedProjectId(subItem.id);
-                          setOpenConfirmDialog(true);
-                          setProjectsPopoverOpen(false);
-                        }}
+                      <PermissionGuard
+                        requiredPermission={[Permissions.DELETE_PROJECT]}
                       >
-                        <Trash2 className="text-muted-foreground mr-2 h-4 w-4" />
-                        <span>Delete Project</span>
-                      </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedProjectId(subItem.id);
+                            setOpenConfirmDialog(true);
+                            setProjectsPopoverOpen(false);
+                          }}
+                        >
+                          <Trash2 className="text-muted-foreground mr-2 h-4 w-4" />
+                          <span>Delete Project</span>
+                        </DropdownMenuItem>
+                      </PermissionGuard>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -316,16 +331,22 @@ const Navigation = () => {
                                         <span>View Project</span>
                                       </DropdownMenuItem>
 
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem
-                                        onClick={() => {
-                                          setSelectedProjectId(subItem.id);
-                                          setOpenConfirmDialog(true);
-                                        }}
+                                      <PermissionGuard
+                                        requiredPermission={[
+                                          Permissions.DELETE_PROJECT,
+                                        ]}
                                       >
-                                        <Trash2 className="text-muted-foreground mr-2 h-4 w-4" />
-                                        <span>Delete Project</span>
-                                      </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                          onClick={() => {
+                                            setSelectedProjectId(subItem.id);
+                                            setOpenConfirmDialog(true);
+                                          }}
+                                        >
+                                          <Trash2 className="text-muted-foreground mr-2 h-4 w-4" />
+                                          <span>Delete Project</span>
+                                        </DropdownMenuItem>
+                                      </PermissionGuard>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 </div>
@@ -340,23 +361,37 @@ const Navigation = () => {
               );
             }
 
+            const content = (
+              <SidebarMenuButton
+                asChild
+                tooltip={item.label}
+                onClick={() => handleNavigationClick(finalUrl)}
+                className={cn(
+                  "h-10 cursor-pointer text-neutral-500",
+                  isActive && "bg-muted text-primary"
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <Icon />
+                  <span>{item.label}</span>
+                </div>
+              </SidebarMenuButton>
+            );
             // Regular menu items
             return (
               <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton
-                  asChild
-                  tooltip={item.label}
-                  onClick={() => handleNavigationClick(finalUrl)}
-                  className={cn(
-                    "h-10 cursor-pointer text-neutral-500",
-                    isActive && "bg-muted text-primary"
-                  )}
-                >
-                  <div className="flex items-center">
-                    <Icon />
-                    <span>{item.label}</span>
-                  </div>
-                </SidebarMenuButton>
+                {item.href === "/settings" ? (
+                  <PermissionGuard
+                    requiredPermission={[
+                      Permissions.DELETE_WORKSPACE,
+                      Permissions.EDIT_WORKSPACE,
+                    ]}
+                  >
+                    {content}
+                  </PermissionGuard>
+                ) : (
+                  content
+                )}
               </SidebarMenuItem>
             );
           })}

@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "../ui/button";
-import { Loader, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import DottedSeperator from "../common/DottedSeperator";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -9,11 +9,15 @@ import { useTaskStore } from "@/store/taskStore";
 import KanabnBoard from "./kanban/KanabnBoard";
 import CreateTaskDailog from "./forms/CreateTaskDialog";
 import DataCalander from "./calendar/DataCalander";
-import columns from "./table/Columns";
-import { debounce, filter, size } from "lodash";
+import { debounce } from "lodash";
 import axios from "axios";
+import PermissionGuard from "../common/PermissionGuard";
+import { Permissions } from "../enums/PermissionsEnum";
+import getTaskTableColumns from "./table/Columns";
 
 const TaskViewSwitcher = () => {
+  const columns = getTaskTableColumns();
+
   const [openCreateTaskForm, setOpenCreateTaskForm] = useState(false);
   const { projectId, workspaceId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -116,7 +120,7 @@ const TaskViewSwitcher = () => {
           <div className="flex flex-col gap-y-2 lg:flex-row justify-between items-center">
             <TabsList className="w-full lg:w-auto">
               <TabsTrigger value="table" className="h-8 w-full lg:w-auto">
-                Table
+                List
               </TabsTrigger>
               <TabsTrigger value="kanban" className="h-8 w-full lg:w-auto">
                 Kanban
@@ -125,14 +129,16 @@ const TaskViewSwitcher = () => {
                 Calendar
               </TabsTrigger>
             </TabsList>
-            <Button
-              size="sm"
-              className="w-full lg:w-auto"
-              onClick={() => setOpenCreateTaskForm(true)}
-            >
-              <PlusIcon className="size-4 mr-2" />
-              New
-            </Button>
+            <PermissionGuard requiredPermission={[Permissions.CREATE_TASK]}>
+              <Button
+                size="sm"
+                className="w-full lg:w-auto"
+                onClick={() => setOpenCreateTaskForm(true)}
+              >
+                <PlusIcon className="size-4" />
+                New
+              </Button>
+            </PermissionGuard>
           </div>
           <DottedSeperator className="my-4" />
 

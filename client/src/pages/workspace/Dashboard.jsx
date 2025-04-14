@@ -6,15 +6,22 @@ import WorkspaceAnalytics from "@/components/workspace/WorkspaceAnalytics";
 import { useProjectStore } from "@/store/projectStore";
 import { useParams } from "react-router-dom";
 import CreateProjectDialog from "@/components/project/CreateProjectDialog";
+import { useRolesAndMembersStore } from "@/store/useRolesAndMembersStore";
+import PermissionGuard from "@/components/common/PermissionGuard";
+import { Permissions } from "@/components/enums/PermissionsEnum";
 
 const Dashboard = () => {
   const [openCreateProjectDialog, setOpenCreateProjectDialog] = useState(false);
   const { workspaceId } = useParams();
   const { getAllProjects } = useProjectStore();
+  const { getAllWorkspaceMembers } = useRolesAndMembersStore();
 
   useEffect(() => {
-    getAllProjects(workspaceId);
-  }, []);
+    (async () => {
+      await getAllProjects(workspaceId);
+      await getAllWorkspaceMembers(workspaceId);
+    })();
+  }, [workspaceId]);
 
   return (
     <>
@@ -24,14 +31,16 @@ const Dashboard = () => {
             title="Workspace OverView"
             description="Here is a summary of your workspace"
           />
-          <Button
-            onClick={() => {
-              setOpenCreateProjectDialog(true);
-            }}
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            New Project
-          </Button>
+          <PermissionGuard requiredPermission={[Permissions.CREATE_PROJECT]}>
+            <Button
+              onClick={() => {
+                setOpenCreateProjectDialog(true);
+              }}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              New Project
+            </Button>
+          </PermissionGuard>
         </div>
 
         <WorkspaceAnalytics />

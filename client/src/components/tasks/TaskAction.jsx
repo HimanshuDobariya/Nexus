@@ -12,6 +12,8 @@ import { useTaskStore } from "@/store/taskStore";
 import ConfirmationDilog from "@/components/common/ConfirmationDilog";
 import { toast } from "@/hooks/use-toast";
 import EditTaskDialog from "./forms/EditTaskDialog";
+import PermissionGuard from "../common/PermissionGuard";
+import { Permissions } from "../enums/PermissionsEnum";
 
 const TaskAction = ({ children, data }) => {
   const { projectId, workspaceId } = useParams();
@@ -49,29 +51,31 @@ const TaskAction = ({ children, data }) => {
           <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
         </div>
         <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenEditTaskDialog(true);
-            }}
-          >
-            <PenLine className="size-4 mr-2" />
-            Edit Task
-          </DropdownMenuItem>
-
-          <DropdownMenuSeparator />
-
-          <DropdownMenuItem
-            className={`!text-destructive cursor-pointer`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenDeleteTaskDialog(true);
-            }}
-          >
-            <Trash />
-            Delete Task
-          </DropdownMenuItem>
+          <PermissionGuard requiredPermission={[Permissions.EDIT_TASK]}>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenEditTaskDialog(true);
+              }}
+            >
+              <PenLine className="size-4 mr-2" />
+              Edit Task
+            </DropdownMenuItem>
+          </PermissionGuard>
+          <PermissionGuard requiredPermission={[Permissions.DELETE_TASK]}>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className={`!text-destructive cursor-pointer`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenDeleteTaskDialog(true);
+              }}
+            >
+              <Trash />
+              Delete Task
+            </DropdownMenuItem>
+          </PermissionGuard>
         </DropdownMenuContent>
       </DropdownMenu>
 

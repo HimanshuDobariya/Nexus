@@ -15,6 +15,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import PermissionGuard from "@/components/common/PermissionGuard";
+import { Permissions } from "@/components/enums/PermissionsEnum";
 
 const TaskDetails = ({ task }) => {
   const formatDate = (date) => {
@@ -68,11 +70,13 @@ const TaskDetails = ({ task }) => {
             </TooltipProvider>
           </h1>
         </div>
-        {!isEditMode && (
-          <Button size="sm" onClick={() => setIsEditMode(true)}>
-            <Pencil className="size-4 mr-2" /> Edit
-          </Button>
-        )}
+        <PermissionGuard requiredPermission={[Permissions.EDIT_TASK]}>
+          {!isEditMode && (
+            <Button size="sm" onClick={() => setIsEditMode(true)}>
+              <Pencil className="size-4 mr-2" /> Edit
+            </Button>
+          )}
+        </PermissionGuard>
       </div>
 
       <div

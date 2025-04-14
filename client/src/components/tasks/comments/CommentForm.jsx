@@ -178,7 +178,7 @@ const CommentForm = ({
   };
 
   // Update the filteredMembers calculation to work with the new member structure
-  const filteredMembers = members.filter((member) =>
+  const filteredMembers = members?.filter((member) =>
     member.userId.name.toLowerCase().includes(mentionFilter.toLowerCase())
   );
 
