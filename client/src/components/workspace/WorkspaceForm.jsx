@@ -18,6 +18,8 @@ import { useWorkspaceStore } from "@/store/workspaceStore";
 import { toast } from "@/hooks/use-toast";
 import { data, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { PhotoProvider, PhotoView } from "react-photo-view";
+import "react-photo-view/dist/react-photo-view.css";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Workspace name is required." }),
@@ -117,71 +119,76 @@ const WorkspaceForm = ({ mode, initialData, setOpen }) => {
             </FormItem>
           )}
         />
+        <PhotoProvider>
+          <FormField
+            control={form.control}
+            name="image"
+            render={({ field }) => (
+              <div className="flex flex-col items-center gap-y-2 border-2 border-dashed rounded-md py-7">
+                <div className="flex items-center gap-x-5">
+                  <Avatar
+                    className="size-[72px] relative"
+                    key={preview || "fallback"}
+                  >
+                    {preview ? (
+                      // Wrap the image inside PhotoView for modal view
+                      <PhotoView src={preview}>
+                        <AvatarImage
+                          src={preview}
+                          alt="Preview"
+                          className="object-cover cursor-pointer" // Add pointer cursor for interactivity
+                        />
+                      </PhotoView>
+                    ) : (
+                      <AvatarFallback className=" flex items-center justify-center bg-neutral-100 w-full">
+                        <ImageIcon className="size-[36px] text-neutral-400" />
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className="flex flex-col items-center">
+                    <p className="text-sm">Workspace Image</p>
+                    <p className="text-sm text-neutral-500">JPG, JPEG or PNG</p>
 
-        <FormField
-          control={form.control}
-          name="image"
-          render={({ field }) => (
-            <div className="flex flex-col items-center gap-y-2 border-2 border-dashed rounded-md py-7">
-              <div className="flex items-center gap-x-5">
-                <Avatar
-                  className="size-[72px] relative"
-                  key={preview || "fallback"}
-                >
-                  {preview ? (
-                    <AvatarImage
-                      src={preview}
-                      alt="Preview"
-                      className="object-cover"
+                    {preview ? (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="xs"
+                        disabled={loading}
+                        onClick={handleRemoveImage}
+                        className="mt-2"
+                      >
+                        Remove Image
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="teritary"
+                        size="xs"
+                        disabled={loading}
+                        onClick={() =>
+                          document.getElementById("file-input")?.click()
+                        }
+                        className="mt-2"
+                      >
+                        Upload Image
+                      </Button>
+                    )}
+
+                    <Input
+                      id="file-input"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileChange}
                     />
-                  ) : (
-                    <AvatarFallback className=" flex items-center justify-center bg-neutral-100 w-full">
-                      <ImageIcon className="size-[36px] text-neutral-400" />
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <div className="flex flex-col items-center">
-                  <p className="text-sm">Workspace Image</p>
-                  <p className="text-sm text-neutral-500">JPG, JPEG or PNG</p>
-
-                  {preview ? (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="xs"
-                      disabled={loading}
-                      onClick={handleRemoveImage}
-                      className="mt-2"
-                    >
-                      Remove Image
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="teritary"
-                      size="xs"
-                      disabled={loading}
-                      onClick={() =>
-                        document.getElementById("file-input")?.click()
-                      }
-                      className="mt-2"
-                    >
-                      Upload Image
-                    </Button>
-                  )}
-
-                  <Input
-                    id="file-input"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        />
+            )}
+          />
+        </PhotoProvider>
+
         <div className="flex items-center justify-end">
           <Button
             type="submit"
