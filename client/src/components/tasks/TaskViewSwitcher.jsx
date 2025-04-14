@@ -55,21 +55,31 @@ const TaskViewSwitcher = () => {
     setPageNumber(1);
     setPageSize(10);
   };
+  
+  
   const fetchAllTasks = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getAllTasks(workspaceId, projectId, {
-        pageNumber,
-        pageSize,
+  
+      const params = {
         ...filters,
-      });
+      };
+  
+      // Apply pagination only if current tab is 'table'
+      if (currentTab === "table") {
+        params.pageNumber = pageNumber;
+        params.pageSize = pageSize;
+      }
+  
+      const data = await getAllTasks(workspaceId, projectId, params);
       setTotalCount(data.totalCount);
     } catch (error) {
       console.error("Error fetching tasks:", error);
     } finally {
       setLoading(false);
     }
-  }, [workspaceId, projectId, filters, pageNumber, pageSize]);
+  }, [workspaceId, projectId, filters, pageNumber, pageSize, currentTab]);
+  
 
   const debouncedFetchAllTasks = useMemo(
     () => debounce(fetchAllTasks, 1000),

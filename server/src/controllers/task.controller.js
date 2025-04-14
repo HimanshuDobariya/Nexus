@@ -120,9 +120,10 @@ export const getAllTasks = async (req, res) => {
       dueDate: req.query.dueDate || undefined,
     };
 
+    // Pagination logic
     const pagination = {
-      pageSize: parseInt(req.query.pageSize) || 10,
-      pageNumber: parseInt(req.query.pageNumber) || 1,
+      pageSize: parseInt(req.query.pageSize) || undefined,
+      pageNumber: parseInt(req.query.pageNumber) || undefined,
     };
 
     const { role } = await getMemberRoleInWorkspace(workspaceId, userId);
@@ -158,18 +159,31 @@ export const getAllTasks = async (req, res) => {
       };
     }
 
-    const { pageSize, pageNumber } = pagination;
-    const skip = (pageNumber - 1) * pageSize;
+    // If pagination is provided
+    let tasks, totalCount;
+    if (pagination.pageSize && pagination.pageNumber) {
+      const { pageSize, pageNumber } = pagination;
+      const skip = (pageNumber - 1) * pageSize;
 
-    const [tasks, totalCount] = await Promise.all([
-      Task.find(query)
-        .skip(skip)
-        .limit(pageSize)
+      // Fetch tasks with pagination
+      [tasks, totalCount] = await Promise.all([
+        Task.find(query)
+          .skip(skip)
+          .limit(pageSize)
+          .sort({ createdAt: -1 })
+          .populate("project")
+          .populate("assignedTo"),
+        Task.countDocuments(query),
+      ]);
+    } else {
+      // Fetch all tasks without pagination
+      tasks = await Task.find(query)
         .sort({ createdAt: -1 })
         .populate("project")
-        .populate("assignedTo"),
-      Task.countDocuments(query),
-    ]);
+        .populate("assignedTo");
+      totalCount = tasks.length;
+    }
+
     res.status(200).json({ tasks, totalCount });
   } catch (error) {
     console.log(error);
