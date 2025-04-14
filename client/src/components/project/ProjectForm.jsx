@@ -141,21 +141,17 @@ const ProjectForm = ({ initialData = null, onSubmit, loading, onCancel }) => {
                   {...field}
                   onChange={(e) => {
                     field.onChange(e.target.value);
-                    setIsKeyModified(true); // Mark that user manually changed projectKey
-
-                    if (isEditMode) {
-                      form.setError("projectKey", {
-                        type: "manual",
-                        message:
-                          "Changing the project key may break some external integrations.",
-                      });
-                    } else {
-                      form.clearErrors("projectKey");
-                    }
+                    setIsKeyModified(true);
                   }}
+                  disabled={isEditMode}
                 />
               </FormControl>
-              <FormMessage className="error-msg" />
+              {isEditMode && (
+                <p className="error-msg">
+                  Changing the project key may break some external integrations.
+                </p>
+              )}
+              <FormMessage className="error-msg !text-[9px]" />
             </FormItem>
           )}
         />
