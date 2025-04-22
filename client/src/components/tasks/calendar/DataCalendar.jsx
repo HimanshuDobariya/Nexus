@@ -31,7 +31,7 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-const DataCalander = ({ data, filterData, loading }) => {
+const DataCalendar = ({ data, filterData, loading }) => {
   const [value, setValue] = useState(new Date());
   const events = data.map((task) => ({
     start: new Date(task?.dueDate),
@@ -99,4 +99,4 @@ const DataCalander = ({ data, filterData, loading }) => {
     </div>
   );
 };
-export default DataCalander;
+export default DataCalendar;

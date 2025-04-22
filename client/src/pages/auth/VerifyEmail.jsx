@@ -136,7 +136,7 @@ const VerifyEmail = () => {
                 ))}
 
               {form.formState.errors.otp && (
-                <p className="error-msg left-auto">
+                <p className="error-msg w-full text-center">
                   {form.formState.errors.otp.root?.message ||
                     "OTP must be exactly 6 digits"}
                 </p>

@@ -33,11 +33,7 @@ import { getAvatarColor, getAvatarFallbackText } from "@/lib/avatar.utils";
 import { priorities, statuses } from "./data";
 import { useRolesAndMembersStore } from "@/store/useRolesAndMembersStore";
 
-const DataFilters = ({
-  filterData,
-  setPageNumber = () => {},
-  setPageSize = () => {},
-}) => {
+const DataFilters = ({ filterData, setPagination }) => {
   const { filters, setFilters, initialFilters } = filterData;
   const { getAllWorkspaceMembers, members } = useRolesAndMembersStore();
   const { workspaceId } = useParams();
@@ -55,8 +51,7 @@ const DataFilters = ({
       ...prevFilters,
       [field]: value === "all" ? "" : value,
     }));
-    setPageNumber(1);
-    setPageSize(10);
+    setPagination(1, 10);
   };
 
   const handleDateSelect = (date) => {
@@ -70,8 +65,7 @@ const DataFilters = ({
   const handleResetFilters = () => {
     setFilters(initialFilters);
     setDate(null);
-    setPageNumber(1);
-    setPageSize(10);
+    setPagination(1, 10);
   };
 
   return (

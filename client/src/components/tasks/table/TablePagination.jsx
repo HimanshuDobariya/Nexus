@@ -13,21 +13,20 @@ const TablePagination = ({
   pageNumber,
   pageSize,
   totalCount,
-  setPageNumber,
-  setPageSize,
+  setPagination,
 }) => {
   const totalPages = Math.ceil(totalCount / pageSize);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
-      setPageNumber(newPage);
+      setPagination(newPage, pageSize); // Set the new page number with the current page size
     }
   };
 
   const handlePageSizeChange = (value) => {
-    setPageSize(value);
-    setPageNumber(1);
+    setPagination(1, value); // Reset to the first page when the page size changes
   };
+
 
   const renderPageNumbers = useMemo(() => {
     const maxVisiblePages = 5;

@@ -92,11 +92,13 @@ const TaskAction = ({ children, data }) => {
         loading={loading}
       />
 
-      <EditTaskDialog
-        open={openEditTaskDialog}
-        setOpen={setOpenEditTaskDialog}
-        initialData={data}
-      />
+      {openEditTaskDialog && (
+        <EditTaskDialog
+          open={openEditTaskDialog}
+          setOpen={setOpenEditTaskDialog}
+          initialData={data}
+        />
+      )}
     </>
   );
 };

@@ -7,7 +7,7 @@ import DataFilters from "../DataFilters";
 import DottedSeperator from "@/components/common/DottedSeperator";
 import { Loader } from "lucide-react";
 
-const KanabnBoard = ({ data = [], onChange, filterData, loading }) => {
+const KanbanBoard = ({ data = [], onChange, filterData, loading }) => {
   const boards = statuses.map((status) => status.value);
 
   const [tasks, setTasks] = useState(() => {
@@ -17,7 +17,7 @@ const KanabnBoard = ({ data = [], onChange, filterData, loading }) => {
     }, {});
 
     data.map((task) => {
-      initialTasks[task.status].push(task);
+      initialTasks[task.status]?.push(task);
     });
 
     Object.keys(initialTasks).forEach((status) => {
@@ -182,4 +182,4 @@ const KanabnBoard = ({ data = [], onChange, filterData, loading }) => {
     </div>
   );
 };
-export default KanabnBoard;
+export default KanbanBoard;

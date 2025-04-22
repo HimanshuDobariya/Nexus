@@ -39,16 +39,9 @@ const EditTaskDialog = ({ open, setOpen, initialData }) => {
       });
     }
   };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent
-        className="sm:max-w-[500px] z-50 max-h-[90vh] overflow-y-auto"
-        onClick={(e) => {
-          e.stopPropagation();
-          e.nativeEvent.stopImmediatePropagation();
-        }}
-      >
+      <DialogContent className="sm:max-w-[500px] z-50 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
           <DialogDescription>Update your task data.</DialogDescription>

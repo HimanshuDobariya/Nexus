@@ -35,7 +35,7 @@ const KanbanColumnHeader = ({ board, taskCount }) => {
       <div className="px-2 py-2 flex items-center justify-between">
         <div className="flex items-center gap-x-3">
           {icon} <h2 className="font-medium">{statusLabelMap[board]}</h2>
-          <div className="size-5 flex items-center justify-center rounded-sm  bg-white shadow text-neutral-700 font-medium">
+          <div className="px-1.5 py-0.5 flex items-center justify-center rounded-sm text-xs  bg-white shadow text-neutral-700 font-medium">
             {taskCount}
           </div>
         </div>

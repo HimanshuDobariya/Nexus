@@ -32,8 +32,7 @@ const DataTable = ({
   columns,
   data,
   pagination,
-  setPageNumber,
-  setPageSize,
+  setPagination,
   filterData,
   loading,
 }) => {
@@ -67,11 +66,7 @@ const DataTable = ({
     <>
       <div className="space-y-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:justify-between flex-wrap">
-          <DataFilters
-            filterData={filterData}
-            setPageNumber={setPageNumber}
-            setPageSize={setPageSize}
-          />
+          <DataFilters filterData={filterData} setPagination={setPagination} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
@@ -179,8 +174,9 @@ const DataTable = ({
             pageNumber={pageNumber}
             pageSize={pageSize}
             totalCount={totalCount}
-            setPageNumber={setPageNumber}
-            setPageSize={setPageSize}
+            // setPageNumber={setPageNumber}
+            // setPageSize={setPageSize}
+            setPagination={setPagination}
           />
         </div>
       </div>

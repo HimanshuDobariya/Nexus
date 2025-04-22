@@ -5,8 +5,26 @@ const API_URL = `${import.meta.env.VITE_SERVER_URL}/api/tasks`;
 
 axios.defaults.withCredentials = true;
 
-export const useTaskStore = create((set) => ({
+export const useTaskStore = create((set, get) => ({
   tasks: [],
+  workspaceId: null,
+  projectId: null,
+  filters: {
+    status: "",
+    priority: "",
+    assignedTo: "",
+    keyword: "",
+    dueDate: "",
+  },
+  pageNumber: 1,
+  pageSize: 10,
+  currentTab: "table",
+
+  setWorkspaceProject: (workspaceId, projectId) =>
+    set({ workspaceId, projectId }),
+  setFilters: (filters) => set({ filters }),
+  setPagination: (pageNumber, pageSize) => set({ pageNumber, pageSize }),
+  setCurrentTab: (tab) => set({ currentTab: tab }),
 
   createTask: async (workspaceId, projectId, taskData) => {
     try {
@@ -24,16 +42,28 @@ export const useTaskStore = create((set) => ({
     }
   },
 
-  getAllTasks: async (workspaceId, projectId, filters = {}) => {
-    const queryParams = new URLSearchParams(filters).toString();
+  getAllTasks: async (workspaceId, projectId) => {
+    const { filters, pageNumber, pageSize, currentTab } = get(); // Get the current state
+
+    const params = { ...filters };
+
+    if (currentTab === "table") {
+      params.pageNumber = pageNumber;
+      params.pageSize = pageSize;
+    }
+
+    
+
+    const queryParams = new URLSearchParams(params).toString();
+
     try {
       const { data } = await axios.get(
         `${API_URL}/project/${projectId}/workspace/${workspaceId}/all?${queryParams}`
       );
-      set({ tasks: data.tasks || [] });
+      set({ tasks: data.tasks || [] }); // Set tasks in the store
       return data;
-      console.log(queryParams)
     } catch (error) {
+      console.error("Error fetching tasks:", error);
       throw error;
     }
   },

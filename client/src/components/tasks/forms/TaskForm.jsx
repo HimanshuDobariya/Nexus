@@ -55,8 +55,7 @@ const TaskForm = ({
   mode = "",
   initialData = null,
 }) => {
-  const { workspaceId } = useParams();
-  const { getAllWorkspaceMembers, members } = useRolesAndMembersStore();
+  const { members } = useRolesAndMembersStore();
 
   const form = useForm({
     resolver: zodResolver(taskSchema),
@@ -70,10 +69,6 @@ const TaskForm = ({
         (initialData?.dueDate && new Date(initialData?.dueDate)) || undefined,
     },
   });
-
-  useEffect(() => {
-    getAllWorkspaceMembers(workspaceId);
-  }, []);
 
   return (
     <Form {...form}>

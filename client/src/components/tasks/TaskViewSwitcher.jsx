@@ -6,9 +6,9 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import DataTable from "./table/DataTable";
 import { useTaskStore } from "@/store/taskStore";
-import KanabnBoard from "./kanban/KanabnBoard";
-import CreateTaskDailog from "./forms/CreateTaskDialog";
-import DataCalander from "./calendar/DataCalander";
+import KanbanBoard from "./kanban/KanbanBoard";
+import CreateTaskDialog from "./forms/CreateTaskDialog";
+import DataCalendar from "./calendar/DataCalendar";
 import { debounce } from "lodash";
 import axios from "axios";
 import PermissionGuard from "../common/PermissionGuard";
@@ -17,15 +17,22 @@ import getTaskTableColumns from "./table/Columns";
 
 const TaskViewSwitcher = () => {
   const columns = getTaskTableColumns();
-
   const [openCreateTaskForm, setOpenCreateTaskForm] = useState(false);
   const { projectId, workspaceId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { tasks, getAllTasks, updateTask } = useTaskStore();
+  const {
+    tasks,
+    currentTab,
+    filters,
+    pageNumber,
+    pageSize,
+    getAllTasks,
+    setCurrentTab,
+    setFilters,
+    setPagination,
+  } = useTaskStore();
   const [loading, setLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(null);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
 
   const initialFilters = {
     status: "",
@@ -35,51 +42,32 @@ const TaskViewSwitcher = () => {
     dueDate: "",
   };
 
-  const [filters, setFilters] = useState(initialFilters);
-  const [currentTab, setCurrentTab] = useState(
-    searchParams.get("task-view") || "table"
-  );
-
   useEffect(() => {
     setCurrentTab(searchParams.get("task-view") || "table");
-  }, [searchParams]);
+  }, [searchParams, setCurrentTab]);
 
   const handleTabChange = (value) => {
-    setCurrentTab(value);
+    setCurrentTab(value); // Update currentTab in Zustand store
     const newParams = new URLSearchParams(searchParams);
     value === "table"
       ? newParams.delete("task-view")
       : newParams.set("task-view", value);
     setSearchParams(newParams);
-    setFilters(initialFilters);
-    setPageNumber(1);
-    setPageSize(10);
+    setFilters(initialFilters); // Reset filters on tab change
+    setPagination(1, 10); // Reset pagination on tab change
   };
-  
-  
+
   const fetchAllTasks = useCallback(async () => {
     try {
       setLoading(true);
-  
-      const params = {
-        ...filters,
-      };
-  
-      // Apply pagination only if current tab is 'table'
-      if (currentTab === "table") {
-        params.pageNumber = pageNumber;
-        params.pageSize = pageSize;
-      }
-  
-      const data = await getAllTasks(workspaceId, projectId, params);
-      setTotalCount(data.totalCount);
+      const data = await getAllTasks(workspaceId, projectId);
+      setTotalCount(data.totalCount); // Set the total count based on the fetched data
     } catch (error) {
       console.error("Error fetching tasks:", error);
     } finally {
       setLoading(false);
     }
-  }, [workspaceId, projectId, filters, pageNumber, pageSize, currentTab]);
-  
+  }, [workspaceId, projectId, getAllTasks, pageNumber, pageSize]);
 
   const debouncedFetchAllTasks = useMemo(
     () => debounce(fetchAllTasks, 1000),
@@ -94,30 +82,64 @@ const TaskViewSwitcher = () => {
     }
 
     return () => debouncedFetchAllTasks.cancel();
-  }, [filters, fetchAllTasks]);
+  }, [filters, fetchAllTasks, debouncedFetchAllTasks]);
 
   const onKanbanChange = useCallback(
     async (updatesPayload) => {
-      if (!Array.isArray(updatesPayload) || updatesPayload.length === 0) return;
-
-      try {
-        await axios.patch(
-          `${
-            import.meta.env.VITE_SERVER_URL
-          }/api/tasks/workspace/${workspaceId}/bulk-update`,
-          { tasks: updatesPayload },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      } catch (error) {
-        console.error("Error updating tasks:", error);
+      if (Array.isArray(updatesPayload) && updatesPayload.length > 0) {
+        try {
+          await axios.patch(
+            `${
+              import.meta.env.VITE_SERVER_URL
+            }/api/tasks/workspace/${workspaceId}/bulk-update`,
+            { tasks: updatesPayload },
+            { headers: { "Content-Type": "application/json" } }
+          );
+        } catch (error) {
+          console.error("Error updating tasks:", error);
+        }
       }
     },
-    [updateTask]
+    [workspaceId]
   );
+
+  const renderTabContent = () => {
+    switch (currentTab) {
+      case "table":
+        return (
+          <DataTable
+            columns={columns}
+            data={tasks}
+            loading={loading}
+            pagination={{ pageNumber, pageSize, totalCount }}
+            setPagination={(pageNumber, pageSize) =>
+              setPagination(pageNumber, pageSize)
+            }
+            setPageSize={(size) => setPagination(pageNumber, size)}
+            filterData={{ filters, setFilters, initialFilters }}
+          />
+        );
+      case "kanban":
+        return (
+          <KanbanBoard
+            data={tasks}
+            onChange={onKanbanChange}
+            filterData={{ filters, setFilters, initialFilters }}
+            loading={loading}
+          />
+        );
+      case "calendar":
+        return (
+          <DataCalendar
+            data={tasks}
+            filterData={{ filters, setFilters, initialFilters }}
+            loading={loading}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <>
@@ -151,45 +173,17 @@ const TaskViewSwitcher = () => {
             </PermissionGuard>
           </div>
           <DottedSeperator className="my-4" />
-
-          <>
-            <TabsContent value="table" className="mt-0">
-              <DataTable
-                columns={columns}
-                data={tasks}
-                loading={loading}
-                pagination={{ pageNumber, pageSize, totalCount }}
-                setPageNumber={setPageNumber}
-                setPageSize={setPageSize}
-                filterData={{ filters, setFilters, initialFilters }}
-              />
-            </TabsContent>
-            <TabsContent value="kanban" className="mt-0">
-              <KanabnBoard
-                data={tasks}
-                onChange={onKanbanChange}
-                filterData={{ filters, setFilters, initialFilters }}
-                loading={loading}
-              />
-            </TabsContent>
-            <TabsContent
-              value="calendar"
-              className="mt-0 h-full overflow-x-auto"
-            >
-              <DataCalander
-                data={tasks}
-                filterData={{ filters, setFilters, initialFilters }}
-                loading={loading}
-              />
-            </TabsContent>
-          </>
+          <TabsContent value={currentTab} className="mt-0">
+            {renderTabContent()}
+          </TabsContent>
         </div>
       </Tabs>
-      <CreateTaskDailog
+      <CreateTaskDialog
         open={openCreateTaskForm}
         setOpen={setOpenCreateTaskForm}
       />
     </>
   );
 };
+
 export default TaskViewSwitcher;
