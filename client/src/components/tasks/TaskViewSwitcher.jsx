@@ -116,7 +116,7 @@ const TaskViewSwitcher = () => {
               setPagination(pageNumber, pageSize)
             }
             setPageSize={(size) => setPagination(pageNumber, size)}
-            filterData={{ filters, setFilters, initialFilters }}
+            filterData={{ filters, setFilters }}
           />
         );
       case "kanban":
@@ -124,7 +124,7 @@ const TaskViewSwitcher = () => {
           <KanbanBoard
             data={tasks}
             onChange={onKanbanChange}
-            filterData={{ filters, setFilters, initialFilters }}
+            filterData={{ filters, setFilters }}
             loading={loading}
           />
         );

@@ -123,7 +123,7 @@ const KanbanBoard = ({ data = [], onChange, filterData, loading }) => {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:justify-between flex-wrap">
-        <DataFilters filterData={filterData} />
+        <DataFilters filterData={filterData} setPagination={() => {}} />
       </div>
 
       <DottedSeperator className="my-4" />

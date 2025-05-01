@@ -22,7 +22,10 @@ export const useTaskStore = create((set, get) => ({
 
   setWorkspaceProject: (workspaceId, projectId) =>
     set({ workspaceId, projectId }),
-  setFilters: (filters) => set({ filters }),
+  setFilters: (filters) =>
+    set((state) => ({
+      filters: typeof filters === "function" ? filters(state.filters) : filters,
+    })),
   setPagination: (pageNumber, pageSize) => set({ pageNumber, pageSize }),
   setCurrentTab: (tab) => set({ currentTab: tab }),
 
@@ -51,8 +54,6 @@ export const useTaskStore = create((set, get) => ({
       params.pageNumber = pageNumber;
       params.pageSize = pageSize;
     }
-
-    
 
     const queryParams = new URLSearchParams(params).toString();
 

@@ -60,7 +60,7 @@ const DataCalendar = ({ data, filterData, loading }) => {
   return (
     <div className="grid grid-cols-1 overflow-x-auto h-full w-full">
       <div className="flex flex-col gap-4 lg:flex-row lg:justify-between flex-wrap">
-        <DataFilters filterData={filterData} />
+        <DataFilters filterData={filterData} setPagination={() => {}} />
       </div>
       <DottedSeperator className="my-4" />
       <Calendar

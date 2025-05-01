@@ -63,7 +63,7 @@ const DataFilters = ({ filterData, setPagination }) => {
   };
 
   const handleResetFilters = () => {
-    setFilters(initialFilters);
+    setFilters({ ...initialFilters });
     setDate(null);
     setPagination(1, 10);
   };
@@ -74,7 +74,7 @@ const DataFilters = ({ filterData, setPagination }) => {
         type="text"
         name="keyword"
         placeholder="Search Task"
-        value={filters.keyword}
+        value={filters.keyword ?? ""}
         onChange={(e) => {
           setFilters((prev) => ({
             ...prev,
